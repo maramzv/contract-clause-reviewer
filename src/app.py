@@ -12,6 +12,7 @@ from pathlib import Path
 import streamlit as st
 
 from clause_review.categories import CATEGORIES
+from clause_review.export import csv_text
 from clause_review.pipeline import run_review
 from clause_review.providers import BudgetExceeded, get_provider
 from clause_review.store import FAILED, FOUND, NOT_FOUND, Store
@@ -29,6 +30,10 @@ st.caption("Every finding is a quotation found word for word in the contract. "
 @st.cache_resource
 def get_store():
     return Store(DB_PATH)
+
+
+def act(finding_id, state):
+    get_store().set_review(finding_id, state)
 
 
 def run(files, categories):
@@ -76,10 +81,14 @@ if not res:
     st.stop()
 
 docs = load_results(get_store(), res["pid"], res["categories"])
-n_find = sum(len(d["findings"]) for d in docs)
+all_f = [f for d in docs for f in d["findings"]]
 n_check = sum(1 for d in docs for c in res["categories"] if d["categories"][c] != FOUND)
-st.subheader(f"{len(docs)} contract(s), {n_find} verified finding(s), {n_check} category check(s) for you")
-st.caption(f"Model usage: {res['usage']}")
+tally = {k: sum(1 for f in all_f if f["review"] == k) for k in ("pending", "accepted", "removed")}
+st.subheader(f"{len(docs)} contract(s), {len(all_f) - tally['removed']} finding(s), {n_check} category check(s) for you")
+st.caption(f"Reviewed: {tally['accepted']} accepted, {tally['removed']} removed, {tally['pending']} not yet reviewed. "
+           f"Model usage: {res['usage']}")
+st.sidebar.download_button("Download CSV", csv_text(get_store(), res["pid"]), file_name="clause_review.csv",
+                           mime="text/csv", help="Accepted and not-yet-reviewed findings, plus every category still to check.")
 
 for d in docs:
     found = sum(1 for c in res["categories"] if d["categories"][c] == FOUND)
@@ -93,6 +102,16 @@ for d in docs:
             status = d["categories"][c] or FAILED
             st.markdown(f"**{ICON.get(status, '❌')} {c}** — {status}")
             for f in (x for x in d["findings"] if x["category"] == c):
+                removed = f["review"] == "removed"
                 with st.container(border=True):
-                    st.caption(f"Page {f['page']}")
-                    st.markdown("> " + md_escape(f["quote"]))
+                    st.caption(f"Page {f['page']} · {f['review'].capitalize() if f['review'] != 'pending' else 'Not yet reviewed'}")
+                    quote = md_escape(f["quote"])
+                    st.markdown("> " + (f"~~{quote}~~" if removed else quote))
+                    b1, b2, _ = st.columns([1, 1, 6])
+                    if removed:
+                        b1.button("Restore", key=f"restore{f['id']}", on_click=act, args=(f["id"], "pending"))
+                    else:
+                        b1.button("Accept", key=f"accept{f['id']}", on_click=act, args=(f["id"], "accepted"),
+                                  type="secondary" if f["review"] == "accepted" else "primary",
+                                  disabled=f["review"] == "accepted")
+                        b2.button("Remove", key=f"remove{f['id']}", on_click=act, args=(f["id"], "removed"))

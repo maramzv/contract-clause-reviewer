@@ -23,11 +23,11 @@ held-out set.
 
 ## What is built
 
-Upload, category choice, findings with quotation, page and category status, and failed files listed with the reason
-(`app.py`, `clause_review/view.py`). The screen runs on whichever provider `CLAUSE_PROVIDER` selects; the default is the
-offline mock, and the screen says so.
+Upload, category choice, findings with quotation, page and category status, failed files listed with the reason,
+Accept, Remove and Restore on each finding, and a CSV download (`app.py`, `clause_review/view.py`). The screen runs on
+whichever provider `CLAUSE_PROVIDER` selects; the default is the offline mock, and the screen says so.
 
-TODO: accept and remove actions, CSV download button, CUAD loader, eval script. A real-model run has not been made yet.
+TODO: mark a category as reviewed, CUAD loader, eval script. A real-model run has not been made yet.
 
 ## Assumptions and limits
 
@@ -52,8 +52,10 @@ not yet measured; **unmeasured** = depends on the real model.
   selected category shows "Failed to process". OCR is out of scope. **Tested.**
 - If the model's reply is not a JSON list, that chunk adds no model findings and any category left empty shows
   "Not found, review required". It is flagged, not hidden, but the cause is not shown. **Unmeasured.**
-- Findings start as `pending`; the planned states are `accepted` and `removed`, and the CSV leaves out `removed`.
-  The actions that set them are not built.
+- Findings start as `pending`; Accept sets `accepted`, Remove sets `removed`, Restore sets `pending`. A removed finding
+  stays in the database and on screen (struck through) so it can be restored, and the CSV leaves it out. If every
+  finding in a category is removed, the category goes back to "Not found, review required", so removing a false match
+  never reads as a confirmed absence. **Tested.**
 - The database stores the full text of every uploaded contract. Use public contracts only.
 - Each Run in the screen creates a new review named by the time of the run (the PRD's "one default review"). **Chosen.**
 - The mock provider finds clauses with keyword rules. Results from it say nothing about model quality.
