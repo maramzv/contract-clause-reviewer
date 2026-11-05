@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Contract Clause Extraction and Review</title>
+<title>Clautra: Find the clause. Trace the source.</title>
 <style>
   /* ---------- Branding hooks: change these later ---------- */
   :root {
@@ -20,7 +20,7 @@
     --warn-soft: #fcf1de;
     --radius: 14px;
     --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    --brand-name: "Clause Review";
+    --brand-name: "Clautra";
   }
 
   * { box-sizing: border-box; }
@@ -76,9 +76,10 @@
   /* ---------- Stage ---------- */
   .stage { position: relative; flex: 1; min-height: 0; }
   .slide {
+    font-size: clamp(12px, 2.25vh, 18px);
     position: absolute; inset: 0;
     overflow-y: auto;
-    padding: clamp(20px, 5vh, 56px) clamp(20px, 7vw, 120px);
+    padding: clamp(14px, 3.2vh, 40px) clamp(20px, 6vw, 110px);
     opacity: 0; visibility: hidden; transform: translateX(24px);
     transition: opacity .28s ease, transform .28s ease, visibility 0s linear .28s;
   }
@@ -86,27 +87,28 @@
   .slide.before { transform: translateX(-24px); }
   .inner { max-width: 1080px; margin: 0 auto; }
 
-  .eyebrow { color: var(--accent); font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px; margin: 0 0 10px; }
-  h1 { font-size: clamp(32px, 5.5vw, 60px); line-height: 1.08; margin: 0 0 18px; letter-spacing: -0.02em; }
-  h2 { font-size: clamp(26px, 3.8vw, 42px); line-height: 1.12; margin: 0 0 18px; letter-spacing: -0.015em; }
-  h3 { font-size: 18px; margin: 0 0 6px; }
-  p { margin: 0 0 12px; }
-  .lead { font-size: clamp(17px, 2vw, 22px); color: var(--muted); max-width: 52ch; }
+  .eyebrow { color: var(--accent); font-weight: 700; font-size: .78em; text-transform: uppercase; letter-spacing: 1.2px; margin: 0 0 10px; }
+  h1 { font-size: clamp(30px, 9vh, 60px); line-height: 1.08; margin: 0 0 .5em; letter-spacing: -0.02em; }
+  h2 { font-size: clamp(22px, 5.4vh, 42px); line-height: 1.12; margin: 0 0 .55em; letter-spacing: -0.015em; }
+  h3 { font-size: 1.12em; margin: 0 0 .3em; }
+  p { margin: 0 0 .6em; }
+  .tagline { font-size: clamp(20px, 4vh, 32px); font-weight: 600; color: var(--accent); margin: 0 0 .9em; letter-spacing: -0.01em; }
+  .lead { font-size: 1.28em; color: var(--muted); max-width: 52ch; }
   .muted { color: var(--muted); }
-  .small { font-size: 14px; }
+  .small { font-size: .88em; }
 
   ul.clean { list-style: none; padding: 0; margin: 0; }
-  ul.clean li { padding: 10px 0 10px 28px; position: relative; border-bottom: 1px solid var(--line); }
+  ul.clean li { padding: .45em 0 .45em 1.7em; position: relative; border-bottom: 1px solid var(--line); }
   ul.clean li:last-child { border-bottom: 0; }
-  ul.clean li::before { content: ""; position: absolute; left: 4px; top: 19px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+  ul.clean li::before { content: ""; position: absolute; left: .25em; top: .95em; width: .6em; height: .6em; border-radius: 50%; background: var(--accent); }
 
-  .grid { display: grid; gap: 14px; }
+  .grid { display: grid; gap: .8em; }
   .g2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
   .g3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
   .g4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
   .card {
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-    padding: 18px 20px;
+    padding: .9em 1.1em;
   }
   .card.accent { border-color: var(--accent); background: var(--accent-soft); }
   .card.good { border-color: #b9dcc9; background: var(--good-soft); }
@@ -114,8 +116,8 @@
   .card p:last-child { margin-bottom: 0; }
 
   .tag {
-    display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
-    margin-bottom: 8px; letter-spacing: .3px;
+    display: inline-block; font-size: .75em; font-weight: 700; padding: .2em .7em; border-radius: 999px;
+    margin-bottom: .4em; letter-spacing: .3px;
   }
   .tag.direct { background: var(--good-soft); color: var(--good); }
   .tag.same { background: var(--accent-soft); color: var(--accent); }
@@ -124,18 +126,35 @@
 
   .flow { display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; }
   .step {
-    flex: 1 1 150px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-    padding: 14px 16px; position: relative;
+    flex: 1 1 9em; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: .8em .9em; position: relative;
   }
-  .step .num { font-weight: 800; color: var(--accent); font-size: 13px; }
+  .step .num { font-weight: 800; color: var(--accent); font-size: .8em; }
   .step.key { border-color: var(--accent); background: var(--accent-soft); }
   .step strong { display: block; margin: 2px 0 4px; }
+
+
+  /* Job-description cards */
+  .jdrow { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+  .jd h3 { font-size: 1.08em; margin-bottom: .4em; line-height: 1.25; }
+  .jd p { font-size: .93em; margin: 0 0 .5em; line-height: 1.4; }
+  .jd { padding: .75em .95em; }
+  .jd .tag { font-size: .75em; }
+  .jd .link { margin: 0; font-size: .95em; }
+  .lbl { display: block; font-weight: 700; font-size: .74em; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 2px; }
 
   .says-row { display: grid; grid-template-columns: 1fr 36px 1fr; gap: 10px; align-items: center; margin-bottom: 10px; }
   .says-row .arrow { text-align: center; color: var(--accent); font-weight: 800; font-size: 20px; }
   @media (max-width: 700px) { .says-row { grid-template-columns: 1fr; } .says-row .arrow { transform: rotate(90deg); } }
 
-  .kpi { font-size: 34px; font-weight: 800; color: var(--accent); line-height: 1.1; margin-bottom: 4px; }
+  .cats { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  ul.clean.tight li { padding: .3em 0 .3em 1.7em; }
+  ul.clean.tight li::before { top: .72em; }
+  .kpi.sm { font-size: 1.35em; display: inline; margin-right: .25em; }
+  .flow.compact .step { padding: .5em .8em; }
+  .flow.compact .step strong { display: inline; margin: 0 .35em 0 .35em; }
+  .flow.compact .step .num { display: inline; }
+  .kpi { font-size: 2.1em; font-weight: 800; color: var(--accent); line-height: 1.1; margin-bottom: 4px; }
   .big-demo {
     display: inline-block; font: inherit; font-size: 20px; font-weight: 700; padding: 16px 34px;
     border-radius: 999px; border: 0; background: var(--accent); color: #fff; cursor: pointer; text-decoration: none;
@@ -187,392 +206,224 @@
   <!-- 1. Title -->
   <section class="slide" data-title="Title" aria-label="Title">
     <div class="inner" style="padding-top:6vh">
-      <p class="eyebrow">Product build</p>
-      <h1>Contract Clause Extraction and Review</h1>
-      <p class="lead">A first-pass clause table for a whole batch of contracts. Every finding shows the exact contract wording, and every gap is flagged for a human to check.</p>
+      <p class="eyebrow">Contract Clause Extraction and Review</p>
+      <h1>Clautra</h1>
+      <p class="tagline">Find the clause. Trace the source.</p>
+      <p class="lead">Turn a batch of commercial contracts into a review-ready clause table. Every finding is a verbatim quotation with its page reference, and every gap is flagged for attorney review.</p>
       <p class="muted" style="margin-top:28px">Kerrian Gordon &amp; Mara Munoz</p>
     </div>
   </section>
 
-  <!-- 2. Problem -->
-  <section class="slide" data-title="The problem">
-    <div class="inner">
+  <!-- 2. Problem and who it's for -->
+  <section class="slide" data-title="The problem and who it's for">
+    <div class="inner" style="max-width:1200px">
       <p class="eyebrow">The problem</p>
-      <h2>Reviewing contracts is repetitive, and a missed clause is costly</h2>
+      <h2>Checking contracts by hand is slow, and a missed detail is costly</h2>
       <div class="grid g2">
-        <div class="card">
-          <h3>What reviewers are asked to do</h3>
-          <ul class="clean">
-            <li>Move commercial contracts quickly</li>
-            <li>Track renewal dates</li>
-            <li>Escalate non-standard language to a senior lawyer</li>
-          </ul>
-        </div>
         <div class="card warn">
-          <h3>Where we think the time goes</h3>
-          <ul class="clean">
-            <li>Finding the same clause types in every agreement</li>
-            <li>Copying quotes, document names and pages into a table</li>
-            <li>Not knowing if an empty keyword search means the clause is absent</li>
+          <h3>What's going on</h3>
+          <p class="small">When a company is being bought, lawyers read piles of its contracts to find a few key sections, called <strong>clauses</strong>. For example: what happens to a contract if the company is sold? This careful check is called <strong>due diligence</strong>. We think the time goes here:</p>
+          <ul class="clean small tight">
+            <li>Hunting for the same kinds of clauses in every contract</li>
+            <li>Copying quotes and page numbers into a spreadsheet</li>
+            <li>Not knowing if a search that finds nothing means the clause isn't there</li>
           </ul>
+          <p class="muted small" style="margin:.5em 0 0">These are our best guesses. No job posting proves them yet.</p>
         </div>
-      </div>
-      <p class="muted small" style="margin-top:14px">These time sinks are our hypotheses. No job posting proves them yet.</p>
-    </div>
-  </section>
-
-  <!-- 3. Users -->
-  <section class="slide" data-title="Who it's for">
-    <div class="inner">
-      <p class="eyebrow">Who it's for</p>
-      <h2>Reviewers who turn a batch of contracts into a table</h2>
-      <div class="grid g3">
         <div class="card accent">
-          <h3>Primary users</h3>
-          <p>Junior corporate associates, paralegals and legal analysts. They care about not missing a clause and showing where each finding came from.</p>
-        </div>
-        <div class="card">
-          <h3>Secondary users</h3>
-          <p>Senior lawyers. They check the table and decide what each provision means for the deal.</p>
-        </div>
-        <div class="card">
-          <h3>Later audiences</h3>
-          <p>Contract managers, in-house counsel, procurement and legal operations.</p>
-        </div>
-      </div>
-      <div class="card" style="margin-top:14px">
-        <h3>Example: Maya, a junior associate</h3>
-        <p>Before an acquisition closes, she must review 30 customer and supplier contracts and report which ones contain assignment restrictions or change-of-control terms. <span class="muted">(An illustrative persona, not a documented customer.)</span></p>
-      </div>
-    </div>
-  </section>
-
-  <!-- 4. How we chose the job -->
-  <section class="slide" data-title="Building for a job description">
-    <div class="inner">
-      <p class="eyebrow">Building for a job description</p>
-      <h2>We read each posting twice: what it says, and what it reveals</h2>
-      <div class="grid g2">
-        <div class="card">
-          <h3>The method</h3>
-          <ul class="clean">
-            <li><strong>Says:</strong> the duties the posting lists outright</li>
-            <li><strong>Reveals:</strong> the daily reality behind them</li>
-            <li><strong>Signals:</strong> words like each, every, track, review, escalate point to repeated manual work</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3>The four checks, applied to our build</h3>
-          <ul class="clean">
-            <li><strong>Specific:</strong> yes. Named roles, defined task</li>
-            <li><strong>Research-able:</strong> partly. Real postings and a public labeled dataset</li>
-            <li><strong>Repetitive:</strong> probably. Same checklist on every contract</li>
-            <li><strong>Multi-step:</strong> yes. Read, find, verify, review, export</li>
+          <h3>Who it's for</h3>
+          <ul class="clean small tight">
+            <li><strong>Main users:</strong> junior lawyers, paralegals (legal assistants) and legal analysts who read the contracts</li>
+            <li><strong>Also:</strong> senior lawyers, who check the results and decide what each clause means for the deal</li>
+            <li><strong>Later:</strong> contract managers, in-house lawyers, purchasing and legal operations teams</li>
+            <li><strong>Example:</strong> Maya, a junior lawyer, must review 30 contracts before a company purchase closes <span class="muted">(an illustrative person, not a real customer)</span></li>
           </ul>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 5. The 7 JDs -->
-  <section class="slide" data-title="The 7 job descriptions">
-    <div class="inner">
-      <p class="eyebrow">Research</p>
-      <h2>Seven real postings tie the build to real work</h2>
-      <div class="grid g3">
-        <div class="card">
-          <span class="tag direct">Direct match</span>
-          <h3>ImmunityBio</h3>
-          <p class="small muted">Paralegal, Corporate Contracts</p>
-          <p class="small">Reviews contracts for assignment and change-of-control provisions during due diligence.</p>
-          <p class="small"><a href="https://nant.wd5.myworkdayjobs.com/en-us/immunitybio/job/paralegal--corporate-contracts_r3103" target="_blank" rel="noopener">Posting</a></p>
+  <!-- 3. Job descriptions -->
+  <section class="slide" data-title="The job descriptions we built for">
+    <div class="inner" style="max-width:1280px">
+      <p class="eyebrow">Who does this work today</p>
+      <h2>Four real job postings show this work exists</h2>
+      <p class="muted" style="margin-bottom:.8em">Each card shows what the posting <strong>says</strong> and what that <strong>reveals</strong> about the daily work.</p>
+      <div class="grid jdrow">
+
+        <div class="card jd">
+          <span class="tag direct">Closest match</span>
+          <h3>ImmunityBio: Paralegal, Corporate Contracts</h3>
+          <p><span class="lbl">Says</span> Checks contracts for rules on handing a contract to someone else, and on what happens if the company is sold.</p>
+          <p><span class="lbl">Reveals</span> The same kinds of clauses get checked in contract after contract.</p>
+          <p class="link"><a href="https://nant.wd5.myworkdayjobs.com/en-us/immunitybio/job/paralegal--corporate-contracts_r3103" target="_blank" rel="noopener">View posting</a></p>
         </div>
-        <div class="card">
-          <span class="tag direct">Direct match</span>
-          <h3>Cantor Fitzgerald</h3>
-          <p class="small muted">IT Contract Paralegal, M&amp;A</p>
-          <p class="small">"analyzing vendor/customer contracts for transferability, change of control, and IP ownership issues."</p>
-          <p class="small"><a href="https://www.goparalegals.com/jobs/539447438-it-contract-paralegal-mergers-and-acquisitions-at-cantor-fitzgerald" target="_blank" rel="noopener">Posting</a></p>
+
+        <div class="card jd">
+          <span class="tag direct">Closest match</span>
+          <h3>Cantor Fitzgerald: Contract Paralegal, Mergers and Acquisitions</h3>
+          <p><span class="lbl">Says</span> "analyzing vendor/customer contracts for transferability, change of control, and IP ownership issues."</p>
+          <p><span class="lbl">Reveals</span> Contracts are checked for the same risky terms before a deal.</p>
+          <p class="link"><a href="https://www.goparalegals.com/jobs/539447438-it-contract-paralegal-mergers-and-acquisitions-at-cantor-fitzgerald" target="_blank" rel="noopener">View posting</a></p>
         </div>
-        <div class="card">
-          <span class="tag same">Same work</span>
-          <h3>Andrews Myers</h3>
-          <p class="small muted">Corporate Transactional Associate (junior)</p>
-          <p class="small">Conducts legal due diligence and prepares detailed diligence reports.</p>
-          <p class="small"><a href="https://www.andrewsmyers.com/about-the-firm/careers/general-inquiries/" target="_blank" rel="noopener">Posting</a></p>
+
+        <div class="card jd">
+          <span class="tag same">Our user</span>
+          <h3>Andrews Myers: Junior Corporate Lawyer</h3>
+          <p><span class="lbl">Says</span> Does legal due diligence and writes detailed reports on what was found.</p>
+          <p><span class="lbl">Reveals</span> A junior lawyer reads many documents in a deal and reports back to a senior lawyer.</p>
+          <p class="link"><a href="https://www.andrewsmyers.com/about-the-firm/careers/general-inquiries/" target="_blank" rel="noopener">View posting</a></p>
         </div>
-        <div class="card">
-          <span class="tag same">Same work</span>
-          <h3>Klehr Harrison</h3>
-          <p class="small muted">Junior Corporate Associate</p>
-          <p class="small">Drafts and reviews corporate agreements and conducts due diligence.</p>
-          <p class="small"><a href="https://klehr.com/careers/junior-corporate-associate/" target="_blank" rel="noopener">Posting</a></p>
+
+        <div class="card jd">
+          <span class="tag same">Our user</span>
+          <h3>Klehr Harrison: Junior Corporate Lawyer</h3>
+          <p><span class="lbl">Says</span> Drafts and reviews business agreements and does due diligence.</p>
+          <p><span class="lbl">Reveals</span> Reviewing agreements is regular, everyday work for junior lawyers.</p>
+          <p class="link"><a href="https://klehr.com/careers/junior-corporate-associate/" target="_blank" rel="noopener">View posting</a></p>
         </div>
-        <div class="card">
-          <span class="tag related">Related</span>
-          <h3>E-Space</h3>
-          <p class="small muted">Contract Paralegal</p>
-          <p class="small">Tracks renewal deadlines and escalates non-standard provisions.</p>
-          <p class="small"><a href="https://jobs.lever.co/espace/59ffb796-535d-4f6e-95db-2146d36953d5" target="_blank" rel="noopener">Posting</a></p>
-        </div>
-        <div class="card">
-          <span class="tag related">Related</span>
-          <h3>LegalShield</h3>
-          <p class="small muted">Paralegal</p>
-          <p class="small">Builds consistent review processes through checklists and monitors renewals.</p>
-          <p class="small"><a href="https://www.builtinboston.com/job/paralegal/11303138" target="_blank" rel="noopener">Posting</a> <span class="muted">(since removed)</span></p>
-        </div>
-        <div class="card warn" style="grid-column: 1 / -1;">
-          <span class="tag weak">Limited fit, states the problem</span>
-          <h3>Pylon</h3>
-          <p class="small muted">Legal &amp; Contract Ops</p>
-          <p class="small">"We have a contract bottleneck problem." About 10 customer contract reviews a month, so a much smaller scale than a diligence batch. <a href="https://joinrise.co/pylon/legal-contract-ops-i9id" target="_blank" rel="noopener">Posting</a></p>
-        </div>
+
       </div>
+      <p class="muted small" style="margin-top:.8em">The postings show the work is real. They don't show how often reviewers miss things or how long it takes. Those are still our guesses.</p>
     </div>
   </section>
 
-  <!-- 6. Says -> reveals -->
-  <section class="slide" data-title="What the postings reveal">
-    <div class="inner">
-      <p class="eyebrow">Research</p>
-      <h2>What the postings say, and what that reveals</h2>
-      <div class="says-row">
-        <div class="card"><strong>Says:</strong> review contracts for assignment and change-of-control provisions</div>
-        <div class="arrow">→</div>
-        <div class="card accent"><strong>Reveals:</strong> the same clause types are checked in contract after contract</div>
-      </div>
-      <div class="says-row">
-        <div class="card"><strong>Says:</strong> track renewal deadlines</div>
-        <div class="arrow">→</div>
-        <div class="card accent"><strong>Reveals:</strong> someone reads every contract for dates and records them by hand</div>
-      </div>
-      <div class="says-row">
-        <div class="card"><strong>Says:</strong> escalate non-standard provisions</div>
-        <div class="arrow">→</div>
-        <div class="card accent"><strong>Reveals:</strong> a reviewer must point a senior lawyer to the exact wording</div>
-      </div>
-      <div class="says-row">
-        <div class="card"><strong>Says:</strong> build consistency through checklists</div>
-        <div class="arrow">→</div>
-        <div class="card accent"><strong>Reveals:</strong> one checklist gets applied to every agreement</div>
-      </div>
-      <p class="muted small">The "reveals" column is our reading. The postings show the work exists. They don't show how often reviewers miss clauses or how much time it takes.</p>
-    </div>
-  </section>
-
-  <!-- 7. What it does -->
+  <!-- 4. What it does -->
   <section class="slide" data-title="What it does">
-    <div class="inner">
+    <div class="inner" style="max-width:1200px">
       <p class="eyebrow">The solution</p>
-      <h2>Upload contracts, get a table you can verify</h2>
-      <div class="flow">
-        <div class="step"><span class="num">1</span><strong>Upload</strong>PDF or text contracts into one review</div>
-        <div class="step"><span class="num">2</span><strong>Choose</strong>the clause categories to check</div>
-        <div class="step"><span class="num">3</span><strong>Extract</strong>candidate passages, kept only if word-for-word</div>
-        <div class="step"><span class="num">4</span><strong>Review</strong>accept a finding or remove a false match</div>
-        <div class="step"><span class="num">5</span><strong>Export</strong>a reviewed CSV for the deal team</div>
-      </div>
-      <p style="margin-top:20px" class="lead">Reviewers spend their time on what the terms mean, not on searching and copying.</p>
-    </div>
-  </section>
+      <h2>Upload contracts, get a table you can trust and check</h2>
 
-  <!-- 8. Guarantees -->
-  <section class="slide" data-title="Two guarantees">
-    <div class="inner">
-      <p class="eyebrow">What sets it apart</p>
-      <h2>Two guarantees, built in</h2>
-      <div class="grid g2">
+      <div class="flow compact">
+        <div class="step"><span class="num">1</span><strong>Upload</strong>your contracts (PDF or text)</div>
+        <div class="step"><span class="num">2</span><strong>Choose</strong>what to look for</div>
+        <div class="step"><span class="num">3</span><strong>Find</strong>the app pulls out exact quotes</div>
+        <div class="step"><span class="num">4</span><strong>Check</strong>you accept or remove each one</div>
+        <div class="step"><span class="num">5</span><strong>Export</strong>a spreadsheet (CSV) to share</div>
+      </div>
+
+      <div class="grid g3" style="margin-top:.8em">
         <div class="card good">
-          <div class="kpi">100%</div>
-          <h3>Verbatim quotations</h3>
-          <p>A quote is shown only if it appears word for word in the contract. Anything the model paraphrases is dropped.</p>
+          <h3><span class="kpi sm">100%</span> Exact quotes</h3>
+          <p class="small">A quote is shown only if those exact words appear in the contract. If the AI rewords something, it is thrown out.</p>
         </div>
         <div class="card good">
-          <div class="kpi">100%</div>
-          <h3>Visible gaps</h3>
-          <p>A category with no result is never left blank. It says "not found, review required", so an empty search is never mistaken for an absent clause.</p>
+          <h3><span class="kpi sm">100%</span> No silent gaps</h3>
+          <p class="small">If nothing is found, the app says so. A blank never means "the clause isn't there".</p>
+        </div>
+        <div class="card">
+          <h3>Three results per topic</h3>
+          <ul class="clean small tight">
+            <li><strong>Found:</strong> a quote with its page</li>
+            <li><strong>Not found, review required:</strong> a person should look</li>
+            <li><strong>Failed to process:</strong> e.g. a scanned image it can't read</li>
+          </ul>
         </div>
       </div>
-      <h3 style="margin-top:22px">Every category in every contract ends in one of three states</h3>
-      <div class="grid g3">
-        <div class="card"><h3>Found</h3><p class="small">A verified quote waits for review.</p></div>
-        <div class="card warn"><h3>Not found, review required</h3><p class="small">The tool never claims the clause is absent.</p></div>
-        <div class="card warn"><h3>Failed to process</h3><p class="small">Unreadable or scanned file. Listed with the reason.</p></div>
+      <p class="muted small" style="margin-top:.8em">The app finds and organizes the wording. Lawyers still decide what it means.</p>
+    </div>
+  </section>
+
+  <!-- 5. How it's built -->
+  <section class="slide" data-title="How it's built">
+    <div class="inner" style="max-width:1200px">
+      <p class="eyebrow">How it's built</p>
+      <h2>Six steps behind the scenes, and the fourth protects the reviewer</h2>
+      <div class="flow compact">
+        <div class="step"><span class="num">1</span><strong>Read</strong>text from each PDF page</div>
+        <div class="step"><span class="num">2</span><strong>Split</strong>into pieces (~1 page each)</div>
+        <div class="step"><span class="num">3</span><strong>Find</strong>the AI suggests quotes</div>
+        <div class="step key"><span class="num">4</span><strong>Verify</strong>keep a quote only if it's word for word</div>
+        <div class="step"><span class="num">5</span><strong>Save</strong>to a small local database</div>
+        <div class="step"><span class="num">6</span><strong>Export</strong>to a spreadsheet</div>
+      </div>
+
+      <h3 style="margin-top:.9em">The five things it looks for</h3>
+      <div class="grid cats">
+        <div class="card"><h3>Assignment</h3><p class="small muted">Can one side hand the contract to someone else?</p></div>
+        <div class="card"><h3>Change of control</h3><p class="small muted">What happens if the company is sold or merged?</p></div>
+        <div class="card"><h3>Ending without a reason</h3><p class="small muted">Can either side walk away? (termination for convenience)</p></div>
+        <div class="card"><h3>Renewal</h3><p class="small muted">Does the contract renew, and how?</p></div>
+        <div class="card"><h3>Governing law</h3><p class="small muted">Which state's or country's laws apply?</p></div>
+      </div>
+
+      <div class="card" style="margin-top:.8em">
+        <p class="small" style="margin:0"><strong>Built with:</strong> Streamlit (a tool for web apps), Python, SQLite (a simple local database) and Claude Sonnet (the AI), with a fake offline AI as a backup. It runs on one computer. <strong>Test data:</strong> we use CUAD, a public set of 510 real contracts that experts already marked up, so we can check our answers. We never use real deal contracts.</p>
       </div>
     </div>
   </section>
 
-  <!-- 9. Pipeline -->
-  <section class="slide" data-title="How it works">
-    <div class="inner">
-      <p class="eyebrow">How it works</p>
-      <h2>Six stages, and the fourth protects the reviewer</h2>
-      <div class="flow">
-        <div class="step"><span class="num">1</span><strong>Ingest</strong>Read each PDF page and record where pages start</div>
-        <div class="step"><span class="num">2</span><strong>Chunk</strong>Split into ~3,000-character windows with overlap</div>
-        <div class="step"><span class="num">3</span><strong>Extract</strong>A regex pass, then one model call per chunk</div>
-        <div class="step key"><span class="num">4</span><strong>Verify</strong>Keep a quote only if it's in the contract word for word</div>
-        <div class="step"><span class="num">5</span><strong>Store</strong>Findings and statuses go to SQLite</div>
-        <div class="step"><span class="num">6</span><strong>Export</strong>Reviewed table to CSV</div>
-      </div>
-      <p class="muted small" style="margin-top:16px">Locations are PDF page numbers. Model answers are cached, so re-runs don't pay twice.</p>
-    </div>
-  </section>
-
-  <!-- 10. Categories -->
-  <section class="slide" data-title="Clause checklist">
-    <div class="inner">
-      <p class="eyebrow">The checklist</p>
-      <h2>Five clause categories, each mapped to a labeled dataset</h2>
-      <div class="grid g3">
-        <div class="card"><h3>Assignment</h3><p class="small muted">CUAD label: Anti-Assignment</p></div>
-        <div class="card"><h3>Change of control</h3><p class="small muted">CUAD label: Change Of Control</p></div>
-        <div class="card"><h3>Termination for convenience</h3><p class="small muted">CUAD label: Termination For Convenience</p></div>
-        <div class="card"><h3>Renewal</h3><p class="small muted">CUAD label: Renewal Term</p></div>
-        <div class="card"><h3>Governing law</h3><p class="small muted">CUAD label: Governing Law</p></div>
-        <div class="card accent"><h3>Why CUAD</h3><p class="small">510 public contracts, 13,000+ expert labels, 41 categories. So accuracy can be measured, not guessed.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 11. Stack -->
-  <section class="slide" data-title="Tech stack">
-    <div class="inner">
-      <p class="eyebrow">Under the hood</p>
-      <h2>One Python process, running locally</h2>
-      <div class="grid g4">
-        <div class="card"><h3>Frontend</h3><p class="small">Streamlit</p></div>
-        <div class="card"><h3>Backend</h3><p class="small">A Python package: ingest, chunk, extract, verify, store, export</p></div>
-        <div class="card"><h3>Database</h3><p class="small">SQLite, one local file</p></div>
-        <div class="card"><h3>Model</h3><p class="small">Claude Sonnet. A mock provider works offline as a fallback.</p></div>
-      </div>
-      <div class="card" style="margin-top:14px">
-        <h3>Data handling</h3>
-        <p>Real deal contracts should not go to a hosted model. Demos and evaluation use public CUAD contracts.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- 12. Scope -->
-  <section class="slide" data-title="Scope">
-    <div class="inner">
-      <p class="eyebrow">Scope</p>
-      <h2>A small, finished loop beats a large unfinished one</h2>
+  <!-- 6. Plan -->
+  <section class="slide" data-title="The plan and how we'll measure it">
+    <div class="inner" style="max-width:1200px">
+      <p class="eyebrow">The plan</p>
+      <h2>What we're building, when, and how we'll know it works</h2>
       <div class="grid g3">
         <div class="card accent">
-          <h3>Must have (P0)</h3>
-          <ul class="clean small">
-            <li>Upload multiple contracts</li>
-            <li>See which files failed, and why</li>
-            <li>Choose categories</li>
-            <li>Quote and page for every finding</li>
-            <li>Status per category</li>
-            <li>Accept or remove</li>
-            <li>CSV export</li>
+          <h3>What we're building</h3>
+          <ul class="clean small tight">
+            <li>Upload many contracts, see which failed and why</li>
+            <li>Choose what to look for</li>
+            <li>Exact quote and page for every finding</li>
+            <li>A result for every topic</li>
+            <li>Accept or remove, then export</li>
           </ul>
+          <p class="small" style="margin:.5em 0 0"><strong>If time allows:</strong> highlight quotes in the full text, flag questions for a senior lawyer, add missed passages, filters, custom topics.</p>
+          <p class="small" style="margin:.4em 0 0"><strong>Not doing:</strong> explaining what a clause means, reading scanned images, drafting or editing contracts, user accounts.</p>
         </div>
         <div class="card">
-          <h3>If time allows</h3>
-          <ul class="clean small">
-            <li>Highlight the quote in the full text</li>
-            <li>Flag a question for a senior lawyer</li>
-            <li>Add a passage the tool missed</li>
-            <li>Filters and custom categories</li>
+          <h3>When</h3>
+          <ul class="clean small tight">
+            <li><strong>Nov 5:</strong> measure cost and speed on 3 contracts</li>
+            <li><strong>Nov 6:</strong> build the screens</li>
+            <li><strong>Nov 7:</strong> rehearse the demo, then lock the version</li>
+            <li><strong>Nov 8&ndash;11:</strong> test accuracy and run a reviewer trial</li>
+            <li><strong>Nov 12:</strong> due</li>
           </ul>
+          <p class="muted small" style="margin:.5em 0 0">Starting point: a basic version already runs with a fake AI. The screens and the real AI come next.</p>
         </div>
         <div class="card">
-          <h3>Not doing</h3>
-          <ul class="clean small">
-            <li>Legal interpretation or risk scores</li>
-            <li>OCR for scanned PDFs</li>
-            <li>Drafting and redlining</li>
-            <li>Accounts and integrations</li>
+          <h3>How we'll know it works</h3>
+          <p class="small" style="margin:0 0 .3em">We test on 102 public contracts we never trained on:</p>
+          <ul class="clean small tight">
+            <li>Finds at least <strong>80%</strong> of the clauses that are really there</li>
+            <li>At least <strong>70%</strong> of what it flags is correct, and beats a plain keyword search</li>
+            <li>Reviewers take at least <strong>30% less time</strong> than by hand, missing no more</li>
+            <li>The 30 biggest contracts finish in <strong>30 minutes</strong></li>
           </ul>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 13. Evaluation -->
-  <section class="slide" data-title="How we measure it">
-    <div class="inner">
-      <p class="eyebrow">Evaluation</p>
-      <h2>We measure accuracy on public contracts, not by feel</h2>
-      <div class="grid g4">
-        <div class="card"><div class="kpi">≥ 0.80</div><h3>Recall</h3><p class="small">Average across the 5 categories on 102 held-out CUAD contracts</p></div>
-        <div class="card"><div class="kpi">≥ 0.70</div><h3>Precision</h3><p class="small">And F1 at least 10 points above a regex-only baseline</p></div>
-        <div class="card"><div class="kpi">−30%</div><h3>Reviewer time</h3><p class="small">Median per-contract time vs. manual, in a pilot with 2+ reviewers</p></div>
-        <div class="card"><div class="kpi">≤ 30 min</div><h3>Processing</h3><p class="small">For the 30 largest test contracts, with an empty cache</p></div>
-      </div>
-      <p class="muted small" style="margin-top:14px">The answer key, definitions and prompts are frozen at the end of Nov 7. The test set stays untouched until then.</p>
-    </div>
-  </section>
-
-  <!-- 14. Risks -->
-  <section class="slide" data-title="Risks and fallbacks">
-    <div class="inner">
-      <p class="eyebrow">Risks</p>
-      <h2>What could go wrong, and what we do about it</h2>
+  <!-- 7. Risks, similar tools, demo -->
+  <section class="slide" data-title="Risks, similar tools and demo">
+    <div class="inner" style="max-width:1200px">
+      <p class="eyebrow">Risks and where it fits</p>
+      <h2>What could go wrong, and how we're different</h2>
       <div class="grid g2">
-        <div class="card"><h3>Messy PDFs</h3><p class="small">Scanned files fail clearly. Quotes that don't match are dropped, so the category reads "not found, review required" instead of a wrong quote.</p></div>
-        <div class="card"><h3>Long contracts</h3><p class="small">Parallel calls and caching. The 30-minute target is tested, not promised for the demo.</p></div>
-        <div class="card"><h3>Cost and speed</h3><p class="small">Not measured yet. A budget cap stops a run, and we measure 3 contracts first.</p></div>
-        <div class="card"><h3>Model fails during the demo</h3><p class="small">Replay from the cache of an earlier run. The mock provider is the last resort, labeled as a mock.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 15. Competition -->
-  <section class="slide" data-title="Where it fits">
-    <div class="inner">
-      <p class="eyebrow">Where it fits</p>
-      <h2>Tools already extract clauses. Here's how we differ</h2>
-      <div class="grid g2">
-        <div class="card">
-          <h3>Existing tools</h3>
-          <ul class="clean">
-            <li><strong>Litera Kira:</strong> clause extraction for diligence at scale</li>
-            <li><strong>Spellbook:</strong> contract review and redlines inside Word</li>
-            <li><strong>Luminance:</strong> used by law firms for M&amp;A diligence</li>
+        <div class="card warn">
+          <h3>What could go wrong</h3>
+          <ul class="clean small tight">
+            <li><strong>Messy PDFs:</strong> a quote that doesn't match is dropped and shown as "not found", never as a wrong quote</li>
+            <li><strong>Very long contracts:</strong> many AI calls at once, with saved answers so re-runs are free</li>
+            <li><strong>Cost and speed:</strong> not measured yet, so we test 3 contracts first and cap spending</li>
+            <li><strong>AI fails during the demo:</strong> replay a saved earlier run. The fake AI is the last resort</li>
           </ul>
         </div>
         <div class="card accent">
-          <h3>What we test</h3>
-          <ul class="clean">
-            <li>Every quote verified word for word</li>
-            <li>An explicit "not found, review required" state</li>
-            <li>A measured evaluation on public CUAD data</li>
+          <h3>Similar tools already exist</h3>
+          <p class="small" style="margin:0 0 .3em">Litera Kira, Spellbook and Luminance already find clauses, at much bigger scale. We don't compete on features. We test three things:</p>
+          <ul class="clean small tight">
+            <li>Every quote is checked word for word</li>
+            <li>An explicit "not found, review required" result</li>
+            <li>Accuracy measured on public contracts</li>
           </ul>
         </div>
       </div>
-      <p class="muted small" style="margin-top:14px">We don't compete on features or scale. This is a class-scale build.</p>
-    </div>
-  </section>
-
-  <!-- 16. Timeline -->
-  <section class="slide" data-title="Timeline">
-    <div class="inner">
-      <p class="eyebrow">Timeline</p>
-      <h2>Three build days, then evaluation</h2>
-      <div class="flow">
-        <div class="step"><span class="num">NOV 5</span><strong>Measure</strong>Run 3 CUAD contracts with Claude. Record cost and time.</div>
-        <div class="step"><span class="num">NOV 6</span><strong>Build screens</strong>Upload, categories, findings, accept or remove, CSV.</div>
-        <div class="step"><span class="num">NOV 7</span><strong>Rehearse and freeze</strong>Demo on 3 contracts. Freeze and tag the version.</div>
-        <div class="step"><span class="num">NOV 8–11</span><strong>Evaluate</strong>Test-split run, scoring and reviewer pilot.</div>
-        <div class="step key"><span class="num">NOV 12</span><strong>Deadline</strong>Project due.</div>
+      <div style="text-align:center; margin-top:1.1em">
+        <button class="big-demo" id="demoMain">Open the demo</button>
       </div>
-      <p class="muted small" style="margin-top:16px">Starting point: a Python skeleton already runs end to end on a mock model. The Streamlit screens and the real model calls come next.</p>
-    </div>
-  </section>
-
-  <!-- 17. Demo -->
-  <section class="slide" data-title="Demo">
-    <div class="inner" style="text-align:center; padding-top:8vh">
-      <p class="eyebrow">Live demo</p>
-      <h2>See it work</h2>
-      <p class="lead" style="margin:0 auto 28px">Upload a few contracts, pick the checklist, and check the findings against the source.</p>
-      <button class="big-demo" id="demoMain">Open the demo</button>
     </div>
   </section>
 
