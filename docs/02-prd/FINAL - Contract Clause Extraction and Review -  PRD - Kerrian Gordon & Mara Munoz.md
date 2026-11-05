@@ -11,7 +11,9 @@
 
 # **1\. PROBLEM**
 
-Reviewers who work through commercial contracts, such as junior corporate associates and contracts paralegals, are expected to move contracts quickly, track renewal dates and escalate non-standard language to a senior lawyer. Real postings describe this work: E-Space asks its contract paralegal to track contract volume, turnaround times and pipeline status, flag renewal deadlines and escalate non-standard provisions, and LegalShield asked its paralegal to help improve turnaround time, reduce cycle times, create consistent review processes and monitor renewal deadlines. One posting, from Pylon, states that contract review is a bottleneck and that slow redlines cost deals. That posting concerns customer contract redlines at a startup handling about 10 reviews a month, so it shows that slow review has a cost, not that finding clauses is the slow step. We hypothesize that, in diligence review, part of the time goes to finding the same clause types in every agreement and copying quotations, document names and locations into a review table, that an empty keyword search leaves the reviewer unsure whether a clause is absent, and that this leads to missed provisions such as assignment restrictions and change-of-control terms and to senior lawyers asking “where does the contract actually say that?” before they trust the table. No posting supports these points yet. The practitioner interviews in Section 5 will test them.
+**Pain (unvalidated):**  When Maya searches a contract for a clause and finds nothing, she cannot tell whether the clause is absent or her keywords missed it. In diligence review she repeats that search for every clause type in every agreement and copies quotations and page numbers into a table. Her senior lawyer then asks “where does the contract actually say that?” before trusting the table.
+
+**Evidence so far:**  This pain is a hypothesis. It rests on job postings that describe the surrounding work: E-Space and LegalShield list turnaround time, consistent review processes and renewal tracking, and Pylon says contract review is a bottleneck for redlines at a startup. No posting says that finding clauses is the slow step or that an empty search leaves reviewers unsure. No contract reviewer has been interviewed yet. The questions for them are in section 6\.
 
 ### **Supporting Context (optional)**
 
@@ -29,7 +31,7 @@ Give legal reviewers a first-pass clause table for a whole batch of contracts in
 
 ### **Market Opportunity**
 
-* The same extract-and-organize task recurs across several roles: junior lawyers, paralegals and legal analysts, in-house counsel, contract managers, procurement teams and legal operations. A corporate contracts paralegal posting from ImmunityBio lists reviewing contracts for assignment and change-of-control provisions during due diligence (see Section 5).
+* The same extract-and-organize task recurs across several roles: junior lawyers, paralegals and legal analysts, in-house counsel, contract managers, procurement teams and legal operations. A corporate contracts paralegal posting from ImmunityBio lists reviewing contracts for assignment and change-of-control provisions during due diligence (see Section 6).
 
 * Market size is not quantified in this PRD. The project is validated instead by the accuracy and reviewer-time targets in Section 2d, and CUAD supplies the labeled data to measure accuracy from the first build.
 
@@ -57,9 +59,11 @@ As a senior lawyer, I need to see the passage behind every finding and any quest
 
 Contract Clause Extraction and Review is a web app that turns a batch of commercial contracts into a review table with source evidence. Maya creates a review, uploads the contracts and chooses a checklist of clause categories: assignment, change of control, termination for convenience, renewal and governing law. The system finds candidate passages, keeps only quotations that appear word for word in the contract, and shows each one with its location (page number), marking any category it could not find as “not found, review required.” Maya accepts or removes findings and exports the reviewed table, so she spends her time on what the terms mean instead of searching and copying.
 
+**What changes for Maya:**  Today she runs keyword searches for five clause types in each of 30 contracts, copies each quotation and page into a spreadsheet, and treats an empty search as probably meaning the clause is not there. With the tool she uploads the 30 contracts once and gets one table in which every contract and category either has a verified quotation with its page or is marked Not found, review required. She checks the quotations against the contracts, removes false matches and exports the table. What she can show her senior lawyer is a table where every quotation is traceable to a page and every gap is visible. How much time this saves has not been measured: the build has not been timed on real contracts, and the reviewer pilot in the Evaluation plan tab is where it will be tested.
+
 ## 2a. Value Proposition
 
-Junior legal associates and paralegals who struggle to find and record the same clause types across dozens of contracts, because wording and headings vary, use Contract Clause Extraction and Review, a web app that extracts clauses with their exact source text into a review table. Unlike keyword search and manual copying into a spreadsheet, it shows only quotations verified word for word against the contract and flags every category it could not find, helping reviewers cut the time spent searching and copying without trusting unverified output.
+Junior legal associates and paralegals who struggle to find and record the same clause types across dozens of contracts, because wording and headings vary, use Contract Clause Extraction and Review, a web app that extracts clauses with their exact source text into a review table. Unlike keyword search and manual copying into a spreadsheet, it shows only quotations verified word for word against the contract and flags every category it could not find, aiming to cut the time reviewers spend searching and copying, without asking them to trust unverified output.
 
 ## 2b. Top 3 MVP Value Props
 
@@ -115,6 +119,15 @@ Recall, precision, the time-saving pilot and the processing-time target are meas
 
 **Context:**  This is the core workflow. We optimize for accuracy she can verify quickly: every finding traces to the contract text, and nothing is silently missing.
 
+**Scenario:**  Maya's senior lawyer sends 30 contracts for diligence and asks for five items from each: assignment, change of control, termination for convenience, renewal and governing law. Within the P0 scope she works like this.
+
+1. She opens the app, keeps all five categories selected and uploads the 30 files (PDF or text).  
+2. The app reads each file. A file it cannot read, such as a scanned PDF, is listed as Failed to process with the reason, and Maya reviews it by hand.  
+3. For every contract she sees each category with a status: Found, with the exact quotation and its page, or Not found, review required.  
+4. She opens the contract at each quoted page and checks the wording. She accepts correct findings and removes false matches. A category whose findings are all removed goes back to Not found, review required.  
+5. For each category marked Not found, review required she searches that contract herself, because an empty result is never treated as proof that the clause is absent.  
+6. She downloads the CSV and sends it with the contracts to the senior lawyer.
+
 **Sub-journey: Setting up a review**
 
 * **\[P1\]**  User can create a review project and name it.
@@ -147,7 +160,7 @@ Recall, precision, the time-saving pilot and the processing-time target are meas
 
   * **\[P1\]**  User can mark a category as reviewed.
 
-  * **\[P0\]**  User can export the reviewed table (contract, category, quotation, location, review state, note) to CSV.
+  * **\[P0\]**  User can export the reviewed table (contract, category, quotation, location, review state) to CSV.
 
   * **\[P1\]**  User can flag a finding with a question for the senior lawyer.
 
@@ -159,9 +172,19 @@ Recall, precision, the time-saving pilot and the processing-time target are meas
 
 **Context:**  The senior lawyer decides what each provision means for the deal. We optimize for fast verification: any finding can be checked against the source without searching the contract separately.
 
+**Scenario:**  The senior lawyer receives Maya's CSV and the 30 contracts. Within the P0 scope he works like this.
+
+1. He opens the CSV in a spreadsheet. Each row is a finding with the contract, category, exact quotation, page and review state. A row in square brackets, such as \[Not found, review required\] or \[Failed to process\], marks a category nobody has confirmed.  
+2. To check a finding, he opens the contract at the page given and finds the quotation word for word. The tool does not highlight it for him yet (P1).  
+3. He filters the CSV by category to list the contracts with an assignment or change-of-control finding. The in-app list is P1.  
+4. He messages Maya about each bracketed row and about any finding he doubts. Flagged questions inside the tool are P1.  
+5. He decides what each clause means for the deal. The tool does not interpret clauses.
+
+**Is the CSV enough in P0?**  Yes for verifying and for deciding what to follow up: every quotation can be checked against a page, and every gap is listed. It is not enough for reading Maya's questions next to the passage or for seeing the highlighted text in the contract, both of which are P1. Until those exist, questions go by message and he finds the passage by page number. The CSV also has a question column that stays empty until flagging is built.
+
 **Sub-journey: Checking the reviewed table**
 
-* **\[P0\]**  User can read each finding with contract name, category, exact quotation, location and note in the exported table.
+* **\[P0\]**  User can read each finding with contract name, category, exact quotation, location and review state in the exported table.
 
   * **\[P0\]**  User can see which categories are unresolved (not found, review required, or failed to process).
 
@@ -236,7 +259,7 @@ Locations are page numbers taken from the PDF. A text file counts as one page. S
 
 **Data handling:** Real deal contracts should not go to a hosted model. Demos and evaluation use public contracts (CUAD), and the write-up says so.
 
-**Competitive context:** Established tools already extract clauses for diligence. Litera Kira links each answer to the source contract and states 95%+ precision on target provisions (a vendor claim we have not verified). Spellbook reviews contracts and suggests redlines inside Word. Luminance is used by law firms for M\&A due diligence, for example Houthoff. This project does not compete on features or scale. The differences to test are verbatim verification of every quotation, an explicit “not found, review required” state, and a measured evaluation on public CUAD data.
+**Competitive context:** Established tools already extract clauses for diligence. [Litera Kira](https://www.litera.com/products/kira) links each answer to the source contract and states 95%+ precision on target provisions (a vendor claim we have not verified). [Spellbook](https://spellbook.com/automated-legal-contract-analysis-software) reviews contracts and suggests redlines inside Word. Luminance is used by law firms for M\&A due diligence, for example [Houthoff](https://houthoff.com/insights/news/houthoff-buruma-uses-luminances-ai-to-streamline-ma-due-diligence). This project does not compete on features or scale. The differences to test are verbatim verification of every quotation, an explicit “not found, review required” state, and a measured evaluation on public CUAD data.
 
 **Evaluation plan:** The answer key, written definitions, freeze, disagreement handling, model and spending limit, and CUAD label mapping are in the Evaluation plan tab.
 
@@ -379,10 +402,10 @@ The two guarantees that hold by construction, 100% verbatim quotations and 100% 
 ## Answer key and definitions
 
 **Decision:** Usability-test contracts and the answer key come from CUAD. The key is the list of CUAD-labelled clauses in each test contract, fixed before testing so that missed clauses can be counted. The test contracts are drawn from the held-out set, so the extractor is not tuned on them. Owner: Kerrian Gordon. Decided November 4, 2026\.  
-**Decision:** Mara Munoz independently marks 10 of the test contracts, without seeing the CUAD labels, to check them before the test. Kerrian Gordon draws the 10 with a recorded random seed, so that at least 3 of them contain each of the five labels. This is a spot check of the key, not an estimate of its error rate; the evaluation reports the number of disagreements. Mara starts marking only after Kerrian has signed the written definitions. Mara records her marks by November 6, 2026, in a separate sheet that holds no CUAD labels (Clause key check: Mara's marks). Decided November 4, 2026\.  
+**Decision:** Mara Munoz independently marks 10 of the test contracts, without seeing the CUAD labels, to check them before the test. Kerrian Gordon draws the 10 with a recorded random seed, so that at least 3 of them contain each of the five labels. This is a spot check of the key, not an estimate of its error rate; the evaluation reports the number of disagreements. Mara starts marking only after Kerrian has signed the written definitions. Mara records her marks by November 6, 2026, in a separate sheet that holds no CUAD labels ([Clause key check: Mara's marks](https://docs.google.com/spreadsheets/d/1kmxT5aGjQXIzzYN5r4xWlO6X0UIIL3jjHxpvnU1VZ88/edit)). Decided November 4, 2026\.  
 **Decision:** Each of the five categories has a short written definition, based on the category descriptions published with CUAD, saying what counts as a clause. Mara marks against these definitions and the extractor is scored against them. Owner: Kerrian Gordon. Due November 5, 2026\. Decided November 4, 2026\.  
 **Decision:** The answer key, the written definitions and the extractor prompts are frozen at the end of November 7, 2026, and the frozen version is tagged. No test-split contract is used for development before then, and the first run on the test split is on or after November 9, 2026\. Owner: Kerrian Gordon. Decided November 4, 2026\. Revised November 5, 2026: the freeze moved from the end of November 6 to the end of November 7 to match the build window.  
-**Decision:** Where Mara's marks differ from a CUAD label, both are recorded and Kerrian and Mara review the contract together against the written definition. The outcome is one of three: the CUAD label stands, the label is corrected, or the item is dropped as ambiguous. Each change is logged with its reason in the disagreement log (Clause key check: Disagreement log), a sheet that Kerrian maintains, and made before the freeze. The evaluation reports how many were changed. Items dropped as ambiguous are removed from scoring and reported as a count. At the freeze the log is exported to a CSV and stored with the tagged version. Owner: Kerrian Gordon and Mara Munoz. Decided November 4, 2026\.  
+**Decision:** Where Mara's marks differ from a CUAD label, both are recorded and Kerrian and Mara review the contract together against the written definition. The outcome is one of three: the CUAD label stands, the label is corrected, or the item is dropped as ambiguous. Each change is logged with its reason in the disagreement log ([Clause key check: Disagreement log](https://docs.google.com/spreadsheets/d/14NnC7_-4Chilgv-5_QtE7OhM-sEf6YrAmoV_u4LzUpI/edit)), a sheet that Kerrian maintains, and made before the freeze. The evaluation reports how many were changed. Items dropped as ambiguous are removed from scoring and reported as a count. At the freeze the log is exported to a CSV and stored with the tagged version. Owner: Kerrian Gordon and Mara Munoz. Decided November 4, 2026\.  
 **Decision:** The final evaluation uses Claude Sonnet through the facilitator's API key, with a spending limit of \$40. Owner: Kerrian Gordon and Mara Munoz. Decided November 4, 2026\.  
 **Decision:** The five checklist categories map to these CUAD labels, as spelled in the data files: assignment is Anti-Assignment, change of control is Change Of Control, termination for convenience is Termination For Convenience, renewal is Renewal Term, and governing law is Governing Law. Checked against the CUAD data files on November 4, 2026\. Governing Law spans are clause sentences (median 28 words), so the 50% overlap rule applies. Anti-Assignment and Change Of Control spans overlap in some contracts, so each category is scored on its own. Notice Period To Terminate Renewal and Expiration Date are not mapped. The held-out set is CUAD's test split of 102 contracts, and evaluation uses all of them. Development uses the other 408 contracts. In the test split, 26 contracts have a Change Of Control label and 26 have Renewal Term, so recall for those two categories is noisy. Decided November 4, 2026\.  
 **Decision:** Notice of non-renewal is out of scope. Renewal is scored against CUAD's Renewal Term label only, the written definition of Renewal excludes notice periods, and the extractor's Renewal description is changed to match. Notice Period To Terminate Renewal is not mapped or scored. Owner: Kerrian Gordon. Decided November 4, 2026\.
