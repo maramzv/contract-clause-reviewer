@@ -1,0 +1,28 @@
+# Secrets and local settings
+.env
+.streamlit/secrets.toml
+
+# Local databases and review output: they contain the text of uploaded contracts
+*.db
+*.sqlite
+*.sqlite3
+out/
+exports/
+
+# CUAD data and labels: Mara marks test contracts without seeing the labels, so keep them out of the shared repo
+data/cuad/
+cuad_data/
+CUADv1.json
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
