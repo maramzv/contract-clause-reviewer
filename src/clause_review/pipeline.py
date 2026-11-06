@@ -12,6 +12,14 @@ from .store import FAILED, FOUND, NOT_FOUND
 log = logging.getLogger("clause_review")
 
 
+def find_findings(text, categories, provider, cache=None, workers=1):
+    """Chunk, extract and verify one contract's text. Returns the verified findings (each with start, end,
+    category, quote, source). Used by the review and by the CUAD evaluation, so both run the same code."""
+    cands = extract(chunk(text), list(categories), provider, cache=cache, workers=workers)
+    kept, _ = verify_and_log(cands, text)
+    return kept
+
+
 def run_review(store, project, paths, provider, categories=None, workers=1):
     cats = list(categories or CATEGORIES)
     pid = store.project(project)
@@ -25,8 +33,7 @@ def run_review(store, project, paths, provider, categories=None, workers=1):
             continue
         did = store.add_document(pid, doc.name, doc.text)
         try:
-            cands = extract(chunk(doc.text), cats, provider, cache=store, workers=workers)
-            kept, dropped = verify_and_log(cands, doc.text)
+            kept = find_findings(doc.text, cats, provider, cache=store, workers=workers)
         except BudgetExceeded as e:  # stop the whole run: the remaining documents would fail the same way
             store.db.execute("UPDATE Document SET status='failed', error=? WHERE id=?", (str(e), did))
             for c in cats:

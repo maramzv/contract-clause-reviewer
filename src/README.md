@@ -27,7 +27,7 @@ Upload, category choice, findings with quotation, page and category status, fail
 Accept, Remove and Restore on each finding, and a CSV download (`app.py`, `clause_review/view.py`). The screen runs on
 whichever provider `CLAUSE_PROVIDER` selects; the default is the offline mock, and the screen says so.
 
-TODO: mark a category as reviewed, CUAD loader, eval script. A real-model run has not been made yet.
+TODO: mark a category as reviewed. The evaluation runs on the development split only so far, and a real-model run has not been made yet.
 
 ## Assumptions and limits
 
@@ -61,3 +61,21 @@ not yet measured; **unmeasured** = depends on the real model.
 - The mock provider finds clauses with keyword rules. Results from it say nothing about model quality.
 
 The PRD's technical section (section 4) describes the same pipeline for readers who do not use the code.
+
+## Scoring against CUAD (development split)
+
+```
+python -m clause_review.evaluate --cuad CUADv1.json --test test.json --baseline          # regex pass only, free
+python -m clause_review.evaluate --cuad CUADv1.json --test test.json --limit 20 --seed 1  # uses CLAUSE_PROVIDER
+```
+
+`CUADv1.json` and `test.json` come from the CUAD release (CC BY 4.0) and stay on your machine; nothing in the repository holds labels.
+The default is the 408 contracts outside CUAD's test split. `--split test` is refused unless `--allow-test` is added; the plan is to leave
+the test split untouched until the answer key, definitions and prompts are frozen (end of November 7).
+
+A prediction matches a gold span when overlap divided by union is at least 0.5 (Jaccard, as in CUAD's own evaluation). Each gold span
+matches at most one prediction. Counts are pooled over contracts per category, and the headline is the average of the five categories.
+Contracts whose model call failed are counted and left out of the scoring, never scored as empty. Paid responses are kept in `--cache`.
+
+Known limits: a quote that appears twice in a contract is located at its first occurrence, so a repeated boilerplate sentence can
+miss its gold span; the 50% rule is Jaccard, which is stricter than "overlap by at least 50% of the gold span".
