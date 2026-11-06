@@ -82,6 +82,15 @@ streamlit run app.py            # the review screen, on the mock provider by def
 
 Try it with `src/samples/sample_contract.txt`. The mock provider finds clauses with keyword rules, so its results say nothing about real model quality, and the screen says so.
 
+**Score it against CUAD** (from `src/`; needs the CUAD files `CUADv1.json` and `test.json` from the CUAD release, which stay on your machine and are not in this repo):
+
+```
+python -m clause_review.evaluate --cuad CUADv1.json --test test.json --baseline            # regex pass only, no model, free
+python -m clause_review.evaluate --cuad CUADv1.json --test test.json --limit 20 --seed 1   # uses CLAUSE_PROVIDER
+```
+
+By default it scores the 408 development contracts. The 102-contract test split is refused unless you add `--allow-test`, which should wait until the answer key, definitions and prompts are frozen (end of Nov 7). Paid model responses are kept in `--cache`, so a rerun does not pay again.
+
 **Settings** (copy `.env.example` to `.env`; it is git-ignored, so never commit a real key):
 
 | Variable | What it does |
@@ -103,18 +112,20 @@ Evaluation and demos use **public contracts from CUAD** (510 contracts, 41 categ
 
 | Goal | Target |
 |---|---|
-| Recall per category on the 102 test contracts (50% span overlap) | Average ≥ 0.80 |
+| Recall per category on the 102 test contracts (a match needs overlap ÷ union ≥ 0.5) | Average ≥ 0.80 |
 | Precision after verification, compared against a regex-only baseline | Average ≥ 0.70, and F1 at least 10 points above baseline |
 | Time saved, in a counterbalanced pilot with ≥ 2 reviewers | Median per-contract time at least 30% lower, with no more missed clauses |
 | Processing time for the 30 largest test contracts (empty cache) | ≤ 30 minutes |
+
+**How a match is counted:** a predicted passage matches a labeled one when their overlap divided by their union is at least 0.5 (Jaccard, the measure CUAD's own evaluation uses). Each labeled passage matches at most one prediction. Counts are pooled over contracts per category, and the headline is the average of the five categories. A contract the model fails on is counted and left out, never scored as empty.
 
 The answer key, written category definitions and extractor prompts are frozen and tagged at the end of Nov 7. The first test-split run is on or after Nov 9.
 
 ## Status
 
-**Built:** upload, category choice, findings with quotation, page and category status, failed files listed with the reason, accept/remove/restore, CSV download, the model providers with a spend limit and response cache, and 25 passing tests (offline, on the mock provider).
+**Built:** upload, category choice, findings with quotation, page and category status, failed files listed with the reason, accept/remove/restore, CSV download, the model providers with a spend limit and response cache, the CUAD loader and evaluation script (with a regex-only baseline, development split by default), and 35 passing tests (offline, on small invented files and the mock provider).
 
-**Not built yet:** marking a category as reviewed (P1), the CUAD loader, and the evaluation script. No real-model run has been made, so cost and latency are unmeasured.
+**Not built yet:** marking a category as reviewed (P1). The evaluation has not been run on the real CUAD data or with a real model, so there are no accuracy, cost or speed numbers yet.
 
 ## Repo layout
 
@@ -122,6 +133,7 @@ The answer key, written category definitions and extractor prompts are frozen an
 docs/00-assignment/   the assignment breakdown
 docs/01-research/     job descriptions and early design notes
 docs/02-prd/          the final PRD (source of truth)
+docs/03-tests/        materials for the answer-key check (test contracts, marking sheet, definitions)
 intro/                the intro slideshow (open intro/index.html)
 src/                  the app, the clause_review package and tests
 ```
