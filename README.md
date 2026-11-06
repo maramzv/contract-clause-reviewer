@@ -6,6 +6,24 @@ A web app that turns a batch of commercial contracts into a first-pass clause re
 
 The source of truth is the [final PRD](docs/02-prd/FINAL%20-%20Contract%20Clause%20Extraction%20and%20Review%20-%20%20PRD%20-%20Kerrian%20Gordon%20%26%20Mara%20Munoz.md). This README summarizes it and the code in `src/`. If they disagree, the PRD wins.
 
+## Who did what
+
+**Kerrian Gordon: the build and the evaluation design**
+- The PRD's later updates and the scoring rule (pull requests #3 and #7).
+- The Python package in `src/`: ingest, chunk, extract, verify, store, export, the model providers with a spend limit and cache, and its tests (#1).
+- The Streamlit review screen, with accept, remove and restore, and the CSV download (#1, #2).
+- The CUAD loader and evaluation script, with a regex-only baseline (#6).
+- The written clause definitions and the answer-key design.
+
+**Mara Munoz: research, documentation, design and the answer-key check**
+- The assignment breakdown and the research: the job-description analysis and early design notes (`docs/00-assignment/`, `docs/01-research/`).
+- This README and the repo setup: the `main` and `developer` branch workflow, and reviewing and merging pull requests (#1 to #7).
+- The intro slideshow at `intro/`, with the project name and tagline (#4).
+- UI design work for the review screens: a clickable prototype, a UI inventory and a plain-English walkthrough. These are kept locally for now and are not in the repo.
+- The answer-key check: completed the marking sheet for the 10 test contracts and signed off the clause definitions (`docs/03-tests/`).
+
+**Both:** the original PRD, owned by Kerrian and Mara together.
+
 ## The problem
 
 Junior associates and contracts paralegals reviewing a batch of contracts for diligence repeat the same work: find the same clause types in every agreement, copy quotations and page references into a spreadsheet, and wonder whether an empty keyword search means the clause is truly absent. Senior lawyers then ask "where does the contract actually say that?" before trusting the table.
