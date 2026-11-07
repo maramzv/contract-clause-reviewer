@@ -108,3 +108,26 @@ def test_cli_baseline_runs_on_development_split(files, capsys):
     main(["--cuad", files[0], "--test", files[1], "--baseline"])
     out = capsys.readouterr().out
     assert "dev split, 2 contracts" in out and "regex baseline" in out and "average of the five" in out
+
+
+def test_lenient_measure_credits_a_sentence_inside_a_long_labeled_span():
+    from clause_review.score import score
+    gold = {"Renewal": [(0, 2000)]}
+    pred = {"Renewal": [(100, 400)]}  # one sentence inside a 2,000-character label
+    assert score(gold, pred)["Renewal"]["tp"] == 0                          # Jaccard 0.15: a miss
+    assert score(gold, pred, measure="coverage")["Renewal"]["tp"] == 1      # fully inside: counted
+    assert score(gold, {"Renewal": [(3000, 3100)]}, measure="coverage")["Renewal"]["tp"] == 0  # no overlap: still a miss
+
+
+def test_lenient_result_is_never_below_the_headline(files):
+    dev, _ = split_contracts(load_cuad(files[0]), files[1])
+    res = evaluate(dev, NoModel())
+    for cat, r in res["categories"].items():
+        l = res["lenient"]["categories"][cat]
+        assert l["tp"] >= r["tp"] and (l["n_pred"], l["n_gold"]) == (r["n_pred"], r["n_gold"])
+
+
+def test_report_shows_both_measures_with_the_headline_first(files, capsys):
+    main(["--cuad", files[0], "--test", files[1], "--baseline"])
+    out = capsys.readouterr().out
+    assert out.index("HEADLINE") < out.index("SECONDARY")
