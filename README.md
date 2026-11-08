@@ -107,9 +107,9 @@ python -m clause_review.evaluate --cuad CUADv1.json --test test.json --baseline 
 python -m clause_review.evaluate --cuad CUADv1.json --test test.json --limit 20 --seed 1   # uses CLAUSE_PROVIDER
 ```
 
-By default it scores the 408 development contracts. The 102-contract test split is refused unless you add `--allow-test`, which should wait until the answer key, definitions and prompts are frozen (end of Nov 7). Paid model responses are kept in `--cache`, so a rerun does not pay again.
+By default it scores the 408 development contracts. The 102-contract test split is refused unless you add `--allow-test`, which should wait until the answer key, definitions and prompts are frozen (end of Nov 8). Paid model responses are kept in `--cache`, so a rerun does not pay again.
 
-**Settings** (copy `.env.example` to `.env`; it is git-ignored, so never commit a real key):
+**Settings** (copy `.env.example` to `.env`; the app, the command line and the evaluation script read it automatically, and a variable you have already exported wins over the file. It is git-ignored, so never commit a real key):
 
 | Variable | What it does |
 |---|---|
@@ -118,6 +118,7 @@ By default it scores the 408 development contracts. The 102-contract test split 
 | `CLAUSE_MODEL` | Model name; the code defaults to `claude-sonnet-5-5` |
 | `CLAUSE_WORKERS` | Parallel model calls (1 = one at a time) |
 | `CLAUSE_BUDGET_USD`, `CLAUSE_PRICE_IN`, `CLAUSE_PRICE_OUT` | Spend limit. All three are needed together, and prices come from the price list. None are built in. |
+| `CLAUSE_LOCAL_URL` | Address of the local model server, used when `CLAUSE_PROVIDER=local` |
 | `CLAUSE_DB` | SQLite file for the review screen (default `review.db`) |
 
 More detail, and the assumptions that are tested vs. still unmeasured, are in [src/README.md](src/README.md).
@@ -135,15 +136,15 @@ Evaluation and demos use **public contracts from CUAD** (510 contracts, 41 categ
 | Time saved, in a counterbalanced pilot with ≥ 2 reviewers | Median per-contract time at least 30% lower, with no more missed clauses |
 | Processing time for the 30 largest test contracts (empty cache) | ≤ 30 minutes |
 
-**How a match is counted:** a predicted passage matches a labeled one when their overlap divided by their union is at least 0.5 (Jaccard, the measure CUAD's own evaluation uses). Each labeled passage matches at most one prediction. Counts are pooled over contracts per category, and the headline is the average of the five categories. A contract the model fails on is counted and left out, never scored as empty.
+**How a match is counted:** a predicted passage matches a labeled one when their overlap divided by their union is at least 0.5 (Jaccard, the measure CUAD's own evaluation uses). Each labeled passage matches at most one prediction. The evaluation also prints a lenient secondary figure (overlap ÷ the shorter passage ≥ 0.5); the target above uses the Jaccard rule. Counts are pooled over contracts per category, and the headline is the average of the five categories. A contract the model fails on is counted and left out, never scored as empty.
 
-The answer key, written category definitions and extractor prompts are frozen and tagged at the end of Nov 7. The first test-split run is on or after Nov 9.
+The answer key, written category definitions and extractor prompts are frozen and tagged at the end of Nov 8. The first test-split run is on or after Nov 9.
 
 ## Status
 
-**Built:** upload, category choice, findings with quotation, page and category status, failed files listed with the reason, accept/remove/restore, CSV download, the model providers with a spend limit and response cache, the CUAD loader and evaluation script (with a regex-only baseline, development split by default), and 35 passing tests (offline, on small invented files and the mock provider).
+**Built:** upload, category choice, findings with quotation, page and category status, failed files listed with the reason, accept/remove/restore, CSV download, the model providers with a spend limit and response cache, the CUAD loader and evaluation script (with a regex-only baseline, development split by default), and 43 passing tests (offline, on small invented files and the mock provider).
 
-**Not built yet:** marking a category as reviewed (P1). The evaluation has not been run on the real CUAD data or with a real model, so there are no accuracy, cost or speed numbers yet.
+**Not built yet:** marking a category as reviewed (P1). The regex-only baseline has been run on the 408 development contracts (average precision 0.48, recall 0.52, F1 0.42). Nothing has been run with a real model yet, so there are no model accuracy, cost or speed numbers.
 
 ## Repo layout
 
