@@ -15,7 +15,9 @@ CATEGORIES = {
         "description": "Rights or consent triggered by a merger, acquisition or change in ownership.",
         "counts": "a sentence that gives a party a termination right, or requires consent or notice, when a party undergoes a change of control (merger, stock sale, sale of all or substantially all assets or business, or assignment by operation of law).",
         "not_counts": "a heading; a definition of \"change of control\" on its own; a sentence that mentions a merger, acquisition or ownership change without attaching a termination right, consent or notice to it.",
-        "patterns": [r"change (?:of|in) control", r"\bmerger\b|\bacquisition\b"],
+        "patterns": [r"change (?:of|in) control",
+                     r"\b(?:merger|consolidation|acquisition)\b[^.]{0,250}\b(?:terminate|termination|consent|notice)\b",
+                     r"\b(?:terminate|termination|consent|notice)\b[^.]{0,250}\b(?:merger|consolidation|acquisition)\b"],
     },
     "Termination for Convenience": {
         "cuad": "Termination For Convenience",
@@ -29,7 +31,9 @@ CATEGORIES = {
         "description": "The renewal or extension term after the initial term expires, including automatic extensions.",
         "counts": "a sentence that states the renewal or extension term after the initial term, including automatic extensions and extensions a party can choose by giving notice.",
         "not_counts": "a heading; a definition of \"Term\" that merely names the renewal term; a sentence about prices or other terms that apply during a renewal; a sentence that says the parties may renew only if they later agree in writing; notice periods for stopping a renewal.",
-        "patterns": [r"\brenew(?:al|ed|s)?\b", r"successive[^.]{0,60}term"],
+        "patterns": [r"successive[^.]{0,60}term",
+                     r"\b(?:automatically|auto-?matic)\b[^.]{0,120}\b(?:renew|extend)",
+                     r"\brenew(?:al|ed|s)?\b[^.]{0,120}\b(?:term|period|year|month)s?\b"],
     },
     "Governing Law": {
         "cuad": "Governing Law",

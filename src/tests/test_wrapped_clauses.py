@@ -22,7 +22,7 @@ def test_regex_hit_is_the_whole_sentence_not_one_line():
 
 
 def test_overlong_sentence_falls_back_to_the_line():
-    text = "This Agreement shall renew " + "and so on, " * 150 + "\nforever and ever.\n"  # sentence is over the cap
+    text = "This Agreement shall renew for successive terms " + "and so on, " * 150 + "\nforever and ever.\n"  # sentence is over the cap
     (q, *_) = quotes(text)
     assert q.startswith("This Agreement shall renew") and "forever" not in q  # only the matched line, not the sentence
 
