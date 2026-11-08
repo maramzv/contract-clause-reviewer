@@ -171,6 +171,17 @@ Lenient secondary measure: average precision 0.69, recall 0.78, F1 0.73. No cont
 - The reviewer pilot and practitioner interviews have not been done, so the time-saved goal and the pain point are untested.
 - Three correct model quotes in 60 development contracts were dropped because page-break filler sits inside the sentence; this is not fixed.
 
+### What we would change next (not done, on purpose)
+
+No change was made after the test run, so the frozen result stays clean. The errors below come from 100 development contracts (replayed from cached model replies), not from the test split.
+
+- **Assignment** (development precision 0.71, recall 0.68; 41 of 128 labeled spans missed). CUAD labels sentences that make a prohibited assignment void or a breach, for example "Any purported assignment in violation of this paragraph shall be void". The model often misses them. Our "does not count" line about what happens after a transfer may be steering it away; that cause is not proven. Fix: count such sentences.
+- **Termination for Convenience** (precision 0.66, recall 0.78). CUAD labels without-cause rights that end only part of the deal, such as a license, a scope of work or a fund ("We will have the right to terminate the Ad Fund by giving you thirty (30) days' advance written notice"). Our wording says "end the agreement". Fix: count a without-cause right to end part of the deal.
+- **Change of Control** (precision 0.35, recall 0.53). CUAD's labels include triggers such as a party ceasing to own shares and assignment by operation of law, and the model's wrong findings include definitions and sentences such as "a change of control shall not be considered an assignment". CUAD's labeling is inconsistent here, so we expect little room to improve.
+- **Verification:** a correct model quote fails the word-for-word check when page-break filler (a line of dashes, a "Source:" footer) sits inside the sentence. Fix: ignore that filler when matching.
+
+Either definition change edits the signed Clause Definitions, so it needs approval, a new version tag, and a check on development contracts nobody has looked at. The test result would still belong to the frozen version; running a changed version on the test split again would be exploratory and should be reported that way.
+
 ## Status
 
 **Built:** upload, category choice, findings with quotation, page and category status, failed files listed with the reason, accept/remove/restore, CSV download, the model providers with a spend limit and response cache, the CUAD loader and evaluation script (with a regex-only baseline, development split by default), and 57 passing tests (offline, on small invented files and the mock provider).
