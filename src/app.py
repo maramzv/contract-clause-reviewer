@@ -38,6 +38,10 @@ def act(finding_id, state):
     get_store().set_review(finding_id, state)
 
 
+def mark_reviewed(document_id, category, key):
+    get_store().set_category_reviewed(document_id, category, st.session_state[key])
+
+
 def run(files, categories):
     """Write the uploads to a temp folder (one subfolder each, so equal file names do not collide) and review them."""
     store, provider = get_store(), get_provider()
@@ -87,7 +91,9 @@ all_f = [f for d in docs for f in d["findings"]]
 n_check = sum(1 for d in docs for c in res["categories"] if d["categories"][c] != FOUND)
 tally = {k: sum(1 for f in all_f if f["review"] == k) for k in ("pending", "accepted", "removed")}
 st.subheader(f"{len(docs)} contract(s), {len(all_f) - tally['removed']} finding(s), {n_check} category check(s) for you")
+n_marked = sum(1 for d in docs for c in res["categories"] if d["reviewed"][c])
 st.caption(f"Reviewed: {tally['accepted']} accepted, {tally['removed']} removed, {tally['pending']} not yet reviewed. "
+           f"{n_marked} of {len(docs) * len(res['categories'])} categories marked as reviewed. "
            f"Model usage: {res['usage']}")
 st.sidebar.download_button("Download CSV", csv_text(get_store(), res["pid"]), file_name="clause_review.csv",
                            mime="text/csv", help="Accepted and not-yet-reviewed findings, plus every category still to check.")
@@ -102,7 +108,10 @@ for d in docs:
             st.error(f"Failed to process: {d['error']}")
         for c in res["categories"]:
             status = d["categories"][c] or FAILED
-            st.markdown(f"**{ICON.get(status, '❌')} {c}** — {status}")
+            st.markdown(f"**{ICON.get(status, '❌')} {c}** — {status}" + ("  ·  ✔ reviewed" if d["reviewed"][c] else ""))
+            key = f"reviewed{d['id']}-{c}"
+            st.checkbox("Mark this category as reviewed", value=d["reviewed"][c], key=key, on_change=mark_reviewed,
+                        args=(d["id"], c, key), help="Only a progress mark: it does not change the status above.")
             for f in (x for x in d["findings"] if x["category"] == c):
                 removed = f["review"] == "removed"
                 with st.container(border=True):
