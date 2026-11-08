@@ -17,7 +17,16 @@ def find_findings(text, categories, provider, cache=None, workers=1):
     category, quote, source). Used by the review and by the CUAD evaluation, so both run the same code."""
     cands = extract(chunk(text), list(categories), provider, cache=cache, workers=workers)
     kept, _ = verify_and_log(cands, text)
-    return kept
+    return regex_only_as_fallback(kept)
+
+
+def regex_only_as_fallback(findings):
+    """Keep a keyword (regex) finding only for a category where the model found nothing in this contract.
+    The keyword pass matches words such as "merger" or "renew" in many sentences that are not the clause (on 60
+    development contracts, 123 regex-only findings gave 6 correct ones), so it is a backstop for a model miss, not a
+    second source of answers. Where the model found a clause, its findings are the ones shown."""
+    from_model = {f["category"] for f in findings if f.get("source") == "llm"}
+    return [f for f in findings if f.get("source") == "llm" or f["category"] not in from_model]
 
 
 def run_review(store, project, paths, provider, categories=None, workers=1):
