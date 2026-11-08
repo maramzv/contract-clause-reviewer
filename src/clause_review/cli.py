@@ -6,6 +6,7 @@ CLAUSE_BUDGET_USD with CLAUSE_PRICE_IN and CLAUSE_PRICE_OUT (USD per million tok
 import os
 import sys
 
+from .envfile import load_env
 from .export import export_csv
 from .pipeline import run_review
 from .providers import BudgetExceeded, get_provider
@@ -13,6 +14,7 @@ from .store import Store
 
 
 def main(argv=None):
+    load_env()
     project, db, out, *files = argv or sys.argv[1:]
     store = Store(db)
     provider = get_provider()
