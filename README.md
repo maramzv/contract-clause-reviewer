@@ -186,9 +186,9 @@ Either definition change edits the signed Clause Definitions, so it needs approv
 
 ## Status
 
-**Built:** upload, category choice, findings with quotation, page and category status, failed files listed with the reason, accept/remove/restore, CSV download, the model providers with a spend limit and response cache, the CUAD loader and evaluation script (with a regex-only baseline, development split by default), and 57 passing tests (offline, on small invented files and the mock provider).
+**Built:** upload, category choice, findings with quotation, page and category status, failed files listed with the reason, accept/remove/restore, a checkbox to mark each category as reviewed (a progress mark that never changes the category's status and is not in the CSV), CSV download, the model providers with a spend limit and response cache, the CUAD loader and evaluation script (with a regex-only baseline, development split by default), and 64 passing tests (offline, on small invented files and the mock provider).
 
-**Not built yet:** marking a category as reviewed (P1). The regex-only baseline (average precision 0.48, recall 0.52, F1 0.42 on the 408 development contracts) and the real-model run on the 102 test contracts are done; results are above.
+**Not built yet:** the other P1 and P2 items (highlighting, flagging a question, adding a missed passage, filters, custom categories). The regex-only baseline (average precision 0.48, recall 0.52, F1 0.42 on the 408 development contracts) and the real-model run on the 102 test contracts are done; results are above.
 
 ## Repo layout
 

@@ -27,7 +27,7 @@ Upload, category choice, findings with quotation, page and category status, fail
 Accept, Remove and Restore on each finding, and a CSV download (`app.py`, `clause_review/view.py`). The screen runs on
 whichever provider `CLAUSE_PROVIDER` selects; the default is the offline mock, and the screen says so.
 
-TODO: mark a category as reviewed. The evaluation has been run with a real model on development contracts and, once, on the 102-contract test split after the freeze (results in the top-level README).
+The screen has a checkbox to mark a category as reviewed in each contract. It is a progress mark only: it does not change the status, so a "Not found, review required" category stays flagged, and it is not in the CSV. **Tested** in the store and checked once in Streamlit's test runner. The evaluation has been run with a real model on development contracts and, once, on the 102-contract test split after the freeze (results in the top-level README).
 
 ## Assumptions and limits
 

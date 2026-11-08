@@ -16,16 +16,20 @@ def md_escape(text: str) -> str:
 
 def load_results(store, pid, categories=None):
     """One dict per uploaded document: name, status ('ok' or 'failed'), error, a status for each category,
-    and the findings ordered by category and position. Only the categories asked for are included."""
+    whether a person marked each category as reviewed, and the findings ordered by category and position. Only the
+    categories asked for are included."""
     cats = [c for c in CATEGORIES if categories is None or c in categories]
     out = []
     for d in store.db.execute("SELECT id, name, status, error FROM Document WHERE project_id=? ORDER BY id", (pid,)):
-        status = {r["category"]: r["status"] for r in
-                  store.db.execute("SELECT category, status FROM CategoryStatus WHERE document_id=?", (d["id"],))}
+        rows = store.db.execute("SELECT category, status, reviewed FROM CategoryStatus WHERE document_id=?",
+                                (d["id"],)).fetchall()
+        status = {r["category"]: r["status"] for r in rows}
+        reviewed = {r["category"]: bool(r["reviewed"]) for r in rows}
         findings = [dict(r) for r in store.db.execute(
             "SELECT id, category, quote, page, start, end, source, review FROM Finding "
             "WHERE document_id=? ORDER BY category, start", (d["id"],))]
         out.append({"id": d["id"], "name": d["name"], "status": d["status"], "error": d["error"],
                     "categories": {c: status.get(c) for c in cats},
+                    "reviewed": {c: reviewed.get(c, False) for c in cats},
                     "findings": [f for f in findings if f["category"] in cats]})
     return out

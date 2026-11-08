@@ -56,6 +56,16 @@ class Store:
                             (FOUND if live else NOT_FOUND, row["document_id"], row["category"], FAILED))
             self.db.commit()
 
+    def set_category_reviewed(self, document_id, category, reviewed=True):
+        """Mark a category in one document as reviewed by a person, or clear the mark. This is a progress flag only:
+        it never changes the category's status, so a 'Not found, review required' category stays flagged."""
+        with self._lock:
+            cur = self.db.execute("UPDATE CategoryStatus SET reviewed=? WHERE document_id=? AND category=?",
+                                  (1 if reviewed else 0, document_id, category))
+            if cur.rowcount == 0:
+                raise ValueError(f"no category {category!r} for document {document_id}")
+            self.db.commit()
+
     # LLM cache interface used by extract()
     def get(self, key):
         with self._lock:
