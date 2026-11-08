@@ -12,12 +12,14 @@ from pathlib import Path
 import streamlit as st
 
 from clause_review.categories import CATEGORIES
+from clause_review.envfile import load_env
 from clause_review.export import csv_text
 from clause_review.pipeline import run_review
 from clause_review.providers import BudgetExceeded, get_provider
 from clause_review.store import FAILED, FOUND, NOT_FOUND, Store
 from clause_review.view import load_results, md_escape
 
+load_env()  # use the key and spend limit from .env, if there is one
 ICON = {FOUND: "✅", NOT_FOUND: "⚠️", FAILED: "❌"}
 DB_PATH = os.environ.get("CLAUSE_DB", "review.db")
 

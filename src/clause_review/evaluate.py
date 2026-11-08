@@ -20,6 +20,7 @@ import sys
 import time
 
 from .categories import CATEGORIES
+from .envfile import load_env
 from .cuad import load_cuad, sample, split_contracts
 from .pipeline import find_findings
 from .providers import BudgetExceeded, Provider, get_provider
@@ -105,6 +106,7 @@ def main(argv=None):
     ap.add_argument("--cache", default="eval_cache.db", help="SQLite file that keeps paid model responses between runs")
     ap.add_argument("--json", help="write the full result to this file")
     a = ap.parse_args(argv)
+    load_env()
     if a.split == "test" and not a.allow_test:
         sys.exit("The test split is held out until the freeze. Use --split dev, or add --allow-test when the key is frozen.")
     dev, test = split_contracts(load_cuad(a.cuad), a.test)
