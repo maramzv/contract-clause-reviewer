@@ -206,7 +206,7 @@ This section describes how the build is put together so that the P0 requirements
 
 ## 4a. Build window and plan
 
-**Build window:** November 5 to 7, 2026 (three days). The project deadline is November 12, 2026\. Only the P0 requirements in section 3 are committed for the build window. P1 and P2 items are built only if P0 is finished and demonstrated; otherwise they belong to a later phase. The extractor is frozen at the end of November 7, 2026\. The evaluation and the reviewer pilot run after the freeze and are defined in the Evaluation plan tab.
+**Build window:** November 5 to 7, 2026 (three days). The project deadline is November 12, 2026\. Only the P0 requirements in section 3 are committed for the build window. P1 and P2 items are built only if P0 is finished and demonstrated; otherwise they belong to a later phase. The extractor is frozen at the end of November 8, 2026 (moved from November 7)\. The evaluation and the reviewer pilot run after the freeze and are defined in the Evaluation plan tab.
 
 **Starting point:** a Python skeleton already runs end to end on a mock model provider (ingest, chunk, extract, verify, SQLite store, CSV export) and has 10 passing tests. Not built yet: the Streamlit review screens, the accept and remove actions, the CUAD loader and the evaluation script. No call to a real model has been made, so tokens, cost and seconds per contract are not yet measured.
 
