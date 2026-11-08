@@ -77,5 +77,9 @@ A prediction matches a gold span when overlap divided by union is at least 0.5 (
 matches at most one prediction. Counts are pooled over contracts per category, and the headline is the average of the five categories.
 Contracts whose model call failed are counted and left out of the scoring, never scored as empty. Paid responses are kept in `--cache`.
 
+A second, more lenient table is printed under the headline: a match when the overlap is at least half of the shorter of the two
+spans. It credits a correct sentence that sits inside a very long labeled span (CUAD sometimes labels a whole list of conditions as one
+span). It is secondary: the targets use the Jaccard headline, and the lenient table was defined before any model run or test run.
+
 Known limits: a quote that appears twice in a contract is located at its first occurrence, so a repeated boilerplate sentence can
 miss its gold span; the 50% rule is Jaccard, which is stricter than "overlap by at least 50% of the gold span".
