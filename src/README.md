@@ -27,7 +27,7 @@ Upload, category choice, findings with quotation, page and category status, fail
 Accept, Remove and Restore on each finding, and a CSV download (`app.py`, `clause_review/view.py`). The screen runs on
 whichever provider `CLAUSE_PROVIDER` selects; the default is the offline mock, and the screen says so.
 
-TODO: mark a category as reviewed. The evaluation runs on the development split only so far, and a real-model run has not been made yet.
+TODO: mark a category as reviewed. The evaluation has been run with a real model on development contracts and, once, on the 102-contract test split after the freeze (results in the top-level README).
 
 ## Assumptions and limits
 
@@ -39,9 +39,13 @@ not yet measured; **unmeasured** = depends on the real model.
 - One model call per chunk asks for all selected categories at once, to keep the number of calls down. Effect on recall:
   **unmeasured**.
 - A quotation counts only if it is found word for word after whitespace is collapsed and is at least 15 characters.
-  **Tested.** Where quotations in one category overlap, the model's quotation is kept over a regex one, and among
+  **Tested.** Page-break filler inside a sentence (a line of dashes, a "Source:" footer) makes a correct model quote fail
+  this check: 3 such quotes were dropped in 60 development contracts. **Observed**, not fixed. Where quotations in one category overlap, the model's quotation is kept over a regex one, and among
   quotations from the same source the tightest is kept. **Tested** on a wrapped clause; the effect on recall is
   **unmeasured**.
+- A keyword (regex) finding is kept only for a category where the model found nothing in that contract. On 60 development
+  contracts the regex-only findings were 123 of 451 predictions and 6 were correct, so it is a backstop for a model miss, not
+  a second source of answers. **Tested** (rule) and **measured** (effect on development contracts).
 - A regex hit becomes the whole sentence around it, so a clause that a PDF wraps over several lines is one quotation.
   A sentence ends at a blank line, or at . ! ? followed by a capital letter, digit, bracket or quote, so an
   abbreviation such as "Inc. Shall" can cut a sentence short. A "sentence" over 1,000 characters falls back to the
