@@ -161,6 +161,7 @@ Lenient secondary measure: average precision 0.69, recall 0.78, F1 0.73. No cont
 | Average recall at least 0.80 | Not met: 0.74 (lenient 0.78). Only Renewal and Governing Law reach 0.80. |
 | Average precision at least 0.70 | Not met: 0.65 (lenient 0.69); the range reaches 0.74, so a small shortfall cannot be ruled out as noise. |
 | Processing time, 30 largest test contracts (empty cache) | All 102 contracts took 14 min 40 s with 4 parallel workers, so any 30 of them take less. Inferred, not timed separately. |
+| Time saved in a reviewer pilot (median per-contract time at least 30% lower) | Not run: no reviewers were available. Untested. |
 
 **Cost and speed:** the test run used 2,096 model calls and cost $8.85 (about $0.09 per contract) at $2 / $10 per million input / output tokens. A 60-contract development run cost $6.09 (about $0.10 per contract).
 
