@@ -20,7 +20,7 @@ The source of truth is the [final PRD](docs/02-prd/FINAL%20-%20Contract%20Clause
 - This README and the repo setup: the `main` and `developer` branch workflow, and reviewing and merging pull requests (#1 to #7).
 - The intro slideshow at `intro/`, with the project name and tagline (#4).
 - UI design work for the review screens: a clickable prototype, a UI inventory and a plain-English walkthrough. These are kept locally for now and are not in the repo.
-- The answer-key check: set up the test materials, signed off the clause definitions, and hand-marked three of the test contracts, sending those results to Kerrian by email (`docs/03-tests/`). The marks for the 10 test contracts in the repo were produced by an AI model (Claude) from those contracts, not marked independently by a person, so the check is not an independent human check.
+- The answer-key check: set up the test materials, read the contracts and the clause definitions, and signed off the definitions (`docs/03-tests/`). The marks for the 10 test contracts were produced by an AI model (Claude) from those contracts, not marked independently by a person, so the check is not an independent human check.
 
 **Both:** the original PRD, owned by Kerrian and Mara together.
 
