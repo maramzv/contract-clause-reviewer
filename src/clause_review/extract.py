@@ -7,13 +7,24 @@ from concurrent.futures import ThreadPoolExecutor
 from .categories import CATEGORIES, COMPILED
 from .providers import parse_json_list
 
-PROMPT = """You are helping a lawyer review a contract. For each category below, copy any passage
-from the contract that addresses it. Quote EXACTLY, word for word; never paraphrase.
+PROMPT = """You are helping a lawyer review a contract. For each category below, copy the passages from the
+contract that state the rule the category describes.
+Rules:
+- Quote EXACTLY, word for word; never paraphrase. Copy the whole sentence that states the rule, no more.
+- Quote a passage only if it states the rule itself. Do not quote a heading or title, a definition on its own, or a
+  sentence that only mentions the topic.
+- Follow each category's "Counts" and "Does not count" lines.
+- A passage may be quoted under more than one category if it fits each.
 Return only a JSON list: [{{"category": "<name>", "quote": "<exact text>"}}]. Return [] if none.
 Categories:
 {cats}
 <<<CONTRACT>>>
 {chunk}"""
+
+
+def describe(cat):
+    c = CATEGORIES[cat]
+    return f"- {cat}: {c['description']}\n  Counts: {c['counts']}\n  Does not count: {c['not_counts']}"
 
 
 # A sentence ends at a blank line, or at . ! ? followed by whitespace and a capital letter, digit, bracket or quote.
@@ -45,7 +56,7 @@ def regex_candidates(chunk, categories):
 
 
 def llm_candidates(chunk, categories, provider, cache=None):
-    prompt = PROMPT.format(cats="\n".join(f"- {c}: {CATEGORIES[c]['description']}" for c in categories), chunk=chunk.text)
+    prompt = PROMPT.format(cats="\n".join(describe(c) for c in categories), chunk=chunk.text)
     key = hashlib.sha256(f"{provider.name}|{getattr(provider, 'model', '')}|{prompt}".encode()).hexdigest()
     raw = cache.get(key) if cache else None
     if raw is None:

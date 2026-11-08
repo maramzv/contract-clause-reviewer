@@ -80,7 +80,7 @@ def test_regex_baseline_counts_hits_and_misses(files):
 
 def test_a_false_match_lowers_precision_not_recall(files):
     from clause_review.cuad import Contract
-    text = f"{GOV}\n\nThe vendor may use a subcontractor and the merger of any records is not restricted here."
+    text = f"{GOV}\n\nThe vendor may use a subcontractor; notice of the merger of any records is not restricted here."
     c = Contract("X", text, {"Governing Law": [(0, len(GOV))], "Assignment": [], "Change of Control": [],
                               "Termination for Convenience": [], "Renewal": []})
     res = evaluate([c], NoModel())

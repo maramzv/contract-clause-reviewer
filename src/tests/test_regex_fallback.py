@@ -6,7 +6,7 @@ from clause_review.providers import Provider
 
 TEXT = (
     "1. Term. This Agreement renews for successive one year terms unless either party gives notice.\n\n"
-    "2. Merger. Nothing in this section limits the merger clause of the parent company records.\n\n"
+    "2. Merger. A party must give notice before any merger of its business.\n\n"
     "3. Governing Law. This Agreement shall be governed by the laws of the State of New York, without regard to conflicts.\n"
 )
 
