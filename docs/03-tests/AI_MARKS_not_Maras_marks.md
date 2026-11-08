@@ -4,17 +4,11 @@
 
 **Method.** Each contract was read in full, in the order 08, 07, 06, 02, 03, 09, 10, 05, 01, 04. Each quoted passage below was then checked by script to appear word for word in its file (whitespace collapsed). All quotes passed.
 
-**Important limitation.** I could not open Kerrian's Clause Definitions document (permission denied). I used these stand-in definitions instead, taken from the category descriptions in `src/clause_review/categories.py` and the rule in Kerrian's message:
+**Definitions used.** Kerrian's approved Clause Definitions (approved November 5, 2026), read from the file she shared. These marks were first made with stand-in definitions, then all 50 rows were re-checked against hers. Two rows changed: contract_03 Renewal (Yes to No) and contract_04 Change of Control (one passage removed, still Yes). Several notes were updated to cite the definitions.
 
-- Assignment: restrictions on assigning the agreement, or requiring consent to assign.
-- Change of Control: rights or consent triggered by a merger, acquisition or change in ownership.
-- Termination for Convenience: a party may terminate without cause on notice.
-- Renewal: the renewal or extension term after the initial term, including automatic extensions. Not notice periods for non-renewal.
-- Governing Law: which jurisdiction's law governs the agreement.
+Calls marked 'Close call' are the ones a reasonable reader could mark differently. Section numbers are the contracts' own numbering, since the files have no page numbers.
 
-Calls marked 'Close call' could change under Kerrian's actual definitions. Section numbers are the contracts' own numbering, since the files have no page numbers.
-
-**Summary:** 25 of 50 rows marked Yes.
+**Summary:** 24 of 50 rows marked Yes.
 
 ## contract_01
 
@@ -30,7 +24,7 @@ Calls marked 'Close call' could change under Kerrian's actual definitions. Secti
 - **Found?** Yes
 - **Quoted passage:** Nothwithstanding the foregoing, this Agreement may be assigned without the AS Parties' consent by MusclePharm in connection with a change of control transaction; provided that the acquirer of MusclePharm shall have financial resources substantially similar or greater than MusclePharm and shall specifically assume the obligations of MusclePharm under this Agreement in writing prior to the consummation of the change of control transaction.
 - **Where:** Section 18 (Assignment)
-- **Notes:** Close call. This is the only place the term appears, and it is an exception to the assignment restriction rather than a stand-alone change-of-control clause. I marked Yes because it expressly addresses a change of control transaction.
+- **Notes:** Close call. This is the only place the term appears. It lets MusclePharm assign without consent in a change of control transaction, on conditions (the acquirer must assume the obligations in writing beforehand). It attaches a right and a condition to a change of control, so I marked Yes, but it is a carve-out inside the assignment clause.
 
 ### Termination for Convenience
 
@@ -104,7 +98,7 @@ Calls marked 'Close call' could change under Kerrian's actual definitions. Secti
 - **Found?** No
 - **Quoted passage:** (none)
 - **Where:** n/a
-- **Notes:** Close call. 'Change of control' is defined in Schedule A, item (e), but I could not find it used in any operative section, so it triggers no right or consent. Could be Yes if the definition alone counts.
+- **Notes:** Close call. 'Change of control' is defined in Schedule A, item (e), but no operative section attaches a right, consent or notice to it. The definitions say a passage that only mentions a merger or acquisition, without attaching a right, consent or notice, does not count.
 
 ### Termination for Convenience
 
@@ -115,10 +109,10 @@ Calls marked 'Close call' could change under Kerrian's actual definitions. Secti
 
 ### Renewal
 
-- **Found?** Yes
-- **Quoted passage:** The parties may mutually agree to extend this Agreement in writing and all terms and conditions hereof shall remain in effect during any extension unless the parties agree otherwise.
-- **Where:** Section 5.1 (Term)
-- **Notes:** Close call. The extension is by mutual written agreement only, not automatic. The 24-month initial term is set in the same section.
+- **Found?** No
+- **Quoted passage:** (none)
+- **Where:** n/a
+- **Notes:** Close call, changed after reading the definitions. Section 5.1 says the parties 'may mutually agree to extend' the Agreement in writing, but it states no renewal term and no automatic extension. The definition asks for a passage stating the renewal or extension term. The 24-month initial term is in the same section.
 
 ### Governing Law
 
@@ -139,9 +133,9 @@ Calls marked 'Close call' could change under Kerrian's actual definitions. Secti
 ### Change of Control
 
 - **Found?** Yes
-- **Quoted passage:** Any change in the control of you shall be deemed a transfer for purposes of this Agreement. || You expressly affirm and agree that we may sell our assets, our rights to the Proprietary Marks or to the System outright to a third party; may go public; may engage in a private placement of some or all of our securities; may merge, acquire other corporations, or be acquired by another corporation; may undertake a refinancing, recapitalization, leveraged buyout or other economic or financial restructuring; and, with regard to any or all of the above sales, assignments and dispositions, you expressly and specifically waive any claims, demands or damages arising from or related to the loss of said Proprietary Marks (or any variation thereof) and/or the loss of association with or identification of "Kiosk Concepts, Inc." as Franchisor.
-- **Where:** Section 12.2 and Section 12.1
-- **Notes:** The first sentence is the clearest: a change in control of the franchisee counts as a transfer (which needs consent). The second is the franchisor's own freedom to be acquired or merge, included as related.
+- **Quoted passage:** Any change in the control of you shall be deemed a transfer for purposes of this Agreement.
+- **Where:** Section 12.2 (Transfer by You)
+- **Notes:** A change in control of the franchisee counts as a transfer, which is not allowed without the franchisor's consent (see Section 10.2.3). Left out: Section 12.1 says the franchisor may merge or be acquired and the franchisee waives claims, but it gives no termination right, consent or notice, so it does not count under the definitions.
 
 ### Termination for Convenience
 
@@ -208,7 +202,7 @@ Calls marked 'Close call' could change under Kerrian's actual definitions. Secti
 - **Found?** No
 - **Quoted passage:** (none)
 - **Where:** n/a
-- **Notes:** Close call. Section 4.7 says the Agreement binds 'successors and permitted assigns', but it does not restrict assigning or require consent. Section 3.5 and 3.6 mention a 'general assignment for the benefit of creditors', which is an insolvency event, not an assignment of the Agreement.
+- **Notes:** Section 4.7 says only that the Agreement binds 'successors and permitted assigns'. The definitions say a passage like that does not count. Sections 3.5 and 3.6 mention a 'general assignment for the benefit of creditors', which is an insolvency event, not an assignment of the Agreement.
 
 ### Change of Control
 
@@ -363,7 +357,7 @@ Calls marked 'Close call' could change under Kerrian's actual definitions. Secti
 - **Found?** Yes
 - **Quoted passage:** The rights of Developer under this Agreement shall immediately cease and be terminated upon the sale or transfer of no less than a majority of, or a controlling interest in or over, the voting capital or ownership capital of Developer unless an assignment of such rights pursuant to such sale or transfer has been previously approved in writing by DSS. || The rights of Developer under this Agreement shall immediately cease and be terminated upon the sale or transfer of all or substantially all of the assets of Developer unless an assignment of such rights pursuant to such sale or transfer has been previously approved in writing by DSS.
 - **Where:** Section 9.1 (Assignment)
-- **Notes:** The first passage is a clear change-of-control trigger (a sale of a majority or controlling interest ends the rights unless approved). The second is an asset sale, closer to assignment than change of control, included as related.
+- **Notes:** Both passages count under the definitions: a sale or transfer of a controlling interest, or of all or substantially all of the assets, ends the Developer's rights unless DSS approves in writing.
 
 ### Termination for Convenience
 
