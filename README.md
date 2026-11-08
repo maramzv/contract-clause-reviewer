@@ -142,6 +142,8 @@ The answer key, written category definitions and extractor prompts were frozen o
 
 ### Results on the 102 test contracts (one run, frozen code, Claude Sonnet 5.5)
 
+Run on Nov 8 after the freeze tag was pushed, a day earlier than the schedule's Nov 9. The freeze came first, so no test result could have influenced the frozen code.
+
 | Category | Precision | Recall | F1 | Right / predicted / labeled |
 |---|---|---|---|---|
 | Assignment | 0.68 | 0.67 | 0.68 | 92 / 135 / 137 |
