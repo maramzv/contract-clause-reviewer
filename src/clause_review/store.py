@@ -1,4 +1,5 @@
-"""SQLite store: Project, Document, Finding, CategoryStatus, LLMCache."""
+"""SQLite store: Project, Document, Finding, CategoryStatus, LLMCache, and saved Runs with their step events."""
+import json
 import sqlite3
 import threading
 
@@ -10,6 +11,9 @@ CREATE TABLE IF NOT EXISTS Finding(id INTEGER PRIMARY KEY, document_id INT, cate
 CREATE TABLE IF NOT EXISTS CategoryStatus(document_id INT, category TEXT, status TEXT, reviewed INT DEFAULT 0,
   PRIMARY KEY(document_id, category));
 CREATE TABLE IF NOT EXISTS LLMCache(key TEXT PRIMARY KEY, response TEXT);
+CREATE TABLE IF NOT EXISTS Run(id INTEGER PRIMARY KEY, name TEXT, created TEXT DEFAULT CURRENT_TIMESTAMP, provider TEXT,
+  model TEXT, project_id INT, categories TEXT, docs INT, usage TEXT, duration REAL);
+CREATE TABLE IF NOT EXISTS RunEvent(run_id INT, seq INT, t REAL, kind TEXT, data TEXT, PRIMARY KEY(run_id, seq));
 """
 FOUND, NOT_FOUND, FAILED = "Found", "Not found, review required", "Failed to process"
 REVIEW_STATES = ("pending", "accepted", "removed")
@@ -65,6 +69,61 @@ class Store:
             if cur.rowcount == 0:
                 raise ValueError(f"no category {category!r} for document {document_id}")
             self.db.commit()
+
+    # Saved runs: the step-by-step events of a review, kept so it can be replayed without calling the model.
+    def save_run(self, name, provider, model, project_id, categories, usage, events):
+        """Save a finished run. `events` are dicts with a time `t` (seconds from the start) and a `kind`; every other
+        key is kept as the event's data."""
+        docs = next((len(e.get("documents", [])) for e in events if e["kind"] == "run_start"), 0)
+        duration = max((e["t"] for e in events), default=0.0)
+        with self._lock:
+            cur = self.db.execute("INSERT INTO Run(name,provider,model,project_id,categories,docs,usage,duration) "
+                                  "VALUES(?,?,?,?,?,?,?,?)",
+                                  (name, provider, model, project_id, json.dumps(list(categories)), docs, usage, duration))
+            rid = cur.lastrowid
+            self.db.executemany("INSERT INTO RunEvent VALUES(?,?,?,?,?)",
+                                [(rid, n, e["t"], e["kind"],
+                                  json.dumps({k: v for k, v in e.items() if k not in ("t", "kind")}))
+                                 for n, e in enumerate(events)])
+            self.db.commit()
+        return rid
+
+    def list_runs(self):
+        """Saved runs, newest first."""
+        rows = self.db.execute("SELECT * FROM Run ORDER BY id DESC").fetchall()
+        return [{**dict(r), "categories": json.loads(r["categories"])} for r in rows]
+
+    def get_run(self, run_id):
+        r = self.db.execute("SELECT * FROM Run WHERE id=?", (run_id,)).fetchone()
+        if r is None:
+            raise ValueError(f"no saved run with id {run_id}")
+        return {**dict(r), "categories": json.loads(r["categories"])}
+
+    def run_events(self, run_id):
+        rows = self.db.execute("SELECT t, kind, data FROM RunEvent WHERE run_id=? ORDER BY seq", (run_id,)).fetchall()
+        return [{"t": r["t"], "kind": r["kind"], **json.loads(r["data"])} for r in rows]
+
+    def clone_project(self, src_pid, new_name):
+        """A fresh copy of a saved review for a replay: same contracts and findings, but every finding not yet reviewed
+        and no category marked reviewed. Category statuses follow the findings, so changes made to the copy never touch
+        the original."""
+        with self._lock:
+            new_pid = self.db.execute("INSERT INTO Project(name) VALUES(?)", (new_name,)).lastrowid
+            for d in self.db.execute("SELECT * FROM Document WHERE project_id=? ORDER BY id", (src_pid,)).fetchall():
+                new_did = self.db.execute("INSERT INTO Document(project_id,name,text,status,error) VALUES(?,?,?,?,?)",
+                                          (new_pid, d["name"], d["text"], d["status"], d["error"])).lastrowid
+                self.db.execute("INSERT INTO Finding(document_id,category,quote,start,end,page,source) "
+                                "SELECT ?,category,quote,start,end,page,source FROM Finding WHERE document_id=? ORDER BY id",
+                                (new_did, d["id"]))
+                for c in self.db.execute("SELECT category, status FROM CategoryStatus WHERE document_id=?",
+                                         (d["id"],)).fetchall():
+                    has = self.db.execute("SELECT COUNT(*) FROM Finding WHERE document_id=? AND category=?",
+                                          (new_did, c["category"])).fetchone()[0]
+                    status = c["status"] if c["status"] == FAILED else (FOUND if has else NOT_FOUND)
+                    self.db.execute("INSERT INTO CategoryStatus(document_id,category,status) VALUES(?,?,?)",
+                                    (new_did, c["category"], status))
+            self.db.commit()
+        return new_pid
 
     # LLM cache interface used by extract()
     def get(self, key):
