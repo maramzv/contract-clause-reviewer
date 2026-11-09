@@ -18,6 +18,7 @@ Every link was checked again later on Nov 9 by Claude, the AI assistant used on 
 - A copy on another site (Law Insider, Justia, CapEdge) is a copy, not the SEC original, and is labeled that way.
 - The check compared the title, the parties, the date and, usually, one passage from the middle of our file. Full texts were not compared word for word.
 - Where this check could not reproduce an earlier "opened" note, the earlier note is left as recorded and the Second check line says so.
+- A third pass the same day searched for each exhibit's file name, which made the fetch tool willing to open it. That opened the exhibits for 01, 02, 07 and 09 and found contract_06's agreement in Western Copper's 20-F. Contract_05 and contract_06's own exhibit page are still not opened.
 
 ---
 
@@ -28,8 +29,8 @@ Every link was checked again later on Nov 9 by Claude, the AI assistant used on 
 - **Size:** 87,795 characters, 13,393 words
 - **Source:** MusclePharm Corp, Form 10-K/A filed 2/8/2017 (from the file's own `Source:` line)
 - **Link:** [10-K/A main document](https://www.sec.gov/Archives/edgar/data/0001415684/000141568417000008/mslp201310ka21038.htm)
-- **How sure:** the filing comes from the `Source:` line. The exhibit file inside it was not opened.
-- **Second check (Nov 9):** the 10-K/A main document at this link appears in search results as MusclePharm Corp, Form 10-K/A, FY2013, accession 0001415684-17-000008, and a filing index lists the same accession. Not opened. A second 10-K/A for the same fiscal year exists under an earlier accession (0001144204-14-064321), so use the one named in the file's `Source:` line (filed 2/8/2017).
+- **How sure:** opened on sec.gov (third pass, Nov 9). The document at the link contains the Endorsement Licensing and Co-Branding Agreement dated July 26, 2013 between Marine MP, LLC and Fitness Publications, Inc., and the Section 8(a) sentence "MusclePharm will cause the Registration Statement to be declared effective as promptly as practicable." matches our file. The page text does not show its form type or date; search results list the filing as Form 10-K/A filed Feb. 8, 2017.
+- **Second check (Nov 9):** the 10-K/A main document at this link appears in search results as MusclePharm Corp, Form 10-K/A, FY2013, accession 0001415684-17-000008, and a filing index lists the same accession. It was not opened in this pass, but was in the third pass (see How sure). A second 10-K/A for the same fiscal year exists under an earlier accession (0001144204-14-064321), so use the one named in the file's `Source:` line (filed 2/8/2017).
 - **Watch out:** the original 8-K attached only a blank "Form of" version, which is not this text.
 
 ## contract_02: Cooperation Agreement
@@ -40,7 +41,8 @@ Every link was checked again later on Nov 9 by Claude, the AI assistant used on 
 - **Source:** HPIL Holding, Form 8-K, Exhibit 99.1
 - **Link:** [Exhibit 99.1](https://www.sec.gov/Archives/edgar/data/0001286345/000128634515000002/hpiletcoopagmntwginaresgroup.htm)
 - **How sure:** opened. Title, parties, date and table of contents match. The full text was not compared.
-- **Second check (Nov 9):** a [Law Insider copy](https://www.lawinsider.com/contracts/MBCuqdRHr8) was opened. Title, parties, date (January 5, 2015) and the confidentiality exception "the information has come into the public domain through no fault of that Party" match our file. It lists the filing as Form 8-K filed January 7, 2015, SEC filing ID 0001286345-15-000002, which is the accession number in the link above, and calls the exhibit "Exhibit 99". The sec.gov link itself could not be opened this time.
+- **Second check (Nov 9):** a [Law Insider copy](https://www.lawinsider.com/contracts/MBCuqdRHr8) was opened. Title, parties, date (January 5, 2015) and the confidentiality exception "the information has come into the public domain through no fault of that Party" match our file. It lists the filing as Form 8-K filed January 7, 2015, SEC filing ID 0001286345-15-000002, which is the accession number in the link above, and calls the exhibit "Exhibit 99". The sec.gov link itself could not be opened in that pass.
+- **Third pass (Nov 9):** the sec.gov exhibit opened. Title "Cooperation Agreement", parties HPIL ENERGYTECH Inc. and GINARES GROUP AG, and the date January 5, 2015 match. The page does not show a form type or filing date.
 
 ## contract_03: Consulting Agreement
 
@@ -78,8 +80,9 @@ Every link was checked again later on Nov 9 by Claude, the AI assistant used on 
 - **Size:** 16,402 characters, 2,626 words
 - **Source:** Western Copper Corporation, Form 20-FR12G, Exhibit 4.1
 - **Link:** [Exhibit 4.1](https://www.sec.gov/Archives/edgar/data/0001364125/000106299306002901/exhibit4-1.htm)
-- **How sure:** probable, not confirmed. The page is scanned images, so the text could not be compared. Its title is "Non-Competition Agreement dated as of May 3, 2006", which is shorter than ours.
-- **Second check (Nov 9):** still not confirmed. Searches by title, parties and date did not return the Western Copper exhibit, and the sec.gov link could not be opened this time.
+- **How sure:** the agreement is confirmed, the exhibit text is not. The exhibit page is scanned images, so the text could not be compared with our file.
+- **Second check (Nov 9):** not confirmed at that point. Searches by title, parties and date did not return the Western Copper exhibit.
+- **Third pass (Nov 9):** Western Copper's FY2006 Form 20-F ([form20f.htm](https://www.sec.gov/Archives/edgar/data/0001364125/000106299307002462/form20f.htm), accession 0001062993-07-002462) opened. Item 10.C lists a "Non-Competition Agreement between Western Copper Corporation and Glamis Gold Ltd. dated as of May 3, 2006". That confirms the agreement, its parties and its date. It is not the Form 20-FR12G exhibit named above, and the full text was not compared.
 
 ## contract_07: Joint Filing Agreement (Exhibit D)
 
@@ -89,7 +92,8 @@ Every link was checked again later on Nov 9 by Claude, the AI assistant used on 
 - **Source:** OneMain Holdings, Schedule 13D/A, Exhibit D
 - **Link:** [Exhibit D](https://www.sec.gov/Archives/edgar/data/1584207/000119312520043638/d886186dex99d.htm)
 - **How sure:** opened. The date and the list of Värde signers match, including George G. Hicks and Ilfryn Carstairs. Earlier and later Exhibit D filings have different signers.
-- **Second check (Nov 9):** search results list the filing as OneMain Holdings, Inc., Form SC 13D/A, FY2020, accession 0001193125-20-043638, the same accession as the link above. They also list an earlier Exhibit D under a different accession (0001193125-18-212342), which fits the warning about other filings. The exhibit itself could not be opened this time.
+- **Second check (Nov 9):** search results list the filing as OneMain Holdings, Inc., Form SC 13D/A, FY2020, accession 0001193125-20-043638, the same accession as the link above. They also list an earlier Exhibit D under a different accession (0001193125-18-212342), which fits the warning about other filings. The exhibit itself could not be opened in that pass.
+- **Third pass (Nov 9):** Exhibit D opened on sec.gov and matches: OneMain Holdings, Inc., Joint Filing Agreement dated February 20, 2020, signed for 21 entities by David A. Marple, General Counsel, including Värde Investment Partners G.P., LLC, with George G. Hicks and Ilfryn Carstairs signing individually.
 
 ## contract_08: Cooperation Agreement, 50MWp Photovoltaic Power Project
 
@@ -108,8 +112,8 @@ Every link was checked again later on Nov 9 by Claude, the AI assistant used on 
 - **Size:** 19,128 characters, 2,472 words
 - **Source:** Xinhua Finance Media (formerly Xinhua Sports & Entertainment), Form F-1 filed 2/21/2007 (from the file's own `Source:` line)
 - **Link:** [F-1 main document](https://www.sec.gov/Archives/edgar/data/0001389476/000114554907000281/h00745fv1.htm)
-- **How sure:** the filing comes from the `Source:` line. The exhibit file itself was not located.
-- **Second check (Nov 9):** still not confirmed. The F-1 link could not be opened and searches did not return it. The company number in the link (1389476) matches Xinhua Finance Media in search results.
+- **How sure:** opened on sec.gov (third pass, Nov 9). The exhibit is [Exhibit 99.4](https://www.sec.gov/Archives/edgar/data/1389476/000114554907000281/h00745exv99w4.txt), in the same accession (0001145549-07-000281) as the F-1 link. It is titled Content License Agreement (Supplement to the Exclusive Broadcasting Agreement), between CEIS and XFN, dated 15 December 2001, and Section 2.2 "CEIS hereby grants XFN and its Affiliates a non-exclusive license" matches our file. The exhibit text does not show the filing form or date; the F-1 filed 2/21/2007 comes from our file's `Source:` line.
+- **Second check (Nov 9):** not confirmed at that point. The F-1 link could not be opened and searches did not return it. The company number in the link (1389476) matches Xinhua Finance Media in search results.
 
 ## contract_10: Outsource Technology Development Agreement
 
@@ -127,11 +131,10 @@ Every link was checked again later on Nov 9 by Claude, the AI assistant used on 
 
 | Level | Contracts |
 |---|---|
-| Opened on sec.gov and matched (checked again Nov 9) | 03, 08, 10 |
+| Opened on sec.gov and matched (checked Nov 9) | 01, 02, 03, 07, 08, 09, 10 |
 | Source filing opened and the agreement found in an SEC exhibit; full text not compared | 04 |
-| Opened as a copy (Law Insider, Justia); the sec.gov link could not be re-opened | 02, 05 |
-| Filing confirmed by search; exhibit not opened | 01, 07 |
-| Not confirmed | 06, 09 |
+| Opened as a copy (Justia); the sec.gov link could not be re-opened | 05 |
+| Agreement confirmed in the company's 20-F; the exhibit is scanned images and could not be compared | 06 |
 
 ---
 
