@@ -22,16 +22,16 @@ from clause_review.replay import Recorder, play
 from clause_review.store import FAILED, FOUND, NOT_FOUND, Store
 from clause_review.view import load_results, md_escape
 from progress_ui import ProgressView
+from theme import apply_theme, brand, category_heading, hero
 
 load_env()  # use the key and spend limit from .env, if there is one
 ICON = {FOUND: "✅", NOT_FOUND: "⚠️", FAILED: "❌"}
 DB_PATH = os.environ.get("CLAUSE_DB", "review.db")
 REPLAY_SPEEDS = {"Original": 1.0, "5×": 5.0, "20×": 20.0, "Skip to results": None}
 
-st.set_page_config(page_title="Contract clause review", layout="wide")
-st.title("Contract clause review")
-st.caption("Every finding is a quotation found word for word in the contract. "
-           "A category with no verified finding is flagged for you to check, never left blank.")
+st.set_page_config(page_title="Clautra · Contract review", page_icon="static/brand/clautra-mark-transparent.png", layout="wide")
+apply_theme(st)
+hero(st)
 
 
 @st.cache_resource
@@ -73,6 +73,7 @@ def run(files, categories, provider_name, samples=(), on_event=None):
 provider_name = default_choice()
 blocked = None
 with st.sidebar:
+    brand(st)
     st.header("New review")
     if toggle_enabled():  # dev only: pick the model for this run (CLAUSE_DEV_TOGGLE=1)
         provider_name = st.selectbox("Model (dev)", list(CHOICES), index=list(CHOICES).index(provider_name) if provider_name in CHOICES else 0,
@@ -134,8 +135,9 @@ if replay_req:
     st.session_state["result"] = {"pid": pid, "categories": saved["categories"], "provider": f"{saved['provider']} (replay)",
                                   "usage": "replay of a saved run, no model was called"}
     slot.empty()
-elif open_req:
-    saved = get_store().get_run(open_req)
+elif open_req or (st.query_params.get("open", "").isdigit() and "result" not in st.session_state):
+    # `?open=<run id>` in the address opens a saved run's results directly, so a design change can be checked with a refresh
+    saved = get_store().get_run(open_req or int(st.query_params["open"]))
     st.session_state["result"] = {"pid": saved["project_id"], "categories": saved["categories"],
                                   "provider": f"{saved['provider']} (saved run)", "usage": saved["usage"] or ""}
 
@@ -186,7 +188,7 @@ for d in docs:
             st.error(f"Failed to process: {d['error']}")
         for c in res["categories"]:
             status = d["categories"][c] or FAILED
-            st.markdown(f"**{ICON.get(status, '❌')} {c}** — {status}" + ("  ·  ✔ reviewed" if d["reviewed"][c] else ""))
+            st.markdown(category_heading(c, status, d["reviewed"][c]), unsafe_allow_html=True)
             key = f"reviewed{d['id']}-{c}"
             st.checkbox("Mark this category as reviewed", value=d["reviewed"][c], key=key, on_change=mark_reviewed,
                         args=(d["id"], c, key), help="Only a progress mark: it does not change the status above.")
