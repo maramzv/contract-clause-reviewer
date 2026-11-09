@@ -15,14 +15,18 @@ from clause_review.categories import CATEGORIES
 from clause_review.envfile import load_env
 from clause_review.export import csv_text
 from clause_review.pipeline import run_review
+from clause_review.samples import estimate_seconds, format_duration, list_samples, workers_from_env
 from clause_review.provider_choice import CHOICES, NOTES, default_choice, problem, toggle_enabled
 from clause_review.providers import BudgetExceeded, get_provider
+from clause_review.replay import Recorder, play
 from clause_review.store import FAILED, FOUND, NOT_FOUND, Store
 from clause_review.view import load_results, md_escape
+from progress_ui import ProgressView
 
 load_env()  # use the key and spend limit from .env, if there is one
 ICON = {FOUND: "✅", NOT_FOUND: "⚠️", FAILED: "❌"}
 DB_PATH = os.environ.get("CLAUSE_DB", "review.db")
+REPLAY_SPEEDS = {"Original": 1.0, "5×": 5.0, "20×": 20.0, "Skip to results": None}
 
 st.set_page_config(page_title="Contract clause review", layout="wide")
 st.title("Contract clause review")
@@ -43,7 +47,7 @@ def mark_reviewed(document_id, category, key):
     get_store().set_category_reviewed(document_id, category, st.session_state[key])
 
 
-def run(files, categories, provider_name):
+def run(files, categories, provider_name, samples=(), on_event=None):
     """Write the uploads to a temp folder (one subfolder each, so equal file names do not collide) and review them."""
     store, provider = get_store(), get_provider(provider_name)
     project = time.strftime("Review %Y-%m-%d %H:%M:%S")
@@ -55,9 +59,15 @@ def run(files, categories, provider_name):
             p = d / Path(f.name).name
             p.write_bytes(f.getvalue())
             paths.append(p)
+        for j, smp in enumerate(samples):  # bundled sample contracts, named by id and title in the results
+            d = Path(tmp) / f"s{j}"
+            d.mkdir()
+            p = d / f"{smp['label']}.txt"
+            p.write_bytes(Path(smp["path"]).read_bytes())
+            paths.append(p)
         pid = run_review(store, project, paths, provider, categories=categories,
-                         workers=int(os.environ.get("CLAUSE_WORKERS", "1")))
-    return pid, provider
+                         workers=int(os.environ.get("CLAUSE_WORKERS", "1")), on_event=on_event)
+    return pid, provider, project
 
 
 provider_name = default_choice()
@@ -72,16 +82,72 @@ with st.sidebar:
             st.error(blocked)
     chosen = st.multiselect("Clause categories", list(CATEGORIES), default=list(CATEGORIES))
     files = st.file_uploader("Contracts (PDF or text)", type=["pdf", "txt"], accept_multiple_files=True)
-    go = st.button("Run review", type="primary", disabled=not files or not chosen or bool(blocked))
+    samples = list_samples()
+    workers = workers_from_env()
+
+    def set_samples(value):
+        for smp in samples:
+            st.session_state[f"sample_{smp['id']}"] = value
+
+    picked = []
+    with st.expander("Sample contracts (bundled)", expanded=True):
+        st.caption("Public contracts that come with the app. The time is a rough estimate for the model chosen.")
+        b1, b2 = st.columns(2)
+        b1.button("Select all", on_click=set_samples, args=(True,), use_container_width=True)
+        b2.button("Clear", on_click=set_samples, args=(False,), use_container_width=True)
+        for smp in samples:
+            est = format_duration(estimate_seconds(smp["chunks"], provider_name, workers))
+            if st.checkbox(f"{smp['title']} · {est}", key=f"sample_{smp['id']}"):
+                picked.append(smp)
+        if picked:
+            total = estimate_seconds(sum(x["chunks"] for x in picked), provider_name, workers)
+            st.markdown(f"**{len(picked)} selected · {format_duration(total)} in total**")
+    go = st.button("Run review", type="primary", disabled=not (files or picked) or not chosen or bool(blocked))
+
+    # Every finished run is saved with its step-by-step recording, so it can be replayed without calling the model.
+    replay_req = open_req = None
+    st.header("Saved runs")
+    saved_runs = get_store().list_runs()
+    if not saved_runs:
+        st.caption("Each review you run is saved here automatically, so you can replay it later.")
+    else:
+        run_id = st.selectbox("Saved run", [r["id"] for r in saved_runs],
+                              format_func=lambda i: next(f"{r['name']} · {r['docs']} contract(s) · {r['provider']} · "
+                                                         f"took {format_duration(r['duration']).replace('instant', 'under a second')}"
+                                                         for r in saved_runs if r["id"] == i))
+        speed_label = st.radio("Replay speed", list(REPLAY_SPEEDS), index=2, horizontal=True)
+        r1, r2 = st.columns(2)
+        if r1.button("Replay", type="primary", use_container_width=True, help="Plays the saved run again with no model calls. "
+                     "Starts fresh: nothing is accepted or removed."):
+            replay_req = (run_id, REPLAY_SPEEDS[speed_label])
+        if r2.button("Open results", use_container_width=True, help="Opens the saved results as they were left."):
+            open_req = run_id
 
 if NOTES.get(provider_name):
     st.warning(NOTES[provider_name])
 
+if replay_req:
+    saved = get_store().get_run(replay_req[0])
+    slot = st.empty()  # the progress screen lives in this slot so it can be cleared once the results are ready
+    play(get_store().run_events(saved["id"]), ProgressView(st, slot.container()).handle, replay_req[1])
+    pid = get_store().clone_project(saved["project_id"], f"Replay of run {saved['id']} ({saved['name']}) at {time.strftime('%H:%M:%S')}")
+    st.session_state["result"] = {"pid": pid, "categories": saved["categories"], "provider": f"{saved['provider']} (replay)",
+                                  "usage": "replay of a saved run, no model was called"}
+    slot.empty()
+elif open_req:
+    saved = get_store().get_run(open_req)
+    st.session_state["result"] = {"pid": saved["project_id"], "categories": saved["categories"],
+                                  "provider": f"{saved['provider']} (saved run)", "usage": saved["usage"] or ""}
+
 if go:
+    slot = st.empty()
+    recorder = Recorder(forward=ProgressView(st, slot.container()).handle)
     try:
-        with st.spinner("Reading contracts and checking quotations..."):
-            pid, provider = run(files, chosen, provider_name)
-        st.session_state["result"] = {"pid": pid, "categories": chosen, "usage": provider.meter.summary(), "provider": provider.name}
+        pid, provider, project = run(files, chosen, provider_name, picked, on_event=recorder)
+        usage = provider.meter.summary()
+        get_store().save_run(project, provider.name, getattr(provider, "model", ""), pid, chosen, usage, recorder.events)
+        st.session_state["result"] = {"pid": pid, "categories": chosen, "usage": usage, "provider": provider.name}
+        st.rerun()  # redraw so the new run appears under Saved runs (the sidebar was drawn before the run)
     except BudgetExceeded as e:
         st.session_state.pop("result", None)
         st.error(f"Stopped at the spending limit: {e}. Responses already paid for are saved and are reused on a rerun.")

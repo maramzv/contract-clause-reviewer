@@ -2,6 +2,7 @@
 import bisect
 import hashlib
 import re
+import threading
 from concurrent.futures import ThreadPoolExecutor
 
 from .categories import CATEGORIES, COMPILED
@@ -68,14 +69,23 @@ def llm_candidates(chunk, categories, provider, cache=None):
             yield {"category": d["category"], "quote": d["quote"], "source": "llm"}
 
 
-def extract(chunks, categories, provider, cache=None, workers=1):
+def extract(chunks, categories, provider, cache=None, workers=1, on_chunk=None):
     """Candidates in chunk order, whatever the worker count. With workers > 1 the LLM calls run in parallel;
-    if one fails (including BudgetExceeded), calls not yet started are cancelled and the error is raised."""
+    if one fails (including BudgetExceeded), calls not yet started are cancelled and the error is raised.
+    on_chunk(done, total), if given, is called after each chunk's model step finishes (from a worker thread when
+    workers > 1; `done` only goes up)."""
     chunks = list(chunks)
     regex = [list(regex_candidates(ch, categories)) for ch in chunks]
 
+    finished, progress_lock = [0], threading.Lock()
+
     def llm_for(ch):
-        return list(llm_candidates(ch, categories, provider, cache))
+        out = list(llm_candidates(ch, categories, provider, cache))
+        if on_chunk:
+            with progress_lock:
+                finished[0] += 1
+                on_chunk(finished[0], len(chunks))
+        return out
 
     if workers > 1:
         with ThreadPoolExecutor(max_workers=workers) as pool:
