@@ -144,6 +144,8 @@ The answer key, written category definitions and extractor prompts were frozen o
 
 Run on Nov 8 after the freeze tag was pushed, a day earlier than the schedule's Nov 9. The freeze came first, so no test result could have influenced the frozen code.
 
+**Code changed after the tag.** The clause definitions, the keyword patterns, the verification rules (`categories.py`, `verify.py`) and the prompt text are unchanged since the tag. Since then the review screen and its store gained features (mark as reviewed, a dev model toggle, a bundled sample list, a progress screen and saved runs that can be replayed), and `extract.py` and `pipeline.py` gained optional progress callbacks that change nothing when they are off. On Nov 9 the cached 102-contract test run was replayed through the code at the tag and through the code with all of these changes: the findings are identical (same fingerprint) and the scores match the table below (precision 0.655, recall 0.738, F1 0.691). The result still belongs to the tagged version.
+
 | Category | Precision | Recall | F1 | Right / predicted / labeled |
 |---|---|---|---|---|
 | Assignment | 0.68 | 0.67 | 0.68 | 92 / 135 / 137 |
