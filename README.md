@@ -172,7 +172,7 @@ Lenient secondary measure: average precision 0.69, recall 0.78, F1 0.73. No cont
 **Read these numbers with care:**
 - CUAD leaves some real clauses unlabeled and our Assignment definition is narrower than CUAD's, so precision is understated by an unknown amount.
 - Change of Control is the weakest category (F1 0.47).
-- The answer-key check is limited: the marks on the 10 contracts were produced with AI, not by an independent human, and 3 contracts were hand-marked by one reviewer. Ten span or label differences have not been adjudicated, and the scores use the CUAD labels as published.
+- The answer-key check is limited: the marks on the 10 contracts were produced with AI, not by an independent human, and 3 contracts were hand-marked by one reviewer. Ten items differed on which text counts (nine span differences and one hand mark, contract 09 Assignment). They were judged against the signed definitions on Nov 9, after the freeze and the test run, and logged in the disagreement log. Kerrian and Mara decided to keep the CUAD labels as published, so every score above uses them. As a labeled sensitivity check, removing the items the definitions would treat as ambiguous or not a clause from the answer key moves average F1 from 0.691 to 0.695 and recall from 0.738 to 0.745; precision stays at 0.655. The freeze and the test run came before these items were settled, which is not the order the evaluation plan set.
 - The reviewer pilot and practitioner interviews have not been done, so the time-saved goal and the pain point are untested.
 - Three correct model quotes in 60 development contracts were dropped because page-break filler sits inside the sentence; this is not fixed.
 
