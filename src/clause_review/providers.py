@@ -1,12 +1,15 @@
-"""Model providers behind one interface. Select with CLAUSE_PROVIDER=mock|anthropic|local.
+"""Model providers behind one interface. Select with CLAUSE_PROVIDER=mock|anthropic|local|claude_code.
 
 Every provider counts tokens through a Meter. Set CLAUSE_BUDGET_USD together with CLAUSE_PRICE_IN and
 CLAUSE_PRICE_OUT (USD per million tokens, taken from the provider's price list; none are hard-coded)
 and the run stops with BudgetExceeded once the budget is spent.
 """
+import glob
 import json
 import os
 import re
+import shutil
+import subprocess
 import threading
 import urllib.request
 
@@ -133,9 +136,56 @@ class LocalProvider(Provider):
         return text, usage.get("prompt_tokens", len(prompt) // 4), usage.get("completion_tokens", len(text) // 4)
 
 
+class ClaudeCodeProvider(Provider):
+    """Runs each model call through the Claude Code CLI (`claude -p`), so it uses the person's Claude Code login and
+    needs no ANTHROPIC_API_KEY. Tools are switched off, so the contract text can only be read, never acted on.
+    Slower than the API (one CLI process per chunk). Set CLAUSE_CLAUDE_CMD to the claude executable if it is not found;
+    CLAUSE_MODEL optionally picks the model."""
+    name = "claude_code"
+    SYSTEM = ("You extract exact quotations from contract text. Follow the user's instructions and reply with only "
+              "the JSON list they ask for.")
+
+    def __init__(self, model=None, command=None, timeout=300, meter=None):
+        super().__init__(meter)
+        self.command = command or self._find_command()
+        self.model = model or os.environ.get("CLAUSE_MODEL", "")
+        self.timeout = timeout
+
+    @staticmethod
+    def _find_command():
+        found = os.environ.get("CLAUSE_CLAUDE_CMD") or shutil.which("claude")
+        if found:
+            return found
+        # The VS Code extension bundles the CLI but does not put it on the PATH; take the newest copy.
+        pattern = os.path.join(os.path.expanduser("~"), ".vscode", "extensions", "anthropic.claude-code-*",
+                               "resources", "native-binary", "claude*")
+        copies = sorted(glob.glob(pattern), key=os.path.getmtime)
+        if copies:
+            return copies[-1]
+        raise RuntimeError("Claude Code CLI not found: put `claude` on the PATH or set CLAUSE_CLAUDE_CMD")
+
+    def _complete(self, prompt):
+        cmd = [self.command, "-p", "--output-format", "json", "--tools", "", "--no-session-persistence",
+               "--system-prompt", self.SYSTEM]
+        if self.model:
+            cmd += ["--model", self.model]
+        r = subprocess.run(cmd, input=prompt, capture_output=True, text=True, encoding="utf-8", timeout=self.timeout)
+        try:
+            data = json.loads(r.stdout)
+        except json.JSONDecodeError:
+            data = None
+        if r.returncode != 0 or not isinstance(data, dict) or data.get("is_error"):
+            detail = (data or {}).get("result") if isinstance(data, dict) else None
+            raise RuntimeError(f"Claude Code call failed: {detail or r.stderr.strip() or r.stdout.strip()[:200]}")
+        usage = data.get("usage") or {}
+        tokens_in = sum(usage.get(k, 0) for k in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens"))
+        return data.get("result") or "", tokens_in, usage.get("output_tokens", 0)
+
+
 def get_provider(name=None) -> Provider:
     name = name or os.environ.get("CLAUSE_PROVIDER", "mock")
-    return {"mock": MockProvider, "anthropic": AnthropicProvider, "local": LocalProvider}[name]()
+    return {"mock": MockProvider, "anthropic": AnthropicProvider, "local": LocalProvider,
+            "claude_code": ClaudeCodeProvider}[name]()
 
 
 def parse_json_list(raw: str):

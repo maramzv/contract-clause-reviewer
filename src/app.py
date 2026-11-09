@@ -15,6 +15,7 @@ from clause_review.categories import CATEGORIES
 from clause_review.envfile import load_env
 from clause_review.export import csv_text
 from clause_review.pipeline import run_review
+from clause_review.provider_choice import CHOICES, NOTES, default_choice, problem, toggle_enabled
 from clause_review.providers import BudgetExceeded, get_provider
 from clause_review.store import FAILED, FOUND, NOT_FOUND, Store
 from clause_review.view import load_results, md_escape
@@ -42,9 +43,9 @@ def mark_reviewed(document_id, category, key):
     get_store().set_category_reviewed(document_id, category, st.session_state[key])
 
 
-def run(files, categories):
+def run(files, categories, provider_name):
     """Write the uploads to a temp folder (one subfolder each, so equal file names do not collide) and review them."""
-    store, provider = get_store(), get_provider()
+    store, provider = get_store(), get_provider(provider_name)
     project = time.strftime("Review %Y-%m-%d %H:%M:%S")
     with tempfile.TemporaryDirectory() as tmp:
         paths = []
@@ -59,27 +60,38 @@ def run(files, categories):
     return pid, provider
 
 
-provider_name = os.environ.get("CLAUSE_PROVIDER", "mock")
-if provider_name == "mock":
-    st.warning("Mock provider: this is an offline demo that finds clauses with keyword rules, not a real model.")
-
+provider_name = default_choice()
+blocked = None
 with st.sidebar:
     st.header("New review")
+    if toggle_enabled():  # dev only: pick the model for this run (CLAUSE_DEV_TOGGLE=1)
+        provider_name = st.selectbox("Model (dev)", list(CHOICES), index=list(CHOICES).index(provider_name) if provider_name in CHOICES else 0,
+                                     format_func=CHOICES.get)
+        blocked = problem(provider_name)
+        if blocked:
+            st.error(blocked)
     chosen = st.multiselect("Clause categories", list(CATEGORIES), default=list(CATEGORIES))
     files = st.file_uploader("Contracts (PDF or text)", type=["pdf", "txt"], accept_multiple_files=True)
-    go = st.button("Run review", type="primary", disabled=not files or not chosen)
+    go = st.button("Run review", type="primary", disabled=not files or not chosen or bool(blocked))
+
+if NOTES.get(provider_name):
+    st.warning(NOTES[provider_name])
 
 if go:
     try:
         with st.spinner("Reading contracts and checking quotations..."):
-            pid, provider = run(files, chosen)
-        st.session_state["result"] = {"pid": pid, "categories": chosen, "usage": provider.meter.summary()}
+            pid, provider = run(files, chosen, provider_name)
+        st.session_state["result"] = {"pid": pid, "categories": chosen, "usage": provider.meter.summary(), "provider": provider.name}
     except BudgetExceeded as e:
         st.session_state.pop("result", None)
         st.error(f"Stopped at the spending limit: {e}. Responses already paid for are saved and are reused on a rerun.")
+        if toggle_enabled() and provider_name == "anthropic":
+            st.info("Dev toggle: switch Model (dev) to Claude Code and run again. Responses already paid for are cached.")
     except Exception as e:  # never show a half-finished table as if it were complete
         st.session_state.pop("result", None)
         st.error(f"The review could not be completed: {e}")
+        if toggle_enabled() and provider_name == "anthropic":
+            st.info("Dev toggle: switch Model (dev) to Claude Code and run again. Responses already paid for are cached.")
 
 res = st.session_state.get("result")
 if not res:
@@ -94,7 +106,7 @@ st.subheader(f"{len(docs)} contract(s), {len(all_f) - tally['removed']} finding(
 n_marked = sum(1 for d in docs for c in res["categories"] if d["reviewed"][c])
 st.caption(f"Reviewed: {tally['accepted']} accepted, {tally['removed']} removed, {tally['pending']} not yet reviewed. "
            f"{n_marked} of {len(docs) * len(res['categories'])} categories marked as reviewed. "
-           f"Model usage: {res['usage']}")
+           f"Model: {res.get('provider', '?')}. Usage: {res['usage']}")
 st.sidebar.download_button("Download CSV", csv_text(get_store(), res["pid"]), file_name="clause_review.csv",
                            mime="text/csv", help="Accepted and not-yet-reviewed findings, plus every category still to check.")
 
