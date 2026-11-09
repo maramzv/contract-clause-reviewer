@@ -144,6 +144,8 @@ The answer key, written category definitions and extractor prompts were frozen o
 
 Run on Nov 8 after the freeze tag was pushed, a day earlier than the schedule's Nov 9. The freeze came first, so no test result could have influenced the frozen code.
 
+**Code changed after the tag.** The clause definitions, the keyword patterns, the verification rules (`categories.py`, `verify.py`) and the prompt text are unchanged since the tag. Since then the review screen and its store gained features (mark as reviewed, a dev model toggle, a bundled sample list, a progress screen and saved runs that can be replayed), and `extract.py` and `pipeline.py` gained optional progress callbacks that change nothing when they are off. On Nov 9 the cached 102-contract test run was replayed through the code at the tag and through the code with all of these changes: the findings are identical (same fingerprint) and the scores match the table below (precision 0.655, recall 0.738, F1 0.691). The result still belongs to the tagged version.
+
 | Category | Precision | Recall | F1 | Right / predicted / labeled |
 |---|---|---|---|---|
 | Assignment | 0.68 | 0.67 | 0.68 | 92 / 135 / 137 |
@@ -182,6 +184,7 @@ No change was made after the test run, so the frozen result stays clean. The err
 - **Termination for Convenience** (precision 0.66, recall 0.78). CUAD labels without-cause rights that end only part of the deal, such as a license, a scope of work or a fund ("We will have the right to terminate the Ad Fund by giving you thirty (30) days' advance written notice"). Our wording says "end the agreement". Fix: count a without-cause right to end part of the deal.
 - **Change of Control** (precision 0.35, recall 0.53). CUAD's labels include triggers such as a party ceasing to own shares and assignment by operation of law, and the model's wrong findings include definitions and sentences such as "a change of control shall not be considered an assignment". CUAD's labeling is inconsistent here, so we expect little room to improve.
 - **Verification:** a correct model quote fails the word-for-word check when page-break filler (a line of dashes, a "Source:" footer) sits inside the sentence. Fix: ignore that filler when matching.
+- **Record of removed findings** (seen in a demo run on one contract, not from the evaluation). The CSV leaves out a finding the reviewer removed, so the file cannot show that the tool proposed a passage and a person rejected it. In the demo, a stand-alone definition of "change of control" was removed, and the CSV shows only "[Not found, review required]". Fix: keep removed findings in the export, for example as rows with the review column set to `removed`, or in a separate log. This changes the CSV format described in the PRD, so the PRD would need updating too.
 
 Either definition change edits the signed Clause Definitions, so it needs approval, a new version tag, and a check on development contracts nobody has looked at. The test result would still belong to the frozen version; running a changed version on the test split again would be exploratory and should be reported that way.
 
