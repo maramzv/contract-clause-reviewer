@@ -22,7 +22,7 @@ from clause_review.replay import Recorder, play
 from clause_review.store import FAILED, FOUND, NOT_FOUND, Store
 from clause_review.view import load_results, md_escape
 from progress_ui import ProgressView
-from theme import apply_theme, brand, category_heading, hero
+from theme import apply_theme, brand, category_heading, hero, kpi_row
 
 load_env()  # use the key and spend limit from .env, if there is one
 ICON = {FOUND: "✅", NOT_FOUND: "⚠️", FAILED: "❌"}
@@ -75,9 +75,10 @@ blocked = None
 with st.sidebar:
     brand(st)
     st.header("New review")
-    if toggle_enabled():  # dev only: pick the model for this run (CLAUSE_DEV_TOGGLE=1)
-        provider_name = st.selectbox("Model (dev)", list(CHOICES), index=list(CHOICES).index(provider_name) if provider_name in CHOICES else 0,
-                                     format_func=CHOICES.get)
+    if toggle_enabled():  # choose how this run is done: Mock, the local Claude agent, or the API (hide with CLAUSE_DEV_TOGGLE=0)
+        options = list(CHOICES) + ([provider_name] if provider_name not in CHOICES else [])  # keep e.g. CLAUSE_PROVIDER=local
+        provider_name = st.selectbox("Run with", options, index=options.index(provider_name),
+                                     format_func=lambda n: CHOICES.get(n, f"{n} (set by CLAUSE_PROVIDER)"))
         blocked = problem(provider_name)
         if blocked:
             st.error(blocked)
@@ -154,12 +155,12 @@ if go:
         st.session_state.pop("result", None)
         st.error(f"Stopped at the spending limit: {e}. Responses already paid for are saved and are reused on a rerun.")
         if toggle_enabled() and provider_name == "anthropic":
-            st.info("Dev toggle: switch Model (dev) to Claude Code and run again. Responses already paid for are cached.")
+            st.info("Dev toggle: switch Run with to Local Claude agent and run again. Responses already paid for are cached.")
     except Exception as e:  # never show a half-finished table as if it were complete
         st.session_state.pop("result", None)
         st.error(f"The review could not be completed: {e}")
         if toggle_enabled() and provider_name == "anthropic":
-            st.info("Dev toggle: switch Model (dev) to Claude Code and run again. Responses already paid for are cached.")
+            st.info("Dev toggle: switch Run with to Local Claude agent and run again. Responses already paid for are cached.")
 
 res = st.session_state.get("result")
 if not res:
@@ -170,7 +171,10 @@ docs = load_results(get_store(), res["pid"], res["categories"])
 all_f = [f for d in docs for f in d["findings"]]
 n_check = sum(1 for d in docs for c in res["categories"] if d["categories"][c] != FOUND)
 tally = {k: sum(1 for f in all_f if f["review"] == k) for k in ("pending", "accepted", "removed")}
-st.subheader(f"{len(docs)} contract(s), {len(all_f) - tally['removed']} finding(s), {n_check} category check(s) for you")
+n_findings = len(all_f) - tally["removed"]
+kpi_row(st, [(len(docs), "Contract" if len(docs) == 1 else "Contracts", None, False),
+             (n_findings, "Finding" if n_findings == 1 else "Findings", "verbatim quotations", False),
+             (n_check, "To check" , "categories for you to review", n_check > 0)])
 n_marked = sum(1 for d in docs for c in res["categories"] if d["reviewed"][c])
 st.caption(f"Reviewed: {tally['accepted']} accepted, {tally['removed']} removed, {tally['pending']} not yet reviewed. "
            f"{n_marked} of {len(docs) * len(res['categories'])} categories marked as reviewed. "

@@ -39,6 +39,15 @@ section[data-testid="stSidebar"] > div:first-child { background-color:var(--ink)
 .brand-word { width:172px; aspect-ratio:1662 / 201;
   -webkit-mask:url(%(STATIC)s/brand/clautra-wordmark-trim.png) center / contain no-repeat; mask:url(%(STATIC)s/brand/clautra-wordmark-trim.png) center / contain no-repeat; }
 
+/* KPI row: the three headline numbers of a review */
+.kpis { display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:1rem; margin:.3rem 0 1.1rem; }
+.kpi { background:rgba(255,253,248,.78); border:1px solid var(--line); border-top:3px solid var(--brass); border-radius:3px; padding:.75rem 1.1rem .85rem; }
+.kpi .num { font-family:%(SERIF)s; font-size:2.9rem; line-height:1; color:var(--ink); }
+.kpi .lbl { margin-top:.35rem; font-size:.72rem; letter-spacing:.2em; text-transform:uppercase; font-weight:600; color:var(--brass-deep); }
+.kpi .note { margin-top:.15rem; font-size:.8rem; color:#4b5f70; }
+.kpi.flag { background:#EFE2BF; border-color:#D9C38C; border-top-color:var(--brass-deep); }
+.kpi.flag .lbl { color:#5c4719; }
+
 /* page header */
 .hero { margin:0 0 1.4rem 0; }
 .hero .eyebrow { font-size:.7rem; letter-spacing:.26em; text-transform:uppercase; color:var(--brass-deep); font-weight:600; }
@@ -112,6 +121,16 @@ def apply_theme(st):
 def brand(st):
     """The corner logo (sidebar top)."""
     st.markdown('<div class="brand"><div class="brand-stack" role="img" aria-label="Clautra"><div class="gold brand-mark"></div><div class="gold brand-word"></div></div></div>', unsafe_allow_html=True)
+
+
+def kpi_row(st, items):
+    """A row of headline numbers. Each item is (value, label, note); a tile whose note is given and whose value is above 0
+    is highlighted (something is waiting for the reader). Text is escaped."""
+    tiles = []
+    for value, label, note, flag in items:
+        tiles.append(f'<div class="kpi{" flag" if flag else ""}"><div class="num">{int(value)}</div>'
+                     f'<div class="lbl">{html.escape(label)}</div>' + (f'<div class="note">{html.escape(note)}</div>' if note else "") + "</div>")
+    st.markdown('<div class="kpis">' + "".join(tiles) + "</div>", unsafe_allow_html=True)
 
 
 def hero(st):
