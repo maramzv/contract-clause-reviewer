@@ -5,7 +5,6 @@ Environment: CLAUSE_PROVIDER (mock by default), CLAUSE_DB (SQLite file, default 
 spend-limit variables described in the README.
 """
 import logging
-import os
 import tempfile
 import time
 from pathlib import Path
@@ -13,21 +12,19 @@ from pathlib import Path
 import streamlit as st
 
 from clause_review.categories import CATEGORIES
-from clause_review.envfile import load_env
 from clause_review.export import csv_text
 from clause_review.pipeline import run_review
 from clause_review.samples import estimate_seconds, format_duration, list_samples, workers_from_env
 from clause_review.provider_choice import CHOICES, NOTES, default_choice, problem, toggle_enabled
 from clause_review.providers import BudgetExceeded, get_provider
 from clause_review.replay import Recorder, play
-from clause_review.store import FAILED, FOUND, NOT_FOUND, Store
+from clause_review.store import ANSWERED, FAILED, FOUND, NOT_FOUND, OPEN, RESOLVED
 from clause_review.view import load_results, md_escape
+from common import DB_PATH, get_store
 from progress_ui import ProgressView
-from theme import apply_theme, brand, category_heading, hero, kpi_row, marquee
+from theme import apply_theme, brand, category_heading, hero, kpi_row, marquee, views
 
-load_env()  # use the key and spend limit from .env, if there is one
 ICON = {FOUND: "✅", NOT_FOUND: "⚠️", FAILED: "❌"}
-DB_PATH = os.environ.get("CLAUSE_DB", "review.db")
 REPLAY_SPEEDS = {"Original": 1.0, "5×": 5.0, "20×": 20.0, "Skip to results": None}
 
 st.set_page_config(page_title="Clautra · Contract review", page_icon="static/brand/clautra-mark-transparent.png", layout="wide")
@@ -40,13 +37,20 @@ if toggle_enabled():  # the switch itself is hidden when CLAUSE_DEV_TOGGLE=0, wh
 hero(st, demo=not dev and default_choice() == "mock")
 
 
-@st.cache_resource
-def get_store():
-    return Store(DB_PATH)
-
-
 def act(finding_id, state):
     get_store().set_review(finding_id, state)
+
+
+def save_question(finding_id, key):
+    get_store().set_question(finding_id, st.session_state[key])
+
+
+def resolve(finding_id, resolved):
+    get_store().set_resolved(finding_id, resolved)
+
+
+QSTATE_CHIP = {OPEN: ("chip-miss", "Question open: waiting for the senior lawyer"),
+               ANSWERED: ("chip-found", "Answered by the senior lawyer"), RESOLVED: ("chip-found", "Question resolved")}
 
 
 def mark_reviewed(document_id, category, key):
@@ -80,6 +84,7 @@ provider_name = default_choice()
 blocked = None
 with st.sidebar:
     brand(st)
+    views(st)
     st.header("New review")
     if dev:  # choose how this run is done: Mock, the local Claude agent, or the API (dev mode only)
         options = list(CHOICES) + ([provider_name] if provider_name not in CHOICES else [])  # keep e.g. CLAUSE_PROVIDER=local
@@ -123,7 +128,7 @@ with st.sidebar:
         speed_label = st.radio("Replay speed", list(REPLAY_SPEEDS), index=2, horizontal=True)
         r1, r2 = st.columns(2)
         if r1.button("Replay", type="primary", use_container_width=True, help="Plays the saved run again with no model calls. "
-                     "Starts fresh: nothing is accepted or removed."):
+                     "Starts fresh: nothing is accepted or removed, and questions and answers are not copied."):
             replay_req = (run_id, REPLAY_SPEEDS[speed_label])
         if r2.button("Open results", use_container_width=True, help="Opens the saved results as they were left."):
             open_req = run_id
@@ -179,10 +184,15 @@ n_findings = len(all_f) - tally["removed"]
 kpi_row(st, [(len(docs), "Contract" if len(docs) == 1 else "Contracts", None, False),
              (n_findings, "Finding" if n_findings == 1 else "Findings", "verbatim quotations", False),
              (n_check, "To check" , "categories for you to review", n_check > 0)])
+qn = {k: sum(1 for f in all_f if f["review"] != "removed" and f["qstate"] == k) for k in (OPEN, ANSWERED, RESOLVED)}
 n_marked = sum(1 for d in docs for c in res["categories"] if d["reviewed"][c])
 st.caption(f"Reviewed: {tally['accepted']} accepted, {tally['removed']} removed, {tally['pending']} not yet reviewed. "
            f"{n_marked} of {len(docs) * len(res['categories'])} categories marked as reviewed. "
+           + (f"Questions for the senior lawyer: {qn[OPEN]} open, {qn[ANSWERED]} answered, {qn[RESOLVED]} resolved. "
+              if sum(qn.values()) else "")
            + (f"Model: {res.get('provider', '?')}. Usage: {res['usage']}" if dev else ""))
+st.sidebar.button("Refresh", help="Reloads the results, to pick up answers the senior lawyer has just saved.",
+                  use_container_width=True)
 st.sidebar.download_button("Download CSV", csv_text(get_store(), res["pid"]), file_name="clause_review.csv",
                            mime="text/csv", help="Accepted and not-yet-reviewed findings, plus every category still to check.")
 
@@ -206,7 +216,7 @@ for d in docs:
                     st.caption(f"Page {f['page']} · {f['review'].capitalize() if f['review'] != 'pending' else 'Not yet reviewed'}")
                     quote = md_escape(f["quote"])
                     st.markdown("> " + (f"~~{quote}~~" if removed else quote))
-                    b1, b2, _ = st.columns([1, 1, 6])
+                    b1, b2, b3, _ = st.columns([1, 1, 2, 4])
                     if removed:
                         b1.button("Restore", key=f"restore{f['id']}", on_click=act, args=(f["id"], "pending"))
                     else:
@@ -214,3 +224,19 @@ for d in docs:
                                   type="secondary" if f["review"] == "accepted" else "primary",
                                   disabled=f["review"] == "accepted")
                         b2.button("Remove", key=f"remove{f['id']}", on_click=act, args=(f["id"], "removed"))
+                        qkey = f"q{f['id']}"
+                        with b3.popover("Edit question" if f["question"] else "Ask senior lawyer"):
+                            st.text_area("Question for the senior lawyer", value=f["question"] or "", key=qkey, height=100,
+                                         placeholder="e.g. Does a transfer to an affiliate count as assignment here?",
+                                         help="One question per finding. Saving new text reopens it; saving empty text removes it.")
+                            st.button("Save question", key=f"saveq{f['id']}", on_click=save_question, args=(f["id"], qkey))
+                        if f["question"]:
+                            cls, text = QSTATE_CHIP[f["qstate"] or OPEN]
+                            st.markdown(f'<span class="chip {cls}">{text}</span>', unsafe_allow_html=True)
+                            st.markdown("**Your question:** " + md_escape(f["question"]))
+                            if f["answer"]:
+                                st.markdown("**Senior lawyer:** " + md_escape(f["answer"]))
+                                if f["qstate"] == RESOLVED:
+                                    st.button("Reopen", key=f"reopen{f['id']}", on_click=resolve, args=(f["id"], False))
+                                else:
+                                    st.button("Mark resolved", key=f"resolve{f['id']}", on_click=resolve, args=(f["id"], True))

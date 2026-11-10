@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS RunEvent(run_id INT, seq INT, t REAL, kind TEXT, data
 """
 FOUND, NOT_FOUND, FAILED = "Found", "Not found, review required", "Failed to process"
 REVIEW_STATES = ("pending", "accepted", "removed")
+# A question for the senior lawyer: None (no question), then open -> answered -> resolved.
+OPEN, ANSWERED, RESOLVED = "open", "answered", "resolved"
 
 
 class Store:
@@ -26,6 +28,11 @@ class Store:
         self._lock = threading.Lock()
         self.db.row_factory = sqlite3.Row
         self.db.executescript(SCHEMA)
+        have = {r["name"] for r in self.db.execute("PRAGMA table_info(Finding)")}
+        for col in ("answer", "qstate"):  # databases made before the senior-lawyer questions get the new columns
+            if col not in have:
+                self.db.execute(f"ALTER TABLE Finding ADD COLUMN {col} TEXT")
+        self.db.commit()
 
     def project(self, name):
         self.db.execute("INSERT OR IGNORE INTO Project(name) VALUES(?)", (name,))
@@ -58,6 +65,42 @@ class Store:
                                    (row["document_id"], row["category"])).fetchone()[0]
             self.db.execute("UPDATE CategoryStatus SET status=? WHERE document_id=? AND category=? AND status!=?",
                             (FOUND if live else NOT_FOUND, row["document_id"], row["category"], FAILED))
+            self.db.commit()
+
+    def _finding_row(self, finding_id):
+        row = self.db.execute("SELECT question, qstate FROM Finding WHERE id=?", (finding_id,)).fetchone()
+        if row is None:
+            raise ValueError(f"no finding with id {finding_id}")
+        return row
+
+    def set_question(self, finding_id, text):
+        """Maya's question for the senior lawyer on one finding. New or changed text makes it 'open' again and drops any
+        earlier answer (it answered a different question); empty text removes the question."""
+        text = (text or "").strip()
+        with self._lock:
+            row = self._finding_row(finding_id)
+            if text == (row["question"] or ""):
+                return
+            self.db.execute("UPDATE Finding SET question=?, answer=NULL, qstate=? WHERE id=?",
+                            (text or None, OPEN if text else None, finding_id))
+            self.db.commit()
+
+    def set_answer(self, finding_id, text):
+        """The senior lawyer's answer. Empty text takes the answer back and the question returns to 'open'."""
+        text = (text or "").strip()
+        with self._lock:
+            if not self._finding_row(finding_id)["question"]:
+                raise ValueError(f"finding {finding_id} has no question to answer")
+            self.db.execute("UPDATE Finding SET answer=?, qstate=? WHERE id=?",
+                            (text or None, ANSWERED if text else OPEN, finding_id))
+            self.db.commit()
+
+    def set_resolved(self, finding_id, resolved=True):
+        """Maya closes an answered question (or reopens it). Only an answered question can be resolved."""
+        with self._lock:
+            if self._finding_row(finding_id)["qstate"] not in (ANSWERED, RESOLVED):
+                raise ValueError(f"finding {finding_id} has no answer to resolve")
+            self.db.execute("UPDATE Finding SET qstate=? WHERE id=?", (RESOLVED if resolved else ANSWERED, finding_id))
             self.db.commit()
 
     def set_category_reviewed(self, document_id, category, reviewed=True):

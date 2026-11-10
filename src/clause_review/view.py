@@ -26,7 +26,7 @@ def load_results(store, pid, categories=None):
         status = {r["category"]: r["status"] for r in rows}
         reviewed = {r["category"]: bool(r["reviewed"]) for r in rows}
         findings = [dict(r) for r in store.db.execute(
-            "SELECT id, category, quote, page, start, end, source, review FROM Finding "
+            "SELECT id, category, quote, page, start, end, source, review, question, answer, qstate FROM Finding "
             "WHERE document_id=? ORDER BY category, start", (d["id"],))]
         out.append({"id": d["id"], "name": d["name"], "status": d["status"], "error": d["error"],
                     "categories": {c: status.get(c) for c in cats},

@@ -48,7 +48,6 @@ span[data-baseweb="tag"] { max-width:100%%; }
 .clautra-marquee { text-overflow:clip !important; animation:clautra-slide var(--dur, 6s) ease-in-out infinite alternate; }
 @keyframes clautra-slide { 0%%, 14%% { text-indent:0; } 86%%, 100%% { text-indent:var(--shift, 0px); } }
 @media (prefers-reduced-motion: reduce) { .clautra-marquee { animation:none; text-overflow:ellipsis !important; } }
-section[data-testid="stSidebar"] { width:25rem !important; min-width:25rem !important; }
 
 /* KPI row: the three headline numbers of a review */
 .kpis { display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:1rem; margin:.3rem 0 1.1rem; }
@@ -63,6 +62,15 @@ section[data-testid="stSidebar"] { width:25rem !important; min-width:25rem !impo
 .st-key-dev_mode { position:fixed; top:.55rem; right:3.4rem; z-index:1000002; background:rgba(243,239,230,.94);
   border:1px solid var(--line); border-radius:999px; padding:.15rem .9rem .15rem .6rem; box-shadow:0 1px 3px rgba(20,39,55,.15); }
 .st-key-dev_mode label p { font-size:.78rem; letter-spacing:.06em; text-transform:uppercase; font-weight:600; color:var(--ink); }
+
+/* screen switch under the logo: serif labels, brass icons, the current screen marked with a brass rule */
+section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"] { border-radius:3px; border-left:3px solid transparent; padding-left:.55rem; }
+section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"] p { font-family:%(SERIF)s; font-size:1.12rem; color:var(--ivory); }
+section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"] [data-testid="stIconMaterial"] { color:#C4A972; }
+section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"]:hover { background:rgba(196,169,114,.12); }
+section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"]:hover p { color:#E4D3A6; }
+section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"][aria-current="page"] { background:rgba(196,169,114,.16); border-left-color:#C4A972; }
+section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"][aria-current="page"] p { color:#E4D3A6; }
 
 /* page header */
 .hero { margin:0 0 1.4rem 0; }
@@ -170,6 +178,12 @@ def marquee(st):
 def brand(st):
     """The corner logo (sidebar top)."""
     st.markdown('<div class="brand"><div class="brand-stack" role="img" aria-label="Clautra"><div class="gold brand-mark"></div><div class="gold brand-word"></div></div></div>', unsafe_allow_html=True)
+
+
+def views(st):
+    """The switch between the two screens, drawn under the logo (Streamlit's own page menu is off in config.toml)."""
+    st.page_link("app.py", label="Junior associate", icon=":material/fact_check:")
+    st.page_link("pages/1_Senior_lawyer.py", label="Senior lawyer", icon=":material/gavel:")
 
 
 def kpi_row(st, items):

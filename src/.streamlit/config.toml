@@ -4,6 +4,7 @@ enableStaticServing = true   # serves ./static (the fonts, logos and textures us
 
 [client]
 toolbarMode = "minimal"
+showSidebarNavigation = false   # the Junior associate / Senior lawyer switch is drawn under the logo instead (theme.views)
 
 [theme]
 base = "light"
