@@ -1,0 +1,15 @@
+<section id="targets" data-transition="fade" style="background:#F6F5F0;color:#14202B;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1">Results against our targets</h2>
+<table style="font-family:'Inter', Arial, sans-serif;font-size:28px;color:#14202B">
+<tr style="background:#14202B"><th style="width:38%;color:#F6F5F0">Target</th><th style="width:40%;color:#F6F5F0">Result</th><th style="width:22%;color:#F6F5F0">Outcome</th></tr>
+<tr style="background:#FFFFFF"><td>F1 at least 10 points above the regex baseline</td><td>0.69 against 0.42, about 27 points above</td><td>Met</td></tr>
+<tr style="background:#EEEDE6"><td>Average recall at least 0.80</td><td>0.74 (lenient 0.78)</td><td>Not met</td></tr>
+<tr style="background:#FFFFFF"><td>Average precision at least 0.70</td><td>0.65 (lenient 0.69); range reaches 0.74</td><td>Not met</td></tr>
+<tr style="background:#EEEDE6"><td>30 largest contracts in 30 minutes or less</td><td>All 102 took 14 min 40 s; not timed separately</td><td>Met (inferred)</td></tr>
+<tr style="background:#FFFFFF"><td>Reviewer pilot: median time 30% lower</td><td>Not run; no reviewers were available</td><td>Untested</td></tr>
+</table>
+<p style="font-size:32px;line-height:1.3">Cost of the test run: $8.85 for 102 contracts, about $0.09 each.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1400px;font-size:24px;color:#5B6670">2,096 model calls at $2 and $10 per million input and output tokens, 4 parallel workers.</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;text-align:right;color:#5B6670">10</p>
+<aside>One target met, two missed, one met by inference and one untested. The precision range reaches 0.74, so a small shortfall cannot be ruled out as noise. The processing-time target was about the 30 largest contracts with an empty cache; we ran all 102 in 14 minutes 40 seconds, so any 30 of them take less, but we did not time that subset separately. The reviewer pilot was not run because we could not find reviewers, so the time-saved goal is untested and we make no claim about it.</aside>
+</section>

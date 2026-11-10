@@ -1,0 +1,15 @@
+<section id="pipeline" data-transition="fade" style="background:#F6F5F0;color:#14202B;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1">Six steps from file to table</h2>
+<table style="font-family:'Inter', Arial, sans-serif;font-size:28px;color:#14202B">
+<tr style="background:#14202B"><th style="width:18%;color:#F6F5F0">Step</th><th style="width:82%;color:#F6F5F0">What happens</th></tr>
+<tr style="background:#FFFFFF"><td>Ingest</td><td>pypdf reads each page. Unreadable or scanned files become “Failed to process”.</td></tr>
+<tr style="background:#EEEDE6"><td>Chunk</td><td>3,000-character windows with 300 characters of overlap.</td></tr>
+<tr style="background:#FFFFFF"><td>Extract</td><td>One model call per chunk returns the category and the exact quotation. A keyword pass is kept only where the model found nothing.</td></tr>
+<tr style="background:#EEEDE6"><td>Verify</td><td>Drop any quotation not found word for word. Where findings overlap, keep the model’s, then the tightest.</td></tr>
+<tr style="background:#FFFFFF"><td>Store</td><td>Findings and category status go to a local SQLite file.</td></tr>
+<tr style="background:#EEEDE6"><td>Export</td><td>Accept, remove or restore in the review screen, then download the CSV.</td></tr>
+</table>
+<p style="position:absolute;left:128px;bottom:64px;width:1400px;font-size:24px;color:#5B6670">Model: Claude Sonnet 5.5, called through the facilitator’s API key.</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;text-align:right;color:#5B6670">6</p>
+<aside>The pipeline in the code. The keyword (regex) pass is a backstop: its findings are kept only for a category where the model found nothing in that contract, so a model miss can still surface a candidate for review. Model replies are cached by a hash of provider, model and prompt, so a re-run does not pay twice. Locations are PDF page numbers; a text file counts as one page.</aside>
+</section>

@@ -1,0 +1,54 @@
+{
+  "v": 4,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-09T05:40:00Z"
+  },
+  "lists": "css",
+  "title": "Contract Clause Review: Results",
+  "order": [
+    "cover",
+    "problem",
+    "what",
+    "maya",
+    "guarantees",
+    "pipeline",
+    "evaluation",
+    "headline",
+    "categories",
+    "targets",
+    "tuning",
+    "answer-key",
+    "limits",
+    "next"
+  ],
+  "sections": {
+    "s1": {
+      "description": "Who the tool is for and what it does.",
+      "start": "cover"
+    },
+    "s2": {
+      "description": "How it is built and how it was tested.",
+      "start": "pipeline"
+    },
+    "s3": {
+      "description": "What the one test run showed.",
+      "start": "headline"
+    },
+    "s4": {
+      "description": "What we cannot claim and what we would change next.",
+      "start": "answer-key"
+    }
+  },
+  "faces": {
+    "space-grotesk": {
+      "family": "Space Grotesk",
+      "href": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap"
+    },
+    "inter": {
+      "family": "Inter",
+      "href": "https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+    }
+  },
+  "designSystems": []
+}
