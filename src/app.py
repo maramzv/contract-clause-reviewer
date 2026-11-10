@@ -4,6 +4,7 @@ Run:  streamlit run app.py
 Environment: CLAUSE_PROVIDER (mock by default), CLAUSE_DB (SQLite file, default review.db), plus the provider and
 spend-limit variables described in the README.
 """
+import logging
 import os
 import tempfile
 import time
@@ -47,7 +48,7 @@ def mark_reviewed(document_id, category, key):
     get_store().set_category_reviewed(document_id, category, st.session_state[key])
 
 
-def run(files, categories, provider_name, samples=(), on_event=None):
+def run(files, categories, provider_name, samples=(), on_event=None, workers=1):
     """Write the uploads to a temp folder (one subfolder each, so equal file names do not collide) and review them."""
     store, provider = get_store(), get_provider(provider_name)
     project = time.strftime("Review %Y-%m-%d %H:%M:%S")
@@ -66,7 +67,7 @@ def run(files, categories, provider_name, samples=(), on_event=None):
             p.write_bytes(Path(smp["path"]).read_bytes())
             paths.append(p)
         pid = run_review(store, project, paths, provider, categories=categories,
-                         workers=int(os.environ.get("CLAUSE_WORKERS", "1")), on_event=on_event)
+                         workers=workers, on_event=on_event)
     return pid, provider, project
 
 
@@ -79,9 +80,9 @@ with st.sidebar:
         options = list(CHOICES) + ([provider_name] if provider_name not in CHOICES else [])  # keep e.g. CLAUSE_PROVIDER=local
         provider_name = st.selectbox("Run with", options, index=options.index(provider_name),
                                      format_func=lambda n: CHOICES.get(n, f"{n} (set by CLAUSE_PROVIDER)"))
-        blocked = problem(provider_name)
-        if blocked:
-            st.error(blocked)
+    blocked = problem(provider_name)  # for everyone (#24): a missing key shows here, before Run, and disables Run
+    if blocked:
+        st.error(blocked)
     chosen = st.multiselect("Clause categories", list(CATEGORIES), default=list(CATEGORIES))
     files = st.file_uploader("Contracts (PDF or text)", type=["pdf", "txt"], accept_multiple_files=True)
     samples = list_samples()
@@ -146,7 +147,7 @@ if go:
     slot = st.empty()
     recorder = Recorder(forward=ProgressView(st, slot.container()).handle)
     try:
-        pid, provider, project = run(files, chosen, provider_name, picked, on_event=recorder)
+        pid, provider, project = run(files, chosen, provider_name, picked, on_event=recorder, workers=workers)
         usage = provider.meter.summary()
         get_store().save_run(project, provider.name, getattr(provider, "model", ""), pid, chosen, usage, recorder.events)
         st.session_state["result"] = {"pid": pid, "categories": chosen, "usage": usage, "provider": provider.name}
@@ -157,6 +158,7 @@ if go:
         if toggle_enabled() and provider_name == "anthropic":
             st.info("Dev toggle: switch Run with to Local Claude agent and run again. Responses already paid for are cached.")
     except Exception as e:  # never show a half-finished table as if it were complete
+        logging.exception("Review failed")
         st.session_state.pop("result", None)
         st.error(f"The review could not be completed: {e}")
         if toggle_enabled() and provider_name == "anthropic":
