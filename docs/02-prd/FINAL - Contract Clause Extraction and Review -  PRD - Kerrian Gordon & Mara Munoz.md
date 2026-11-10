@@ -231,7 +231,7 @@ This section describes how the build is put together so that the P0 requirements
 5. **Verify.** A quotation is kept only if it is found word for word in the contract after whitespace is collapsed and is at least 15 characters long. Its start position gives the page. Quotations that cannot be found are dropped and never shown. Overlapping findings in the same category are merged, keeping the model's quotation over a regex one and the shortest among quotations from the same source.  
 6. **Store.** Findings and category statuses are written to SQLite. A category with no verified finding is set to Not found, review required.  
 7. **Review.** The reviewer sees each finding with its quotation, page and status, and accepts or removes it.  
-8. **Export.** The reviewed table is exported to CSV with contract, category, quotation, location, review state and note.
+8. **Export.** The reviewed table is exported to CSV with contract, category, quotation, location, review state and note. Findings the reviewer removed stay in the file with the review state set to removed.
 
 Locations are page numbers taken from the PDF. A text file counts as one page. Section headings are not detected.
 
