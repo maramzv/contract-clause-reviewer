@@ -20,5 +20,5 @@ About 35 seconds. Six steps. Ingest reads the PDF page by page. Chunk cuts it in
 
 ## Slide 5: results
 
-About 25 seconds. We tested once on 102 held-out contracts from the public CUAD dataset. The result is F1 0.69 against 0.42 for a keyword baseline. Precision 0.65 and recall 0.74 both missed our targets, and we say so. The run cost $8.85. What we have not proven is time saved: we could not recruit reviewers, so that pilot was not run. Thank you.
+About 25 seconds. We tested once on 102 held-out contracts from the public CUAD dataset. F1 is 69 percent against 42 percent for a keyword baseline, which meets our target of ten points above. Precision is 65 percent against a target of 70, and recall is 74 percent against a target of 80, so both missed and we say so. Processing time meets the target by inference. The reviewer pilot was not run, so time saved is untested. Thank you.
 
