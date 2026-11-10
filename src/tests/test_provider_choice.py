@@ -2,10 +2,10 @@
 from clause_review import provider_choice as pc
 
 
-def test_toggle_is_off_unless_switched_on():
-    assert not pc.toggle_enabled({})
-    assert not pc.toggle_enabled({"CLAUSE_DEV_TOGGLE": "0"})
+def test_dropdown_is_always_on_unless_hidden():
+    assert pc.toggle_enabled({})
     assert pc.toggle_enabled({"CLAUSE_DEV_TOGGLE": "1"})
+    assert not pc.toggle_enabled({"CLAUSE_DEV_TOGGLE": "0"})
 
 
 def test_default_follows_clause_provider_as_written():

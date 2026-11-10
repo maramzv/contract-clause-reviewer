@@ -1,12 +1,13 @@
-"""The dev model toggle on the review screen: which providers can be picked, and what is wrong with one that cannot be used.
+"""The "Run with" dropdown on the review screen: which providers can be picked, and what is wrong with one that cannot be used.
 
-The toggle is off unless CLAUSE_DEV_TOGGLE=1, so a normal run still uses exactly the provider CLAUSE_PROVIDER names."""
+It is always shown. CLAUSE_PROVIDER only chooses which option it starts on (mock if unset), and CLAUSE_DEV_TOGGLE=0
+hides it so a run uses exactly the provider CLAUSE_PROVIDER names."""
 import os
 
 CHOICES = {
-    "mock": "Mock (offline keyword rules)",
-    "claude_code": "Claude Code (this computer's login, no API key)",
-    "anthropic": "Anthropic API (needs an API key)",
+    "mock": "Mock (offline demo)",
+    "claude_code": "Local Claude agent (no key)",
+    "anthropic": "API key (Anthropic)",
 }
 
 NOTES = {
@@ -18,7 +19,8 @@ NOTES = {
 
 
 def toggle_enabled(environ=None):
-    return (environ if environ is not None else os.environ).get("CLAUSE_DEV_TOGGLE") == "1"
+    """The dropdown is on unless CLAUSE_DEV_TOGGLE=0."""
+    return (environ if environ is not None else os.environ).get("CLAUSE_DEV_TOGGLE", "1") != "0"
 
 
 def default_choice(environ=None):
