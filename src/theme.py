@@ -39,6 +39,17 @@ section[data-testid="stSidebar"] > div:first-child { background-color:var(--ink)
 .brand-word { width:172px; aspect-ratio:1662 / 201;
   -webkit-mask:url(%(STATIC)s/brand/clautra-wordmark-trim.png) center / contain no-repeat; mask:url(%(STATIC)s/brand/clautra-wordmark-trim.png) center / contain no-repeat; }
 
+/* dropdown options: let long contract names wrap instead of being cut off */
+/* long names (dropdown options, selected chips, contract headings): clipped with an ellipsis, and on hover they slide
+   sideways so the whole name can be read. The script that sets --shift is in marquee() below. */
+[role="option"] div, span[data-baseweb="tag"] > span:first-child { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+[role="option"] { padding-top:.5rem; padding-bottom:.5rem; }
+span[data-baseweb="tag"] { max-width:100%%; }
+.clautra-marquee { text-overflow:clip !important; animation:clautra-slide var(--dur, 6s) ease-in-out infinite alternate; }
+@keyframes clautra-slide { 0%%, 14%% { text-indent:0; } 86%%, 100%% { text-indent:var(--shift, 0px); } }
+@media (prefers-reduced-motion: reduce) { .clautra-marquee { animation:none; text-overflow:ellipsis !important; } }
+section[data-testid="stSidebar"] { width:25rem !important; min-width:25rem !important; }
+
 /* KPI row: the three headline numbers of a review */
 .kpis { display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:1rem; margin:.3rem 0 1.1rem; }
 .kpi { background:rgba(255,253,248,.78); border:1px solid var(--line); border-top:3px solid var(--brass); border-radius:3px; padding:.75rem 1.1rem .85rem; }
@@ -47,6 +58,11 @@ section[data-testid="stSidebar"] > div:first-child { background-color:var(--ink)
 .kpi .note { margin-top:.15rem; font-size:.8rem; color:#4b5f70; }
 .kpi.flag { background:#EFE2BF; border-color:#D9C38C; border-top-color:var(--brass-deep); }
 .kpi.flag .lbl { color:#5c4719; }
+
+/* user / dev mode switch, pinned to the top-right corner */
+.st-key-dev_mode { position:fixed; top:.55rem; right:3.4rem; z-index:1000002; background:rgba(243,239,230,.94);
+  border:1px solid var(--line); border-radius:999px; padding:.15rem .9rem .15rem .6rem; box-shadow:0 1px 3px rgba(20,39,55,.15); }
+.st-key-dev_mode label p { font-size:.78rem; letter-spacing:.06em; text-transform:uppercase; font-weight:600; color:var(--ink); }
 
 /* page header */
 .hero { margin:0 0 1.4rem 0; }
@@ -118,6 +134,39 @@ def apply_theme(st):
                         "SERIF": SERIF, "STATIC": STATIC}, unsafe_allow_html=True)
 
 
+_MARQUEE_JS = """
+(function () {
+  if (window.__clautraMarquee) return;
+  window.__clautraMarquee = true;
+  var active = null;
+  function clipped(el) {
+    var cs = getComputedStyle(el);
+    return el.scrollWidth - el.clientWidth > 2 && (cs.overflowX === 'hidden' || cs.overflow === 'hidden');
+  }
+  function stop() { if (active) { active.classList.remove('clautra-marquee'); active = null; } }
+  document.addEventListener('mouseover', function (e) {
+    var el = e.target, hops = 0;
+    while (el && el !== document.body && hops < 5 && !clipped(el)) { el = el.parentElement; hops++; }
+    if (!el || el === document.body || !clipped(el)) { stop(); return; }
+    if (el === active) return;
+    stop();
+    var extra = el.scrollWidth - el.clientWidth;
+    el.title = el.title || el.textContent.trim();
+    el.style.setProperty('--shift', '-' + (extra + 6) + 'px');
+    el.style.setProperty('--dur', Math.max(3, extra / 28 + 2) + 's');
+    el.classList.add('clautra-marquee');
+    active = el;
+  }, true);
+  document.addEventListener('mouseleave', stop, true);
+})();
+"""
+
+
+def marquee(st):
+    """Long names slide sideways on hover so they can be read in full (see .clautra-marquee in the CSS)."""
+    st.html(f"<script>{_MARQUEE_JS}</script>", unsafe_allow_javascript=True)
+
+
 def brand(st):
     """The corner logo (sidebar top)."""
     st.markdown('<div class="brand"><div class="brand-stack" role="img" aria-label="Clautra"><div class="gold brand-mark"></div><div class="gold brand-word"></div></div></div>', unsafe_allow_html=True)
@@ -133,9 +182,12 @@ def kpi_row(st, items):
     st.markdown('<div class="kpis">' + "".join(tiles) + "</div>", unsafe_allow_html=True)
 
 
-def hero(st):
+def hero(st, demo=False):
+    """The page header. `demo` adds a small 'Demo mode' tag to the eyebrow line (shown in user mode when the offline
+    keyword demo is the model, so the results are never mistaken for a real model's)."""
+    tag = '&nbsp;&nbsp;·&nbsp;&nbsp;Demo mode' if demo else ''
     st.markdown(
-        '<div class="hero"><div class="eyebrow">Clautra &nbsp;/&nbsp; Contract review</div>'
+        f'<div class="hero"><div class="eyebrow">Clautra &nbsp;/&nbsp; Contract review{tag}</div>'
         '<h1>Contract review</h1><p class="tag">Every clause, accounted for.</p><hr class="rule">'
         '<p class="lede">Every finding is a quotation found word for word in the contract. A category with no verified '
         "finding is flagged for you to check, never left blank.</p></div>", unsafe_allow_html=True)

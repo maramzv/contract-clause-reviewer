@@ -23,7 +23,7 @@ from clause_review.replay import Recorder, play
 from clause_review.store import FAILED, FOUND, NOT_FOUND, Store
 from clause_review.view import load_results, md_escape
 from progress_ui import ProgressView
-from theme import apply_theme, brand, category_heading, hero, kpi_row
+from theme import apply_theme, brand, category_heading, hero, kpi_row, marquee
 
 load_env()  # use the key and spend limit from .env, if there is one
 ICON = {FOUND: "✅", NOT_FOUND: "⚠️", FAILED: "❌"}
@@ -32,7 +32,12 @@ REPLAY_SPEEDS = {"Original": 1.0, "5×": 5.0, "20×": 20.0, "Skip to results": N
 
 st.set_page_config(page_title="Clautra · Contract review", page_icon="static/brand/clautra-mark-transparent.png", layout="wide")
 apply_theme(st)
-hero(st)
+marquee(st)
+dev = False
+if toggle_enabled():  # the switch itself is hidden when CLAUSE_DEV_TOGGLE=0, which leaves the app in user mode
+    st.session_state.setdefault("dev_mode", st.query_params.get("dev") == "1")
+    dev = st.toggle("Dev mode", key="dev_mode", help="Off: just what a reviewer sees. On: model choice, provider notes and usage.")
+hero(st, demo=not dev and default_choice() == "mock")
 
 
 @st.cache_resource
@@ -76,7 +81,7 @@ blocked = None
 with st.sidebar:
     brand(st)
     st.header("New review")
-    if toggle_enabled():  # choose how this run is done: Mock, the local Claude agent, or the API (hide with CLAUSE_DEV_TOGGLE=0)
+    if dev:  # choose how this run is done: Mock, the local Claude agent, or the API (dev mode only)
         options = list(CHOICES) + ([provider_name] if provider_name not in CHOICES else [])  # keep e.g. CLAUSE_PROVIDER=local
         provider_name = st.selectbox("Run with", options, index=options.index(provider_name),
                                      format_func=lambda n: CHOICES.get(n, f"{n} (set by CLAUSE_PROVIDER)"))
@@ -87,24 +92,21 @@ with st.sidebar:
     files = st.file_uploader("Contracts (PDF or text)", type=["pdf", "txt"], accept_multiple_files=True)
     samples = list_samples()
     workers = workers_from_env()
+    by_id = {smp["id"]: smp for smp in samples}
 
-    def set_samples(value):
-        for smp in samples:
-            st.session_state[f"sample_{smp['id']}"] = value
+    def set_samples(everything):
+        st.session_state["sample_pick"] = list(by_id) if everything else []
 
-    picked = []
-    with st.expander("Sample contracts (bundled)", expanded=True):
-        st.caption("Public contracts that come with the app. The time is a rough estimate for the model chosen.")
-        b1, b2 = st.columns(2)
-        b1.button("Select all", on_click=set_samples, args=(True,), use_container_width=True)
-        b2.button("Clear", on_click=set_samples, args=(False,), use_container_width=True)
-        for smp in samples:
-            est = format_duration(estimate_seconds(smp["chunks"], provider_name, workers))
-            if st.checkbox(f"{smp['title']} · {est}", key=f"sample_{smp['id']}"):
-                picked.append(smp)
-        if picked:
-            total = estimate_seconds(sum(x["chunks"] for x in picked), provider_name, workers)
-            st.markdown(f"**{len(picked)} selected · {format_duration(total)} in total**")
+    st.multiselect("Sample contracts", list(by_id), key="sample_pick", placeholder="Choose from the bundled contracts",
+                   format_func=lambda i: f"{by_id[i]['title']} · {format_duration(estimate_seconds(by_id[i]['chunks'], provider_name, workers))}",
+                   help="Public contracts that come with the app. The time beside each is a rough estimate for the model chosen.")
+    picked = [by_id[i] for i in st.session_state.get("sample_pick", []) if i in by_id]
+    b1, b2 = st.columns(2)
+    b1.button("Select all samples", on_click=set_samples, args=(True,), use_container_width=True)
+    b2.button("Clear", on_click=set_samples, args=(False,), use_container_width=True)
+    if picked:
+        total = estimate_seconds(sum(x["chunks"] for x in picked), provider_name, workers)
+        st.markdown(f"**{len(picked)} selected · {format_duration(total)} in total**")
     go = st.button("Run review", type="primary", disabled=not (files or picked) or not chosen or bool(blocked))
 
     # Every finished run is saved with its step-by-step recording, so it can be replayed without calling the model.
@@ -126,7 +128,7 @@ with st.sidebar:
         if r2.button("Open results", use_container_width=True, help="Opens the saved results as they were left."):
             open_req = run_id
 
-if NOTES.get(provider_name):
+if dev and NOTES.get(provider_name):
     st.warning(NOTES[provider_name])
 
 if replay_req:
@@ -155,13 +157,13 @@ if go:
     except BudgetExceeded as e:
         st.session_state.pop("result", None)
         st.error(f"Stopped at the spending limit: {e}. Responses already paid for are saved and are reused on a rerun.")
-        if toggle_enabled() and provider_name == "anthropic":
+        if dev and provider_name == "anthropic":
             st.info("Dev toggle: switch Run with to Local Claude agent and run again. Responses already paid for are cached.")
     except Exception as e:  # never show a half-finished table as if it were complete
         logging.exception("Review failed")
         st.session_state.pop("result", None)
         st.error(f"The review could not be completed: {e}")
-        if toggle_enabled() and provider_name == "anthropic":
+        if dev and provider_name == "anthropic":
             st.info("Dev toggle: switch Run with to Local Claude agent and run again. Responses already paid for are cached.")
 
 res = st.session_state.get("result")
@@ -180,7 +182,7 @@ kpi_row(st, [(len(docs), "Contract" if len(docs) == 1 else "Contracts", None, Fa
 n_marked = sum(1 for d in docs for c in res["categories"] if d["reviewed"][c])
 st.caption(f"Reviewed: {tally['accepted']} accepted, {tally['removed']} removed, {tally['pending']} not yet reviewed. "
            f"{n_marked} of {len(docs) * len(res['categories'])} categories marked as reviewed. "
-           f"Model: {res.get('provider', '?')}. Usage: {res['usage']}")
+           + (f"Model: {res.get('provider', '?')}. Usage: {res['usage']}" if dev else ""))
 st.sidebar.download_button("Download CSV", csv_text(get_store(), res["pid"]), file_name="clause_review.csv",
                            mime="text/csv", help="Accepted and not-yet-reviewed findings, plus every category still to check.")
 
