@@ -54,7 +54,9 @@ def test_removing_the_only_finding_flags_the_category_and_restoring_clears_it():
     (doc,) = load_results(s, pid)
     assert doc["categories"]["Governing Law"] == NOT_FOUND
     gaps = [r for r in rows(s, pid) if r["category"] == "Governing Law"]
-    assert [g["quote"] for g in gaps] == ["[Not found, review required]"]  # the removed quote is not exported
+    # the removed quote stays in the file, marked removed, and the category is also listed as a gap
+    assert [(g["review"], g["quote"].startswith("[")) for g in gaps] == [("removed", False), ("", True)]
+    assert gaps[1]["quote"] == "[Not found, review required]"
     s.set_review(law, "pending")
     assert load_results(s, pid)[0]["categories"]["Governing Law"] == FOUND
 
@@ -79,12 +81,27 @@ def test_failed_status_is_never_overwritten(tmp_path):
     assert load_results(s, pid)[0]["categories"]["Renewal"] == FAILED
 
 
-def test_csv_has_accepted_and_pending_but_not_removed():
+def test_csv_keeps_removed_findings_marked_as_removed():
     s, pid = reviewed()
     a, = finding_ids(s, "Assignment")
     law, = finding_ids(s, "Governing Law")
     s.set_review(a, "accepted")
     s.set_review(law, "removed")
-    by_cat = {r["category"]: r for r in rows(s, pid)}
-    assert by_cat["Assignment"]["review"] == "accepted" and by_cat["Assignment"]["quote"].startswith("Neither party")
-    assert by_cat["Governing Law"]["quote"].startswith("[")
+    table = rows(s, pid)
+    (assign,) = [r for r in table if r["category"] == "Assignment"]
+    assert assign["review"] == "accepted" and assign["quote"].startswith("Neither party")
+    law_rows = [r for r in table if r["category"] == "Governing Law"]
+    removed = [r for r in law_rows if r["review"] == "removed"]
+    assert len(removed) == 1 and not removed[0]["quote"].startswith("[")  # the rejected quote is still on record
+    assert [r["quote"] for r in law_rows if r["quote"].startswith("[")] == ["[Not found, review required]"]
+
+
+def test_export_counts_only_findings_still_standing():
+    s, pid = reviewed()
+    (law,) = finding_ids(s, "Governing Law")
+    s.set_review(law, "removed")
+    import io as _io
+    from clause_review.export import write_csv
+    n, gaps = write_csv(s, pid, _io.StringIO())
+    live = s.db.execute("SELECT COUNT(*) FROM Finding WHERE review!='removed'").fetchone()[0]
+    assert n == live and gaps >= 1
