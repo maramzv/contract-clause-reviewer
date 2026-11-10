@@ -1,0 +1,33 @@
+<section id="tuning" data-transition="fade" style="background:#F6F5F0;color:#14202B;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1">How the extractor improved</h2>
+<div style="display:flex;gap:32px;align-items:flex-end">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;align-items:stretch">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;text-align:center">0.53</p>
+<div style="height:298px;background:#0F766E;border-radius:8px"></div>
+<p style="font-size:24px;line-height:1.4;color:#3A4651;text-align:center;min-height:68px">First real-model run</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;align-items:stretch">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;text-align:center">0.58</p>
+<div style="height:327px;background:#0F766E;border-radius:8px"></div>
+<p style="font-size:24px;line-height:1.4;color:#3A4651;text-align:center;min-height:68px">Keyword pass becomes a backstop</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;align-items:stretch">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;text-align:center">0.66</p>
+<div style="height:372px;background:#0F766E;border-radius:8px"></div>
+<p style="font-size:24px;line-height:1.4;color:#3A4651;text-align:center;min-height:68px">Prompt lists what counts and what does not</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;align-items:stretch">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;text-align:center">0.71</p>
+<div style="height:400px;background:#0F766E;border-radius:8px"></div>
+<p style="font-size:24px;line-height:1.4;color:#3A4651;text-align:center;min-height:68px">Tighter keyword patterns</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;align-items:stretch">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;text-align:center">0.64</p>
+<div style="height:360px;background:#14202B;border-radius:8px"></div>
+<p style="font-size:24px;line-height:1.4;color:#3A4651;text-align:center;min-height:68px">Final code on 40 fresh contracts</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1400px;font-size:24px;color:#5B6670">Development contracts only; test split never used. About 7 points were specific to the tuning contracts.</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;text-align:right;color:#5B6670">11</p>
+<aside>Average F1 on 60 development contracts for the first four bars, then 0.64 on 40 development contracts nobody had tuned against. The keyword pass turned out to supply many wrong findings, so it became a backstop. Listing what counts and what does not in the prompt, worded from the signed clause definitions, was the biggest single gain. The drop from 0.71 to 0.64 on fresh contracts shows about 7 points of the gain were specific to the tuning contracts, which is why the test split result (0.69) is the number to trust.</aside>
+</section>
