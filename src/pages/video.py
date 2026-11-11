@@ -17,13 +17,13 @@ here = Path(__file__).resolve().parent.parent / "static" / "video"
 if (here / "clautra_demo.mp4").is_file():
     # st.video sends the file through Streamlit itself, so it works on any host with no static-file setting
     st.video(str(here / "clautra_demo.mp4"), subtitles=str(here / "clautra_demo.vtt") if (here / "clautra_demo.vtt").is_file() else None)
-    # Play and the timeline stay; the browser's extras (download, picture-in-picture, casting, speed, fullscreen, right-click menu) go.
+    # Play and the timeline stay; the browser's extras (download, picture-in-picture, casting, speed, right-click menu; fullscreen stays) go.
     # Streamlit draws the <video> itself, so this small script sets those attributes on it (it also catches a re-draw).
     components.html("""<script>
     const d = window.parent.document;
     function lock() {
       d.querySelectorAll('video').forEach(v => {
-        v.setAttribute('controlsList', 'nodownload noplaybackrate nofullscreen');
+        v.setAttribute('controlsList', 'nodownload noplaybackrate');
         v.setAttribute('disablepictureinpicture', ''); v.disablePictureInPicture = true;
         v.setAttribute('disableremoteplayback', ''); v.disableRemotePlayback = true;
         if (!v.__locked) { v.__locked = true; v.addEventListener('contextmenu', e => e.preventDefault()); }
