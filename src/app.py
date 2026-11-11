@@ -12,19 +12,20 @@ from pathlib import Path
 import streamlit as st
 
 from clause_review.categories import CATEGORIES
-from clause_review.export import csv_text
 from clause_review.pipeline import run_review
 from clause_review.samples import estimate_seconds, format_duration, list_samples, workers_from_env
 from clause_review.provider_choice import CHOICES, NOTES, default_choice, problem, toggle_enabled
 from clause_review.providers import BudgetExceeded, get_provider
 from clause_review.replay import Recorder, play
-from clause_review.store import ANSWERED, FAILED, FOUND, NOT_FOUND, OPEN, RESOLVED
-from clause_review.view import load_results, md_escape
-from common import DB_PATH, get_store
-from progress_ui import ProgressView
-from theme import apply_theme, brand, category_heading, hero, kpi_row, marquee, views
+from clause_review.view import load_results
+import os
 
-ICON = {FOUND: "✅", NOT_FOUND: "⚠️", FAILED: "❌"}
+import workspace
+import workspace_html
+from common import DB_PATH, get_store, result_actions
+from progress_ui import ProgressView
+from theme import apply_theme, brand, hero, marquee, views
+
 REPLAY_SPEEDS = {"Original": 1.0, "5×": 5.0, "20×": 20.0, "Skip to results": None}
 
 st.set_page_config(page_title="Clautra · Contract review", page_icon="static/brand/clautra-mark-transparent.png", layout="wide")
@@ -34,27 +35,6 @@ dev = False
 if toggle_enabled():  # the switch itself is hidden when CLAUSE_DEV_TOGGLE=0, which leaves the app in user mode
     st.session_state.setdefault("dev_mode", st.query_params.get("dev") == "1")
     dev = st.toggle("Dev mode", key="dev_mode", help="Off: just what a reviewer sees. On: model choice, provider notes and usage.")
-hero(st, demo=not dev and default_choice() == "mock")
-
-
-def act(finding_id, state):
-    get_store().set_review(finding_id, state)
-
-
-def save_question(finding_id, key):
-    get_store().set_question(finding_id, st.session_state[key])
-
-
-def resolve(finding_id, resolved):
-    get_store().set_resolved(finding_id, resolved)
-
-
-QSTATE_CHIP = {OPEN: ("chip-miss", "Question open: waiting for the senior lawyer"),
-               ANSWERED: ("chip-found", "Answered by the senior lawyer"), RESOLVED: ("chip-found", "Question resolved")}
-
-
-def mark_reviewed(document_id, category, key):
-    get_store().set_category_reviewed(document_id, category, st.session_state[key])
 
 
 def run(files, categories, provider_name, samples=(), on_event=None, workers=1):
@@ -84,7 +64,7 @@ provider_name = default_choice()
 blocked = None
 with st.sidebar:
     brand(st)
-    views(st)
+    views(st, on_review=True)
     st.header("New review")
     if dev:  # choose how this run is done: Mock, the local Claude agent, or the API (dev mode only)
         options = list(CHOICES) + ([provider_name] if provider_name not in CHOICES else [])  # keep e.g. CLAUSE_PROVIDER=local
@@ -173,70 +153,12 @@ if go:
 
 res = st.session_state.get("result")
 if not res:
+    hero(st, demo=not dev and default_choice() == "mock")
     st.info("Choose categories, upload one or more contracts and select Run review.")
     st.stop()
 
 docs = load_results(get_store(), res["pid"], res["categories"])
-all_f = [f for d in docs for f in d["findings"]]
-n_check = sum(1 for d in docs for c in res["categories"] if d["categories"][c] != FOUND)
-tally = {k: sum(1 for f in all_f if f["review"] == k) for k in ("pending", "accepted", "removed")}
-n_findings = len(all_f) - tally["removed"]
-kpi_row(st, [(len(docs), "Contract" if len(docs) == 1 else "Contracts", None, False),
-             (n_findings, "Finding" if n_findings == 1 else "Findings", "verbatim quotations", False),
-             (n_check, "To check" , "categories for you to review", n_check > 0)])
-qn = {k: sum(1 for f in all_f if f["review"] != "removed" and f["qstate"] == k) for k in (OPEN, ANSWERED, RESOLVED)}
-n_marked = sum(1 for d in docs for c in res["categories"] if d["reviewed"][c])
-st.caption(f"Reviewed: {tally['accepted']} accepted, {tally['removed']} removed, {tally['pending']} not yet reviewed. "
-           f"{n_marked} of {len(docs) * len(res['categories'])} categories marked as reviewed. "
-           + (f"Questions for the senior lawyer: {qn[OPEN]} open, {qn[ANSWERED]} answered, {qn[RESOLVED]} resolved. "
-              if sum(qn.values()) else "")
-           + (f"Model: {res.get('provider', '?')}. Usage: {res['usage']}" if dev else ""))
-st.sidebar.button("Refresh", help="Reloads the results, to pick up answers the senior lawyer has just saved.",
-                  use_container_width=True)
-st.sidebar.download_button("Download CSV", csv_text(get_store(), res["pid"]), file_name="clause_review.csv",
-                           mime="text/csv", help="Accepted and not-yet-reviewed findings, plus every category still to check.")
-
-for d in docs:
-    found = sum(1 for c in res["categories"] if d["categories"][c] == FOUND)
-    label = f"{d['name']}  ·  {found} of {len(res['categories'])} categories found"
-    if d["status"] == "failed":
-        label = f"{d['name']}  ·  Failed to process"
-    with st.expander(label, expanded=len(docs) <= 3):
-        if d["status"] == "failed":
-            st.error(f"Failed to process: {d['error']}")
-        for c in res["categories"]:
-            status = d["categories"][c] or FAILED
-            st.markdown(category_heading(c, status, d["reviewed"][c]), unsafe_allow_html=True)
-            key = f"reviewed{d['id']}-{c}"
-            st.checkbox("Mark this category as reviewed", value=d["reviewed"][c], key=key, on_change=mark_reviewed,
-                        args=(d["id"], c, key), help="Only a progress mark: it does not change the status above.")
-            for f in (x for x in d["findings"] if x["category"] == c):
-                removed = f["review"] == "removed"
-                with st.container(border=True):
-                    st.caption(f"Page {f['page']} · {f['review'].capitalize() if f['review'] != 'pending' else 'Not yet reviewed'}")
-                    quote = md_escape(f["quote"])
-                    st.markdown("> " + (f"~~{quote}~~" if removed else quote))
-                    b1, b2, b3, _ = st.columns([1, 1, 2, 4])
-                    if removed:
-                        b1.button("Restore", key=f"restore{f['id']}", on_click=act, args=(f["id"], "pending"))
-                    else:
-                        b1.button("Accept", key=f"accept{f['id']}", on_click=act, args=(f["id"], "accepted"),
-                                  type="secondary" if f["review"] == "accepted" else "primary",
-                                  disabled=f["review"] == "accepted")
-                        b2.button("Remove", key=f"remove{f['id']}", on_click=act, args=(f["id"], "removed"))
-                        qkey = f"q{f['id']}"
-                        with b3.popover("Edit question" if f["question"] else "Ask senior lawyer"):
-                            st.text_area("Question for the senior lawyer", value=f["question"] or "", key=qkey, height=100,
-                                         placeholder="e.g. Does a transfer to an affiliate count as assignment here?",
-                                         help="One question per finding. Saving new text reopens it; saving empty text removes it.")
-                            st.button("Save question", key=f"saveq{f['id']}", on_click=save_question, args=(f["id"], qkey))
-                        if f["question"]:
-                            cls, text = QSTATE_CHIP[f["qstate"] or OPEN]
-                            st.markdown(f'<span class="chip {cls}">{text}</span>', unsafe_allow_html=True)
-                            st.markdown("**Your question:** " + md_escape(f["question"]))
-                            if f["answer"]:
-                                st.markdown("**Senior lawyer:** " + md_escape(f["answer"]))
-                                if f["qstate"] == RESOLVED:
-                                    st.button("Reopen", key=f"reopen{f['id']}", on_click=resolve, args=(f["id"], False))
-                                else:
-                                    st.button("Mark resolved", key=f"resolve{f['id']}", on_click=resolve, args=(f["id"], True))
+result_actions(st, get_store(), res)
+if dev:
+    st.caption(f"Model: {res.get('provider', '?')}. Usage: {res['usage']}")
+(workspace if os.environ.get("CLAUSE_WORKSPACE") == "classic" else workspace_html).render(st, get_store(), res, docs)

@@ -23,7 +23,7 @@ _CSS = """
 section[data-testid="stSidebar"] > div:first-child { background-color:var(--ink); background-image:url(%(STATIC)s/brand/texture-navy.jpg);
   background-size:372px auto; border-right:1px solid #0c1823; }
 [data-testid="stSidebarContent"] { padding-top:.4rem; }
-.block-container { padding-top:2.2rem; max-width:1180px; }
+.block-container { padding-top:1.6rem; max-width:1600px; }
 
 
 /* corner logo: the lockup is used as a mask over brushed brass with a soft sheen, so it gleams like the metal version */
@@ -31,6 +31,8 @@ section[data-testid="stSidebar"] > div:first-child { background-color:var(--ink)
 .brand { display:flex; justify-content:center; padding:1.8rem 0 1.6rem; margin:-.2rem -1.9rem 1.1rem -1.9rem;
   background:radial-gradient(ellipse 80%% 70%% at 50%% 38%%, rgba(46,80,108,.55), rgba(10,24,36,.0) 72%%), rgba(8,20,31,.55);
   border-bottom:1px solid rgba(196,169,114,.45); filter:drop-shadow(0 1px 1px rgba(0,0,0,.65)); }
+.st-key-brandlink { position:relative; z-index:5; height:0; margin-bottom:-1rem; }
+.st-key-brandlink a { position:absolute; left:-1.9rem; right:-3rem; top:-13.6rem; height:12.6rem; opacity:0; cursor:pointer; }
 .brand-stack { display:flex; flex-direction:column; align-items:center; gap:30px; }
 .gold { background-image:linear-gradient(112deg, rgba(255,244,214,0) 18%%, rgba(255,244,214,.7) 40%%, rgba(255,244,214,0) 62%%), url(%(STATIC)s/brand/texture-brass.jpg);
   background-size:100%% 100%%, cover; background-position:center; filter:brightness(1.35) saturate(1.05); }
@@ -70,7 +72,57 @@ section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"] [data-testid
 section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"]:hover { background:rgba(196,169,114,.12); }
 section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"]:hover p { color:#E4D3A6; }
 section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"][aria-current="page"] { background:rgba(196,169,114,.16); border-left-color:#C4A972; }
+section[data-testid="stSidebar"] [class*="st-key-nav_junior_on"] [data-testid="stPageLink-NavLink"] { background:rgba(196,169,114,.16); border-left-color:#C4A972; }
+section[data-testid="stSidebar"] [class*="st-key-nav_junior_on"] [data-testid="stPageLink-NavLink"] p { color:#E4D3A6; }
 section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"][aria-current="page"] p { color:#E4D3A6; }
+
+/* review workspace: contract title, the contract text beside the findings */
+.ws-title { font-family:%(SERIF)s; font-size:1.6rem; line-height:1.1; color:var(--ink); margin:.2rem 0 .05rem 0; }
+.ws-sub { font-size:.8rem; color:#4b5f70; margin-bottom:.35rem; }
+.ws-doc-title { font-family:%(SERIF)s; font-size:1.3rem; color:var(--ink); line-height:1.2; }
+.ws-doc-file { font-size:.8rem; color:#4b5f70; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%%; }
+.docwrap { display:flex; gap:.6rem; }
+.doc { flex:1; min-width:0; background:rgba(255,253,248,.97); border:1px solid var(--line); border-radius:4px; padding:1.6rem 2.3rem; height:72vh; overflow:auto;
+  font-family:%(SERIF)s; font-size:1.04rem; line-height:1.5; color:#5d6c78; }
+.doc p { margin:0 0 .8rem 0; }
+.doc mark { background:#E4D3A6; color:#14202b; padding:.1rem 0; box-shadow:0 0 0 3px #E4D3A6; border-radius:2px; }
+.doc .doc-gap { color:#7a8a97; text-align:center; letter-spacing:.3em; }
+.doc hr { border:0; border-top:1px solid var(--line); margin:.9rem 0; }
+.strip { position:relative; width:14px; flex:none; background:#EAE4D5; border-radius:7px; }
+.strip .tick { position:absolute; left:3px; width:8px; height:8px; border-radius:50%%; background:#2F5F82; }
+.strip .tick.now { left:1px; width:12px; height:12px; background:#C4A972; border:2px solid var(--ink); box-sizing:border-box; }
+
+/* the finding on the left: the quotation on a mist band, then the answer panel */
+.passage-no { font-size:.78rem; color:#4b5f70; margin:.35rem 0 .2rem 0; }
+.quote { background:#DCE4EB; border-radius:3px; padding:.65rem .9rem; font-family:%(SERIF)s; font-size:1.08rem; line-height:1.36; color:#0f1f2c; }
+.quote.removed { background:transparent; color:#6b7a87; text-decoration:line-through; padding:.2rem 0; }
+[class*="st-key-qa"] { background:#EAF0F4; border-radius:4px; padding:.7rem .9rem; margin-top:.5rem; gap:.35rem !important; }
+[data-testid="stMain"] [data-testid="stButtonGroup"], [data-testid="stMain"] [data-testid="stButtonGroup"] > div { flex-wrap:wrap !important; row-gap:.4rem; }
+[data-testid="stMain"] [data-testid="stButtonGroup"] button { border:1px solid #A58A58 !important; background:transparent !important; color:var(--ink) !important; border-radius:999px; }
+[data-testid="stMain"] [data-testid="stButtonGroup"] button[aria-checked="true"] { border-color:var(--ink) !important; background:var(--ink) !important; color:var(--ivory) !important; }
+[data-testid="stMain"] [data-testid="stButtonGroup"] button p { color:inherit !important; font-size:.82rem; }
+[data-testid="stMain"] [data-testid="stButtonGroup"] button { min-height:1.9rem; padding:.1rem .7rem; }
+/* slimmer buttons in the workspace, as in the mockup */
+[data-testid="stMain"] [data-testid="stHorizontalBlock"] button { min-height:2.3rem; padding:.15rem .6rem; }
+[data-testid="stMain"] [data-testid="stHorizontalBlock"] button p { font-size:.88rem; }
+
+/* overview matrix: a cell is a button; its key says what it holds (cellfound, cellaccepted, cellcheck, cellfailed) */
+[data-testid="stMain"] [class*="st-key-cell"] button { min-height:2rem; padding:.15rem .6rem; font-size:.8rem; font-weight:600; border-radius:5px; border:0 !important; width:100%%; }
+[data-testid="stMain"] [class*="st-key-cellfound_"] button { background:var(--mist) !important; color:#10202d !important; }
+[data-testid="stMain"] [class*="st-key-cellaccepted_"] button { background:#2F5F82 !important; color:#fff !important; }
+[data-testid="stMain"] [class*="st-key-cellcheck_"] button { background:#EBD8B0 !important; color:#57431a !important; }
+[data-testid="stMain"] [class*="st-key-cellfailed_"] button { background:#E6C7C1 !important; color:#6a2a22 !important; }
+[data-testid="stMain"] [class*="st-key-cell"] button p { color:inherit !important; }
+[data-testid="stMain"] [class*="st-key-cell"] button:hover { filter:brightness(.95); outline:2px solid var(--brass-deep); }
+.ov-key { display:flex; flex-wrap:wrap; gap:.55rem 1.4rem; align-items:center; margin:.2rem 0 1rem; padding:.7rem .9rem; background:#FFFDF8; border:1px solid var(--line); border-radius:4px; font-size:.88rem; color:var(--ink); }
+.ov-key-i { display:inline-flex; align-items:center; gap:.5rem; }
+.ov-sw { display:inline-block; min-width:3.4rem; text-align:center; padding:.12rem .6rem; border-radius:4px; font-size:.82rem; font-weight:600; }
+.ov-sw.found { background:var(--mist); color:#10202d; } .ov-sw.accepted { background:#2F5F82; color:#fff; }
+.ov-sw.check { background:#EBD8B0; color:#57431a; } .ov-sw.failed { background:#E6C7C1; color:#6a2a22; }
+.ov-sw.q { min-width:0; background:transparent; border:1px solid var(--ink); border-radius:50%%; padding:0 .5rem; }
+.ov-head { font-size:.8rem; font-weight:600; color:var(--ink); padding:.3rem 0; border-bottom:1px solid var(--line); }
+.ov-title { font-family:%(SERIF)s; font-size:1.05rem; line-height:1.15; color:var(--ink); }
+.ov-party { font-size:.76rem; color:#4b5f70; }
 
 /* page header */
 .hero { margin:0 0 1.4rem 0; }
@@ -92,6 +144,7 @@ button[data-testid="stBaseButton-primary"], [data-testid="stBaseButton-primary"]
   background:url(%(STATIC)s/brand/texture-brass.jpg) center/cover; color:#0f1c28; border:1px solid var(--brass-deep);
   font-weight:600; letter-spacing:.02em; border-radius:3px; box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 1px 2px rgba(10,20,30,.3); }
 button[data-testid="stBaseButton-primary"]:hover { filter:brightness(1.08); border-color:#5c4a24; color:#0f1c28; }
+.st-key-ov_back button, .st-key-ov_back button p, .st-key-ov_back button span { color:#fff !important; text-shadow:0 1px 1px rgba(60,45,15,.5); }
 button[data-testid="stBaseButton-primary"]:disabled { filter:saturate(.6); opacity:.5; cursor:not-allowed; }
 button[data-testid="stBaseButton-secondary"] { background:transparent; border:1px solid rgba(20,39,55,.38); color:var(--ink); border-radius:3px; }
 button[data-testid="stBaseButton-secondary"]:hover { border-color:var(--brass-deep); color:var(--brass-deep); background:rgba(165,138,88,.08); }
@@ -178,11 +231,16 @@ def marquee(st):
 def brand(st):
     """The corner logo (sidebar top)."""
     st.markdown('<div class="brand"><div class="brand-stack" role="img" aria-label="Clautra"><div class="gold brand-mark"></div><div class="gold brand-word"></div></div></div>', unsafe_allow_html=True)
+    with st.container(key="brandlink"):  # an invisible link laid over the logo: it goes to the home page without reloading the app
+        st.page_link("app.py", label="Clautra home", help="Back to the home page")
 
 
-def views(st):
-    """The switch between the two screens, drawn under the logo (Streamlit's own page menu is off in config.toml)."""
-    st.page_link("app.py", label="Junior associate", icon=":material/fact_check:")
+def views(st, on_review=False):
+    """The switch between the two screens, drawn under the logo (Streamlit's own page menu is off in config.toml).
+    The Junior associate link opens the Overview. The Review page belongs to the same role, so while it is open
+    (`on_review`) that link is drawn as the current one."""
+    with st.container(key="nav_junior_on" if on_review else "nav_junior"):
+        st.page_link("pages/2_Overview.py", label="Junior associate", icon=":material/fact_check:")
     st.page_link("pages/1_Senior_lawyer.py", label="Senior lawyer", icon=":material/gavel:")
 
 

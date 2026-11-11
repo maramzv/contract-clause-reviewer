@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Contract by contract</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button{font-family:Inter,system-ui,sans-serif;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 1360px; height: 860px; box-sizing: border-box; display: flex; flex-direction: column; background: #F3EFE6; color: #142737; font-family: Inter, system-ui, sans-serif; font-size: 14px; overflow: hidden">
+
+<div style="height: 56px; flex: none; background: #142737; display: flex; align-items: center; gap: 28px; padding: 0 24px">
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 26px; font-weight: 600; color: #C4A972; letter-spacing: 0.02em">Clautra</span>
+<span style="display: flex; gap: 6px">
+<a href="#" style="padding: 8px 14px; border-radius: 3px; background: rgba(196,169,114,0.18); color: #E4D3A6; text-decoration: none; font-weight: 600">Junior associate</a>
+<a href="#" style="padding: 8px 14px; border-radius: 3px; color: #F3EFE6; text-decoration: none">Senior lawyer</a>
+</span>
+<span style="flex-grow: 1"></span>
+<span style="color: #B9C8D4; font-size: 13px">Review 10 Nov · 30 contracts · 5 clauses</span>
+<button style="height: 36px; padding: 0 16px; border-radius: 3px; border: 1px solid #A58A58; background: #C4A972; color: #0f1c28; font-weight: 600">Download CSV</button>
+</div>
+
+<div style="flex: 1; min-height: 0; display: flex">
+
+<div style="width: 340px; flex: none; box-sizing: border-box; background: #EAE4D5; border-right: 1px solid #D3CAB4; padding: 18px 16px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: baseline; justify-content: space-between">
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; font-weight: 600">Contracts</span>
+<span style="font-size: 12.5px; color: #3d5163">12 of 30 fully checked</span>
+</div>
+<div style="display: flex; gap: 6px; flex-wrap: wrap">
+<button style="height: 30px; padding: 0 12px; border-radius: 15px; border: 1px solid #142737; background: #142737; color: #F3EFE6; font-size: 12.5px">All 30</button>
+<button style="height: 30px; padding: 0 12px; border-radius: 15px; border: 1px solid #A58A58; background: transparent; color: #142737; font-size: 12.5px">To check 11</button>
+<button style="height: 30px; padding: 0 12px; border-radius: 15px; border: 1px solid #A58A58; background: transparent; color: #142737; font-size: 12.5px">Questions 3</button>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; overflow: hidden">
+<sc-for list="{{contracts}}" as="k" hint-placeholder-count="9">
+<div style="box-sizing: border-box; padding: 10px 12px; border-radius: 4px; background: {{k.bg}}; border: 1px solid {{k.border}}; display: flex; flex-direction: column; gap: 6px">
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; font-weight: 600; line-height: 1.15">{{k.name}}</span>
+<span style="display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: #3d5163">
+<span style="display: flex; gap: 5px">
+<sc-for list="{{k.dots}}" as="d" hint-placeholder-count="5">
+<span style="width: 11px; height: 11px; box-sizing: border-box; border-radius: 6px; background: {{d.fill}}; border: 2px solid {{d.ring}}"></span>
+</sc-for>
+</span>
+<span>{{k.summary}}</span>
+</span>
+</div>
+</sc-for>
+<span style="font-size: 12.5px; color: #3d5163; padding: 4px 4px">21 more contracts</span>
+</div>
+<div style="margin-top: auto; font-size: 12px; color: #3d5163; display: flex; gap: 14px; flex-wrap: wrap">
+<span style="display: flex; align-items: center; gap: 5px"><span style="width: 11px; height: 11px; box-sizing: border-box; border-radius: 6px; background: #2F5F82; border: 2px solid #2F5F82"></span>Found</span>
+<span style="display: flex; align-items: center; gap: 5px"><span style="width: 11px; height: 11px; box-sizing: border-box; border-radius: 6px; background: transparent; border: 2px solid #7A6334"></span>To check</span>
+<span style="display: flex; align-items: center; gap: 5px"><span style="width: 11px; height: 11px; box-sizing: border-box; border-radius: 2px; background: #A8392C; border: 2px solid #A8392C"></span>Failed</span>
+</div>
+</div>
+
+<div style="flex: 1; min-width: 0; box-sizing: border-box; padding: 22px 32px; display: flex; flex-direction: column; gap: 12px; overflow: hidden">
+<div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+<div>
+<div style="font-size: 11.5px; letter-spacing: 0.2em; text-transform: uppercase; color: #7A6334; font-weight: 600">Contract 4 of 30</div>
+<h1 style="margin: 2px 0 0 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 36px; font-weight: 500; line-height: 1.05">Northwind Hosting Agreement</h1>
+</div>
+<div style="display: flex; gap: 8px">
+<button style="height: 36px; padding: 0 14px; border-radius: 3px; border: 1px solid rgba(20,39,55,0.4); background: transparent; color: #142737">Previous</button>
+<button style="height: 36px; padding: 0 14px; border-radius: 3px; border: 1px solid rgba(20,39,55,0.4); background: transparent; color: #142737">Next contract</button>
+</div>
+</div>
+<div style="display: flex; gap: 10px; align-items: center; font-size: 13px; color: #3d5163">
+<span>4 of 5 clauses found</span><span>·</span><span>2 accepted</span><span>·</span><span>1 question open</span><span>·</span><span>1 to check by hand</span>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px; min-height: 0">
+<sc-for list="{{clauses}}" as="c" hint-placeholder-count="5">
+<div style="box-sizing: border-box; background: #FFFDF8; border: 1px solid #D3CAB4; border-radius: 4px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; gap: 12px">
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 20px; font-weight: 600">{{c.name}}</span>
+<span style="padding: 2px 10px; border-radius: 5px; font-size: 12px; font-weight: 600; background: {{c.chipBg}}; color: {{c.chipFg}}">{{c.chip}}</span>
+<span style="flex-grow: 1"></span>
+<sc-if value="{{c.found}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12.5px; color: #3d5163">Page {{c.page}}</span></sc-if>
+<label style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #3d5163"><input type="checkbox"> Mark clause as reviewed</label>
+</div>
+<sc-if value="{{c.found}}" hint-placeholder-val="{{ true }}">
+<div style="background: #DCE4EB; border-radius: 3px; padding: 9px 14px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; line-height: 1.35; color: #0f1f2c">{{c.quote}}</div>
+<div style="display: flex; align-items: center; gap: 8px">
+<button style="height: 32px; padding: 0 14px; border-radius: 3px; border: 1px solid #7A6334; background: {{c.acceptBg}}; color: #0f1c28; font-weight: 600">{{c.acceptLabel}}</button>
+<button style="height: 32px; padding: 0 14px; border-radius: 3px; border: 1px solid rgba(20,39,55,0.4); background: transparent; color: #142737">Remove</button>
+<button style="height: 32px; padding: 0 14px; border-radius: 3px; border: 1px solid rgba(20,39,55,0.4); background: transparent; color: #142737">{{c.askLabel}}</button>
+<button style="height: 32px; padding: 0 14px; border-radius: 3px; border: 0; background: transparent; color: #7A6334; text-decoration: underline">Open in contract</button>
+</div>
+<sc-if value="{{c.hasQ}}" hint-placeholder-val="{{ false }}">
+<div style="background: #EAF0F4; border-radius: 3px; padding: 8px 14px; display: flex; flex-direction: column; gap: 3px; font-size: 13.5px">
+<span><strong>You asked:</strong> {{c.question}}</span>
+<span><strong>Senior lawyer:</strong> {{c.answer}}</span>
+</div>
+</sc-if>
+</sc-if>
+<sc-if value="{{c.missing}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 14px; font-size: 13.5px; color: #3d5163">
+<span>Nothing confirmed. An empty result is not proof the clause is absent: search this contract yourself.</span>
+<button style="height: 32px; padding: 0 14px; border-radius: 3px; border: 1px solid #7A6334; background: transparent; color: #142737; white-space: nowrap">Open contract text</button>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":860}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const F = { fill: '#2F5F82', ring: '#2F5F82' };
+    const C = { fill: 'transparent', ring: '#7A6334' };
+    const X = { fill: '#A8392C', ring: '#A8392C' };
+    const mk = (name, dots, summary, sel) => ({
+      name, dots, summary,
+      bg: sel ? '#FFFDF8' : 'transparent',
+      border: sel ? '#7A6334' : 'transparent'
+    });
+    const contracts = [
+      mk('Acme Reseller Agreement', [F, F, F, F, F], 'All 5 found', false),
+      mk('Brightwater Services Agreement', [F, C, F, F, F], '4 of 5 · 1 to check', false),
+      mk('Cascade Data Processing Addendum', [F, F, C, C, F], '3 of 5 · 2 to check', false),
+      mk('Northwind Hosting Agreement', [F, C, F, F, F], '4 of 5 · 1 question', true),
+      mk('Orchard Distribution Agreement', [F, F, F, F, F], 'All 5 found', false),
+      mk('Pinnacle Software License', [X, X, X, X, X], 'Failed: scanned PDF', false),
+      mk('Redwood Supply Agreement', [F, F, C, F, F], '4 of 5 · 1 to check', false),
+      mk('Summit Maintenance Agreement', [F, F, F, F, F], 'All 5 found', false),
+      mk('Tidewater Consulting Agreement', [C, C, F, F, F], '3 of 5 · 2 to check', false)
+    ];
+    const clauses = [
+      { name: 'Assignment', chip: 'Found', chipBg: '#B9C8D4', chipFg: '#10202d', found: true, missing: false, page: 14,
+        quote: 'Neither party may assign this Agreement without the prior written consent of the other party, which shall not be unreasonably withheld.',
+        acceptBg: '#C4A972', acceptLabel: 'Accept', askLabel: 'Edit question', hasQ: true,
+        question: 'Does a transfer to an affiliate count as assignment here?',
+        answer: 'Yes. Section 14.2 treats affiliate transfers as assignments. Flag it for the deal list.' },
+      { name: 'Change of control', chip: 'Not found, review required', chipBg: '#EBD8B0', chipFg: '#57431a', found: false, missing: true, page: 0,
+        quote: '', acceptBg: '', acceptLabel: '', askLabel: '', hasQ: false, question: '', answer: '' },
+      { name: 'Termination for convenience', chip: 'Found', chipBg: '#B9C8D4', chipFg: '#10202d', found: true, missing: false, page: 9,
+        quote: 'Either party may terminate this Agreement for convenience upon ninety (90) days\' written notice to the other party.',
+        acceptBg: '#C4A972', acceptLabel: 'Accepted', askLabel: 'Ask senior lawyer', hasQ: false, question: '', answer: '' },
+      { name: 'Renewal', chip: 'Found', chipBg: '#B9C8D4', chipFg: '#10202d', found: true, missing: false, page: 3,
+        quote: 'This Agreement renews automatically for successive one-year terms unless either party gives notice of non-renewal at least sixty (60) days before the end of the then-current term.',
+        acceptBg: '#C4A972', acceptLabel: 'Accept', askLabel: 'Ask senior lawyer', hasQ: false, question: '', answer: '' },
+      { name: 'Governing law', chip: 'Found', chipBg: '#B9C8D4', chipFg: '#10202d', found: true, missing: false, page: 18,
+        quote: 'This Agreement is governed by the laws of the State of Delaware, without regard to its conflict of laws principles.',
+        acceptBg: '#C4A972', acceptLabel: 'Accepted', askLabel: 'Ask senior lawyer', hasQ: false, question: '', answer: '' }
+    ];
+    return { contracts, clauses };
+  }
+}
+</script>
+</body>
+</html>

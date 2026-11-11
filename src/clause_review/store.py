@@ -47,6 +47,12 @@ class Store:
         self.db.execute("INSERT INTO Finding(document_id,category,quote,start,end,page,source) VALUES(?,?,?,?,?,?,?)",
                         (did, f["category"], f["quote"], f["start"], f["end"], page, f["source"]))
 
+    def document_text(self, document_id):
+        row = self.db.execute("SELECT text FROM Document WHERE id=?", (document_id,)).fetchone()
+        if row is None:
+            raise ValueError(f"no document with id {document_id}")
+        return row["text"] or ""
+
     def set_status(self, did, category, status):
         self.db.execute("INSERT OR REPLACE INTO CategoryStatus(document_id,category,status) VALUES(?,?,?)",
                         (did, category, status))
