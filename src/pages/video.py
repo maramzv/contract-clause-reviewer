@@ -8,12 +8,10 @@ st.set_page_config(page_title="Clautra · Video", page_icon="static/brand/clautr
 st.markdown("""<style>
 [data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"], [data-testid="stToolbar"], header { display: none !important; }
 .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: #0d1b27 !important; }
-h1 { color: #F3EFE6 !important; font-family: Georgia, 'Times New Roman', serif !important; font-weight: 400 !important; text-align: center; }
-.block-container { max-width: 1180px !important; }
+.block-container { max-width: min(1500px, calc((100vh - 2rem) * 1.6)) !important; padding: 1rem 1rem 0 !important; }  /* the biggest 16:10 picture that fits the window, no scrolling */
 video { width: 100%; border-radius: 8px; background: #0d1b27; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
 </style>""", unsafe_allow_html=True)
 
-st.title("Clautra")
 here = Path(__file__).resolve().parent.parent / "static" / "video"
 if (here / "clautra_demo.mp4").is_file():
     # st.video sends the file through Streamlit itself, so it works on any host with no static-file setting
