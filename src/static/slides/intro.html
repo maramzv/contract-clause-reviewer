@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clautra: Find the clause. Trace the source.</title>
+<style>
+  /* ---------- Branding hooks: change these later ---------- */
+  :root {
+    --bg: #f7f7f4;
+    --surface: #ffffff;
+    --ink: #1c1f24;
+    --muted: #5b626d;
+    --line: #dfe1e5;
+    --accent: #2f5bd8;
+    --accent-soft: #e8eefc;
+    --good: #1f7a4d;
+    --good-soft: #e5f4ec;
+    --warn: #a15c00;
+    --warn-soft: #fcf1de;
+    --radius: 14px;
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --brand-name: "Clautra";
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  a { color: var(--accent); }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- Top bar (looks like a website header) ---------- */
+  .topbar {
+    display: flex; align-items: center; gap: 16px;
+    padding: 12px clamp(16px, 4vw, 40px);
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    flex: none;
+  }
+  .brand { font-weight: 700; letter-spacing: .2px; }
+  .brand::before { content: var(--brand-name); }
+  .spacer { flex: 1; }
+  .topbar button, .topbar a.btn {
+    font: inherit; font-size: 14px;
+    padding: 7px 14px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    cursor: pointer; text-decoration: none;
+  }
+  .topbar button:hover, .topbar a.btn:hover { background: var(--accent-soft); }
+  .topbar .primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .topbar .primary:hover { background: #2449b3; }
+
+  /* ---------- Contents panel ---------- */
+  .toc {
+    position: fixed; top: 58px; right: clamp(16px, 4vw, 40px); z-index: 20;
+    width: min(340px, calc(100vw - 32px)); max-height: 70vh; overflow: auto;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: 0 12px 32px rgba(0,0,0,.12); padding: 8px; display: none;
+  }
+  .toc.open { display: block; }
+  .toc button {
+    display: flex; gap: 10px; width: 100%; text-align: left;
+    border: 0; background: none; font: inherit; padding: 8px 10px; border-radius: 8px; cursor: pointer; color: var(--ink);
+  }
+  .toc button:hover, .toc button[aria-current="true"] { background: var(--accent-soft); }
+  .toc .n { color: var(--muted); min-width: 1.6em; font-variant-numeric: tabular-nums; }
+
+  /* ---------- Stage ---------- */
+  .stage { position: relative; flex: 1; min-height: 0; }
+  .slide {
+    font-size: clamp(12px, 2.25vh, 18px);
+    position: absolute; inset: 0;
+    overflow-y: auto;
+    padding: clamp(14px, 3.2vh, 40px) clamp(20px, 6vw, 110px);
+    opacity: 0; visibility: hidden; transform: translateX(24px);
+    transition: opacity .28s ease, transform .28s ease, visibility 0s linear .28s;
+  }
+  .slide.active { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+  .slide.before { transform: translateX(-24px); }
+  .inner { max-width: 1080px; margin: 0 auto; }
+
+  .eyebrow { color: var(--accent); font-weight: 700; font-size: .78em; text-transform: uppercase; letter-spacing: 1.2px; margin: 0 0 10px; }
+  h1 { font-size: clamp(30px, 9vh, 60px); line-height: 1.08; margin: 0 0 .5em; letter-spacing: -0.02em; }
+  h2 { font-size: clamp(22px, 5.4vh, 42px); line-height: 1.12; margin: 0 0 .55em; letter-spacing: -0.015em; }
+  h3 { font-size: 1.12em; margin: 0 0 .3em; }
+  p { margin: 0 0 .6em; }
+  .tagline { font-size: clamp(20px, 4vh, 32px); font-weight: 600; color: var(--accent); margin: 0 0 .9em; letter-spacing: -0.01em; }
+  .lead { font-size: 1.28em; color: var(--muted); max-width: 52ch; }
+  .muted { color: var(--muted); }
+  .small { font-size: .88em; }
+
+  ul.clean { list-style: none; padding: 0; margin: 0; }
+  ul.clean li { padding: .45em 0 .45em 1.7em; position: relative; border-bottom: 1px solid var(--line); }
+  ul.clean li:last-child { border-bottom: 0; }
+  ul.clean li::before { content: ""; position: absolute; left: .25em; top: .95em; width: .6em; height: .6em; border-radius: 50%; background: var(--accent); }
+
+  .grid { display: grid; gap: .8em; }
+  .g2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .g3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .g4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: .9em 1.1em;
+  }
+  .card.accent { border-color: var(--accent); background: var(--accent-soft); }
+  .card.good { border-color: #b9dcc9; background: var(--good-soft); }
+  .card.warn { border-color: #ecd3a3; background: var(--warn-soft); }
+  .card p:last-child { margin-bottom: 0; }
+
+  .tag {
+    display: inline-block; font-size: .75em; font-weight: 700; padding: .2em .7em; border-radius: 999px;
+    margin-bottom: .4em; letter-spacing: .3px;
+  }
+  .tag.direct { background: var(--good-soft); color: var(--good); }
+  .tag.same { background: var(--accent-soft); color: var(--accent); }
+  .tag.related { background: #efeff1; color: var(--muted); }
+  .tag.weak { background: var(--warn-soft); color: var(--warn); }
+
+  .flow { display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; }
+  .step {
+    flex: 1 1 9em; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: .8em .9em; position: relative;
+  }
+  .step .num { font-weight: 800; color: var(--accent); font-size: .8em; }
+  .step.key { border-color: var(--accent); background: var(--accent-soft); }
+  .step strong { display: block; margin: 2px 0 4px; }
+
+
+  /* Job-description cards */
+  .jdrow { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+  .jd h3 { font-size: 1.08em; margin-bottom: .4em; line-height: 1.25; }
+  .jd p { font-size: .93em; margin: 0 0 .5em; line-height: 1.4; }
+  .jd { padding: .75em .95em; }
+  .jd .tag { font-size: .75em; }
+  .jd .link { margin: 0; font-size: .95em; }
+  .lbl { display: block; font-weight: 700; font-size: .74em; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 2px; }
+
+  .says-row { display: grid; grid-template-columns: 1fr 36px 1fr; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .says-row .arrow { text-align: center; color: var(--accent); font-weight: 800; font-size: 20px; }
+  @media (max-width: 700px) { .says-row { grid-template-columns: 1fr; } .says-row .arrow { transform: rotate(90deg); } }
+
+  .cats { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  ul.clean.tight li { padding: .3em 0 .3em 1.7em; }
+  ul.clean.tight li::before { top: .72em; }
+  .kpi.sm { font-size: 1.35em; display: inline; margin-right: .25em; }
+  .flow.compact .step { padding: .5em .8em; }
+  .flow.compact .step strong { display: inline; margin: 0 .35em 0 .35em; }
+  .flow.compact .step .num { display: inline; }
+  .kpi { font-size: 2.1em; font-weight: 800; color: var(--accent); line-height: 1.1; margin-bottom: 4px; }
+  .big-demo {
+    display: inline-block; font: inherit; font-size: 20px; font-weight: 700; padding: 16px 34px;
+    border-radius: 999px; border: 0; background: var(--accent); color: #fff; cursor: pointer; text-decoration: none;
+  }
+  .big-demo:hover { background: #2449b3; }
+
+  /* ---------- Bottom controls ---------- */
+  .controls {
+    flex: none; display: flex; align-items: center; gap: 14px;
+    padding: 10px clamp(16px, 4vw, 40px);
+    background: var(--surface); border-top: 1px solid var(--line);
+  }
+  .controls button {
+    font: inherit; font-size: 15px; padding: 8px 18px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer;
+  }
+  .controls button:hover:not(:disabled) { background: var(--accent-soft); }
+  .controls button:disabled { opacity: .4; cursor: default; }
+  .progress { flex: 1; height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .progress > div { height: 100%; width: 0; background: var(--accent); transition: width .28s ease; }
+  .counter { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 14px; min-width: 5em; text-align: right; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 76px; transform: translateX(-50%);
+    background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 14px;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .toast.show { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide, .progress > div, .toast { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <span class="brand"></span>
+  <span class="spacer"></span>
+  <button id="tocBtn" aria-expanded="false" aria-controls="toc">Contents</button>
+  <button id="fsBtn" title="Toggle fullscreen (F)">Fullscreen</button>
+  <button id="demoTop" class="primary">Open demo</button>
+</header>
+
+<nav class="toc" id="toc" aria-label="Slide contents"></nav>
+
+<main class="stage" id="stage">
+
+  <!-- 1. Title -->
+  <section class="slide" data-title="Title" aria-label="Title">
+    <div class="inner" style="padding-top:6vh">
+      <p class="eyebrow">Contract Clause Extraction and Review</p>
+      <h1>Clautra</h1>
+      <p class="tagline">Find the clause. Trace the source.</p>
+      <p class="lead">Turn a batch of commercial contracts into a review-ready clause table. Every finding is a verbatim quotation with its page reference, and every gap is flagged for attorney review.</p>
+      <p class="muted" style="margin-top:28px">Kerrian Gordon &amp; Mara Munoz</p>
+    </div>
+  </section>
+
+  <!-- 2. Problem and who it's for -->
+  <section class="slide" data-title="The problem and who it's for">
+    <div class="inner" style="max-width:1200px">
+      <p class="eyebrow">The problem</p>
+      <h2>Checking contracts by hand is slow, and a missed detail is costly</h2>
+      <div class="grid g2">
+        <div class="card warn">
+          <h3>What's going on</h3>
+          <p class="small">When a company is being bought, lawyers read piles of its contracts to find a few key sections, called <strong>clauses</strong>. For example: what happens to a contract if the company is sold? This careful check is called <strong>due diligence</strong>. We think the time goes here:</p>
+          <ul class="clean small tight">
+            <li>Hunting for the same kinds of clauses in every contract</li>
+            <li>Copying quotes and page numbers into a spreadsheet</li>
+            <li>Not knowing if a search that finds nothing means the clause isn't there</li>
+          </ul>
+          <p class="muted small" style="margin:.5em 0 0">These are our best guesses. No job posting proves them yet.</p>
+        </div>
+        <div class="card accent">
+          <h3>Who it's for</h3>
+          <ul class="clean small tight">
+            <li><strong>Main users:</strong> junior lawyers, paralegals (legal assistants) and legal analysts who read the contracts</li>
+            <li><strong>Also:</strong> senior lawyers, who check the results and decide what each clause means for the deal</li>
+            <li><strong>Later:</strong> contract managers, in-house lawyers, purchasing and legal operations teams</li>
+            <li><strong>Example:</strong> Maya, a junior lawyer, must review 30 contracts before a company purchase closes <span class="muted">(an illustrative person, not a real customer)</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Job descriptions -->
+  <section class="slide" data-title="The job descriptions we built for">
+    <div class="inner" style="max-width:1280px">
+      <p class="eyebrow">Who does this work today</p>
+      <h2>Four real job postings show this work exists</h2>
+      <p class="muted" style="margin-bottom:.8em">Each card shows what the posting <strong>says</strong> and what that <strong>reveals</strong> about the daily work.</p>
+      <div class="grid jdrow">
+
+        <div class="card jd">
+          <span class="tag direct">Closest match</span>
+          <h3>ImmunityBio: Paralegal, Corporate Contracts</h3>
+          <p><span class="lbl">Says</span> Checks contracts for rules on handing a contract to someone else, and on what happens if the company is sold.</p>
+          <p><span class="lbl">Reveals</span> The same kinds of clauses get checked in contract after contract.</p>
+          <p class="link"><a href="https://nant.wd5.myworkdayjobs.com/en-us/immunitybio/job/paralegal--corporate-contracts_r3103" target="_blank" rel="noopener">View posting</a></p>
+        </div>
+
+        <div class="card jd">
+          <span class="tag direct">Closest match</span>
+          <h3>Cantor Fitzgerald: Contract Paralegal, Mergers and Acquisitions</h3>
+          <p><span class="lbl">Says</span> "analyzing vendor/customer contracts for transferability, change of control, and IP ownership issues."</p>
+          <p><span class="lbl">Reveals</span> Contracts are checked for the same risky terms before a deal.</p>
+          <p class="link"><a href="https://www.goparalegals.com/jobs/539447438-it-contract-paralegal-mergers-and-acquisitions-at-cantor-fitzgerald" target="_blank" rel="noopener">View posting</a></p>
+        </div>
+
+        <div class="card jd">
+          <span class="tag same">Our user</span>
+          <h3>Andrews Myers: Junior Corporate Lawyer</h3>
+          <p><span class="lbl">Says</span> Does legal due diligence and writes detailed reports on what was found.</p>
+          <p><span class="lbl">Reveals</span> A junior lawyer reads many documents in a deal and reports back to a senior lawyer.</p>
+          <p class="link"><a href="https://www.andrewsmyers.com/about-the-firm/careers/general-inquiries/" target="_blank" rel="noopener">View posting</a></p>
+        </div>
+
+        <div class="card jd">
+          <span class="tag same">Our user</span>
+          <h3>Klehr Harrison: Junior Corporate Lawyer</h3>
+          <p><span class="lbl">Says</span> Drafts and reviews business agreements and does due diligence.</p>
+          <p><span class="lbl">Reveals</span> Reviewing agreements is regular, everyday work for junior lawyers.</p>
+          <p class="link"><a href="https://klehr.com/careers/junior-corporate-associate/" target="_blank" rel="noopener">View posting</a></p>
+        </div>
+
+      </div>
+      <p class="muted small" style="margin-top:.8em">The postings show the work is real. They don't show how often reviewers miss things or how long it takes. Those are still our guesses.</p>
+    </div>
+  </section>
+
+  <!-- 4. What it does -->
+  <section class="slide" data-title="What it does">
+    <div class="inner" style="max-width:1200px">
+      <p class="eyebrow">The solution</p>
+      <h2>Upload contracts, get a table you can trust and check</h2>
+
+      <div class="flow compact">
+        <div class="step"><span class="num">1</span><strong>Upload</strong>your contracts (PDF or text)</div>
+        <div class="step"><span class="num">2</span><strong>Choose</strong>what to look for</div>
+        <div class="step"><span class="num">3</span><strong>Find</strong>the app pulls out exact quotes</div>
+        <div class="step"><span class="num">4</span><strong>Check</strong>you accept or remove each one</div>
+        <div class="step"><span class="num">5</span><strong>Export</strong>a spreadsheet (CSV) to share</div>
+      </div>
+
+      <div class="grid g3" style="margin-top:.8em">
+        <div class="card good">
+          <h3><span class="kpi sm">100%</span> Exact quotes</h3>
+          <p class="small">A quote is shown only if those exact words appear in the contract. If the AI rewords something, it is thrown out.</p>
+        </div>
+        <div class="card good">
+          <h3><span class="kpi sm">100%</span> No silent gaps</h3>
+          <p class="small">If nothing is found, the app says so. A blank never means "the clause isn't there".</p>
+        </div>
+        <div class="card">
+          <h3>Three results per topic</h3>
+          <ul class="clean small tight">
+            <li><strong>Found:</strong> a quote with its page</li>
+            <li><strong>Not found, review required:</strong> a person should look</li>
+            <li><strong>Failed to process:</strong> e.g. a scanned image it can't read</li>
+          </ul>
+        </div>
+      </div>
+      <p class="muted small" style="margin-top:.8em">The app finds and organizes the wording. Lawyers still decide what it means.</p>
+    </div>
+  </section>
+
+  <!-- 5. How it's built -->
+  <section class="slide" data-title="How it's built">
+    <div class="inner" style="max-width:1200px">
+      <p class="eyebrow">How it's built</p>
+      <h2>Six steps behind the scenes, and the fourth protects the reviewer</h2>
+      <div class="flow compact">
+        <div class="step"><span class="num">1</span><strong>Read</strong>text from each PDF page</div>
+        <div class="step"><span class="num">2</span><strong>Split</strong>into pieces (~1 page each)</div>
+        <div class="step"><span class="num">3</span><strong>Find</strong>the AI suggests quotes</div>
+        <div class="step key"><span class="num">4</span><strong>Verify</strong>keep a quote only if it's word for word</div>
+        <div class="step"><span class="num">5</span><strong>Save</strong>to a small local database</div>
+        <div class="step"><span class="num">6</span><strong>Export</strong>to a spreadsheet</div>
+      </div>
+
+      <h3 style="margin-top:.9em">The five things it looks for</h3>
+      <div class="grid cats">
+        <div class="card"><h3>Assignment</h3><p class="small muted">Can one side hand the contract to someone else?</p></div>
+        <div class="card"><h3>Change of control</h3><p class="small muted">What happens if the company is sold or merged?</p></div>
+        <div class="card"><h3>Ending without a reason</h3><p class="small muted">Can either side walk away? (termination for convenience)</p></div>
+        <div class="card"><h3>Renewal</h3><p class="small muted">Does the contract renew, and how?</p></div>
+        <div class="card"><h3>Governing law</h3><p class="small muted">Which state's or country's laws apply?</p></div>
+      </div>
+
+      <div class="card" style="margin-top:.8em">
+        <p class="small" style="margin:0"><strong>Built with:</strong> Streamlit (a tool for web apps), Python, SQLite (a simple local database) and Claude Sonnet (the AI), with a fake offline AI as a backup. It runs on one computer. <strong>Test data:</strong> we use CUAD, a public set of 510 real contracts that experts already marked up, so we can check our answers. We never use real deal contracts.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Plan -->
+  <section class="slide" data-title="The plan and how we'll measure it">
+    <div class="inner" style="max-width:1200px">
+      <p class="eyebrow">The plan</p>
+      <h2>What we're building, when, and how we'll know it works</h2>
+      <div class="grid g3">
+        <div class="card accent">
+          <h3>What we're building</h3>
+          <ul class="clean small tight">
+            <li>Upload many contracts, see which failed and why</li>
+            <li>Choose what to look for</li>
+            <li>Exact quote and page for every finding</li>
+            <li>A result for every topic</li>
+            <li>Accept or remove, then export</li>
+          </ul>
+          <p class="small" style="margin:.5em 0 0"><strong>If time allows:</strong> highlight quotes in the full text, flag questions for a senior lawyer, add missed passages, filters, custom topics.</p>
+          <p class="small" style="margin:.4em 0 0"><strong>Not doing:</strong> explaining what a clause means, reading scanned images, drafting or editing contracts, user accounts.</p>
+        </div>
+        <div class="card">
+          <h3>When</h3>
+          <ul class="clean small tight">
+            <li><strong>Nov 5:</strong> measure cost and speed on 3 contracts</li>
+            <li><strong>Nov 6:</strong> build the screens</li>
+            <li><strong>Nov 7:</strong> rehearse the demo, then lock the version</li>
+            <li><strong>Nov 8&ndash;11:</strong> test accuracy and run a reviewer trial</li>
+            <li><strong>Nov 12:</strong> due</li>
+          </ul>
+          <p class="muted small" style="margin:.5em 0 0">Starting point: a basic version already runs with a fake AI. The screens and the real AI come next.</p>
+        </div>
+        <div class="card">
+          <h3>How we'll know it works</h3>
+          <p class="small" style="margin:0 0 .3em">We test on 102 public contracts we never trained on:</p>
+          <ul class="clean small tight">
+            <li>Finds at least <strong>80%</strong> of the clauses that are really there</li>
+            <li>At least <strong>70%</strong> of what it flags is correct, and beats a plain keyword search</li>
+            <li>Reviewers take at least <strong>30% less time</strong> than by hand, missing no more</li>
+            <li>The 30 biggest contracts finish in <strong>30 minutes</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Risks, similar tools, demo -->
+  <section class="slide" data-title="Risks, similar tools and demo">
+    <div class="inner" style="max-width:1200px">
+      <p class="eyebrow">Risks and where it fits</p>
+      <h2>What could go wrong, and how we're different</h2>
+      <div class="grid g2">
+        <div class="card warn">
+          <h3>What could go wrong</h3>
+          <ul class="clean small tight">
+            <li><strong>Messy PDFs:</strong> a quote that doesn't match is dropped and shown as "not found", never as a wrong quote</li>
+            <li><strong>Very long contracts:</strong> many AI calls at once, with saved answers so re-runs are free</li>
+            <li><strong>Cost and speed:</strong> not measured yet, so we test 3 contracts first and cap spending</li>
+            <li><strong>AI fails during the demo:</strong> replay a saved earlier run. The fake AI is the last resort</li>
+          </ul>
+        </div>
+        <div class="card accent">
+          <h3>Similar tools already exist</h3>
+          <p class="small" style="margin:0 0 .3em">Litera Kira, Spellbook and Luminance already find clauses, at much bigger scale. We don't compete on features. We test three things:</p>
+          <ul class="clean small tight">
+            <li>Every quote is checked word for word</li>
+            <li>An explicit "not found, review required" result</li>
+            <li>Accuracy measured on public contracts</li>
+          </ul>
+        </div>
+      </div>
+      <div style="text-align:center; margin-top:1.1em">
+        <button class="big-demo" id="demoMain">Open the demo</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="controls">
+  <button id="prev" aria-label="Previous slide">← Back</button>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <span class="counter" id="counter" aria-live="polite"></span>
+  <button id="next" aria-label="Next slide">Next →</button>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+  // Set this to where the demo lives once it exists (e.g. "/" if the app is the site index,
+  // or "http://localhost:8501" for Streamlit).
+  // Both "Open demo" buttons use it.
+  const DEMO_URL = "https://clautra.streamlit.app/";
+
+  const slides = Array.from(document.querySelectorAll(".slide"));
+  const toc = document.getElementById("toc");
+  const tocBtn = document.getElementById("tocBtn");
+  const counter = document.getElementById("counter");
+  const bar = document.getElementById("bar");
+  const prev = document.getElementById("prev");
+  const next = document.getElementById("next");
+  const toast = document.getElementById("toast");
+  let current = 0;
+
+  // Build the contents panel
+  slides.forEach((s, i) => {
+    const b = document.createElement("button");
+    b.innerHTML = '<span class="n">' + (i + 1) + '</span><span>' + s.dataset.title + '</span>';
+    b.addEventListener("click", () => { go(i); closeToc(); });
+    toc.appendChild(b);
+  });
+  const tocButtons = Array.from(toc.querySelectorAll("button"));
+
+  function go(i, fromHash) {
+    current = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, idx) => {
+      s.classList.toggle("active", idx === current);
+      s.classList.toggle("before", idx < current);
+      s.setAttribute("aria-hidden", idx === current ? "false" : "true");
+    });
+    slides[current].scrollTop = 0;
+    tocButtons.forEach((b, idx) => b.setAttribute("aria-current", idx === current ? "true" : "false"));
+    counter.textContent = (current + 1) + " / " + slides.length;
+    bar.style.width = ((current + 1) / slides.length * 100) + "%";
+    prev.disabled = current === 0;
+    next.disabled = current === slides.length - 1;
+    if (!fromHash) history.replaceState(null, "", "#" + (current + 1));
+  }
+
+  function closeToc() { toc.classList.remove("open"); tocBtn.setAttribute("aria-expanded", "false"); }
+  tocBtn.addEventListener("click", () => {
+    const open = toc.classList.toggle("open");
+    tocBtn.setAttribute("aria-expanded", String(open));
+  });
+  document.addEventListener("click", (e) => {
+    if (!toc.contains(e.target) && e.target !== tocBtn) closeToc();
+  });
+
+  prev.addEventListener("click", () => go(current - 1));
+  next.addEventListener("click", () => go(current + 1));
+
+  document.addEventListener("keydown", (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    switch (e.key) {
+      case "ArrowRight": case "PageDown": case " ": e.preventDefault(); go(current + 1); break;
+      case "ArrowLeft": case "PageUp": e.preventDefault(); go(current - 1); break;
+      case "Home": go(0); break;
+      case "End": go(slides.length - 1); break;
+      case "f": case "F": toggleFullscreen(); break;
+      case "Escape": closeToc(); break;
+    }
+  });
+
+  function toggleFullscreen() {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+  }
+  document.getElementById("fsBtn").addEventListener("click", toggleFullscreen);
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2600);
+  }
+  function openDemo() {
+    if (!DEMO_URL) { showToast("Demo link isn't set yet. Add it to DEMO_URL in this file."); return; }
+    window.location.href = DEMO_URL;
+  }
+  document.getElementById("demoTop").addEventListener("click", openDemo);
+  document.getElementById("demoMain").addEventListener("click", openDemo);
+
+  window.addEventListener("hashchange", () => {
+    const n = parseInt(location.hash.slice(1), 10);
+    if (n) go(n - 1, true);
+  });
+
+  const start = parseInt(location.hash.slice(1), 10);
+  go(start ? start - 1 : 0, true);
+</script>
+</body>
+</html>
