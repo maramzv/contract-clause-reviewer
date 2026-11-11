@@ -15,6 +15,7 @@ CHIP_CLASS = {"Found": "chip-found", "Not found, review required": "chip-miss", 
 
 _CSS = """
 <style>
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&display=swap');
 :root { --ink:%(INK)s; --mist:%(MIST)s; --ivory:%(IVORY)s; --brass:%(BRASS)s; --brass-deep:%(BRASS_DEEP)s; --line:%(LINE)s; }
 
 /* surfaces: warm paper for reading, woven navy for navigation */
@@ -74,7 +75,21 @@ section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"]:hover p { co
 section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"][aria-current="page"] { background:rgba(196,169,114,.16); border-left-color:#C4A972; }
 section[data-testid="stSidebar"] [class*="st-key-nav_junior_on"] [data-testid="stPageLink-NavLink"] { background:rgba(196,169,114,.16); border-left-color:#C4A972; }
 section[data-testid="stSidebar"] [class*="st-key-nav_junior_on"] [data-testid="stPageLink-NavLink"] p { color:#E4D3A6; }
+section[data-testid="stSidebar"] [class*="st-key-nav_senior_on"] [data-testid="stPageLink-NavLink"] { background:rgba(196,169,114,.16); border-left-color:#C4A972; }
+section[data-testid="stSidebar"] [class*="st-key-nav_senior_on"] [data-testid="stPageLink-NavLink"] p { color:#E4D3A6; }
 section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"][aria-current="page"] p { color:#E4D3A6; }
+
+.nav-gap { height:2.4rem; }
+/* which review a screen is about: its name, how many contracts, when it was run */
+.rv-context { display:flex; flex-wrap:wrap; align-items:baseline; gap:.15rem .9rem; background:#FFFDF8; border:1px solid var(--line); border-left:3px solid #A58A58;
+  border-radius:4px; padding:.7rem 1.1rem; margin:.1rem 0 1rem; }
+.rv-eyebrow { font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; font-weight:600; color:var(--brass-deep); }
+.rv-name { font-family:%(SERIF)s; font-size:1.4rem; line-height:1.15; color:var(--ink); }
+.rv-meta { font-size:.88rem; color:#4b5f70; }
+/* the New review button on the other screens looks like the New review section on the Overview: serif, left-aligned */
+section[data-testid="stSidebar"] [class*="st-key-nav_new_review"] button { justify-content:flex-start; padding-left:.9rem; }
+section[data-testid="stSidebar"] [class*="st-key-nav_new_review"] button p { font-family:%(SERIF)s; font-size:1.08rem; }
+section[data-testid="stSidebar"] [class*="st-key-nav_new_review"] button > div { justify-content:flex-start; gap:.6rem; }
 
 /* review workspace: contract title, the contract text beside the findings */
 .ws-title { font-family:%(SERIF)s; font-size:1.6rem; line-height:1.1; color:var(--ink); margin:.2rem 0 .05rem 0; }
@@ -110,22 +125,36 @@ section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"][aria-current
 [data-testid="stMain"] [class*="st-key-cell"] button { min-height:2rem; padding:.15rem .6rem; font-size:.8rem; font-weight:600; border-radius:5px; border:0 !important; width:100%%; }
 [data-testid="stMain"] [class*="st-key-cellfound_"] button { background:var(--mist) !important; color:#10202d !important; }
 [data-testid="stMain"] [class*="st-key-cellaccepted_"] button { background:#2F5F82 !important; color:#fff !important; }
-[data-testid="stMain"] [class*="st-key-cellcheck_"] button { background:transparent !important; color:#98a4ae !important; border:1px dashed #D3CAB4 !important; font-weight:400; font-size:.74rem; }
+[data-testid="stMain"] [class*="st-key-cellcheck_"] button { background:#F7E8C9 !important; color:#9A5B00 !important; border:1px dashed #C99A3E !important; font-weight:500; font-size:.8rem; }
+[class*="st-key-ov_grid"] [data-testid="stHorizontalBlock"]:has([class*="st-key-ovt_"]) { border-bottom:1px solid rgba(211,202,180,.7); padding:.55rem 0; }
+[class*="st-key-ov_grid"] [data-testid="stLayoutWrapper"]:last-child [data-testid="stHorizontalBlock"]:has([class*="st-key-ovt_"]) { border-bottom:0; }
+[data-testid="stMain"] [class*="st-key-cellmine_"] button { background:#DCEBE3 !important; color:#1F4A33 !important; border:1px solid #7FB09A !important; }
+[data-testid="stMain"] [class*="st-key-cellchecked_"] button { background:#FBF1DC !important; color:#7a5a1c !important; border:1px dashed #C99A3E !important; font-weight:500; }
 [data-testid="stMain"] [class*="st-key-cellfailed_"] button { background:#E6C7C1 !important; color:#6a2a22 !important; }
 [data-testid="stMain"] [class*="st-key-cell"] button p { color:inherit !important; }
+[data-testid="stMain"] [class*="st-key-cell"] button { position:relative; overflow:visible; }
+[data-testid="stMain"] [class*="st-key-cell"][class*="_flagq"] button::after, [data-testid="stMain"] [class*="st-key-cell"][class*="_flaga"] button::after, [data-testid="stMain"] [class*="st-key-cell"][class*="_flags"] button::after {
+  position:absolute; top:-8px; right:-8px; width:18px; height:18px; border-radius:50%%; background:#FFFDF8; border:1.5px solid #142737; color:#142737;
+  font:600 11px/15px sans-serif; text-align:center; }
+[data-testid="stMain"] [class*="st-key-cell"][class*="_flagq"] button::after { content:"?"; }
+[data-testid="stMain"] [class*="st-key-cell"][class*="_flaga"] button::after { content:"!"; }
+[data-testid="stMain"] [class*="st-key-cell"][class*="_flags"] button::after { content:"S"; }
+[class*="st-key-ov_grid"] { background:#FFFDF8; border:1px solid var(--line); border-radius:6px; padding:1rem 1.2rem 1.2rem; margin-top:.4rem; }
 [data-testid="stMain"] [class*="st-key-cell"] button:hover { filter:brightness(.95); outline:2px solid var(--brass-deep); }
 .ov-key { display:flex; flex-wrap:wrap; gap:.55rem 1.4rem; align-items:center; margin:.2rem 0 1rem; padding:.7rem .9rem; background:#FFFDF8; border:1px solid var(--line); border-radius:4px; font-size:.88rem; color:var(--ink); }
 .ov-key-i { display:inline-flex; align-items:center; gap:.5rem; }
 .ov-sw { display:inline-block; min-width:3.4rem; text-align:center; padding:.12rem .6rem; border-radius:4px; font-size:.82rem; font-weight:600; }
 .ov-sw.found { background:var(--mist); color:#10202d; } .ov-sw.accepted { background:#2F5F82; color:#fff; }
 .ov-sw.check { background:transparent; color:#6b7c8b; border:1px dashed #C9BFA6; font-weight:400; } .ov-sw.failed { background:#E6C7C1; color:#6a2a22; }
+.ov-sw.mine { background:#DCEBE3; color:#1F4A33; border:1px solid #7FB09A; min-width:0; padding:0 .4rem; }
+.ov-sw.gap { background:#F7E8C9; color:#9A5B00; border:1px dashed #C99A3E; min-width:0; padding:0 .4rem; }
 .ov-sw.q { min-width:0; background:transparent; border:1px solid var(--ink); border-radius:50%%; padding:0 .5rem; }
-.ov-head { font-size:.8rem; font-weight:600; color:var(--ink); padding:.3rem 0; border-bottom:1px solid var(--line); display:flex; flex-direction:column; }
-.ov-legend { font-size:.82rem; color:#4b5f70; margin:.1rem 0 .4rem; }
+.ov-head { font-size:12px; font-weight:600; color:var(--ink); padding:.3rem 0; display:flex; flex-direction:column; }
+.ov-legend { font-size:13px; color:#4b5f70; margin:0 0 .7rem; display:flex; flex-wrap:wrap; align-items:center; gap:.4rem .5rem; }
 .ov-legend .ov-sw { min-width:0; padding:0 .4rem; margin-right:.2rem; }
-.ov-found { font-size:.7rem; font-weight:400; color:#4b5f70; }
-[data-testid="stLayoutWrapper"]:has(> [class*="st-key-ov_head"]) { position:sticky; top:0; z-index:50; background:#F3EFE6; }
-[class*="st-key-ov_head"] { background:#F3EFE6; padding:.2rem 0 .55rem 0; box-shadow:0 6px 6px -6px rgba(20,39,55,.25); }
+.ov-found { font-size:12px; font-weight:400; color:#4A5D6D; }
+[data-testid="stLayoutWrapper"]:has(> [class*="st-key-ov_head"]) { position:sticky; top:0; z-index:50; background:#FFFDF8; }
+[class*="st-key-ov_head"] { background:#FFFDF8; padding:.2rem 0 .7rem 0; border-bottom:1px solid var(--line); }
 [class*="st-key-ov_go"] { margin-top:.2rem; }
 [data-testid="stMain"] .hero:has(+ *) { margin-bottom:0; }
 .ov-gonote { margin-top:.3rem; text-align:center; font-size:.8rem; color:#4b5f70; }
@@ -154,10 +183,14 @@ section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"][aria-current
 [class*="st-key-ovt_"] [data-testid="stMarkdownContainer"] { margin-bottom:0 !important; }
 [class*="st-key-ovt_"] button > div { justify-content:flex-start !important; width:100%%; }
 [class*="st-key-ovt_"] button { margin:0; background:transparent !important; border:0 !important; box-shadow:none; padding:0; min-height:0; justify-content:flex-start; text-align:left; height:auto; }
-[class*="st-key-ovt_"] button p { font-family:%(SERIF)s; font-size:1.05rem; line-height:1.15; color:var(--ink); text-align:left; text-decoration:underline; text-decoration-color:rgba(20,39,55,.25); text-underline-offset:3px; }
-[class*="st-key-ovt_"] button:hover p { color:var(--brass-deep); text-decoration-color:var(--brass-deep); }
+[class*="st-key-ovt_"] button p { font-family:'EB Garamond',%(SERIF)s; font-size:17px; font-weight:400; line-height:1.25; color:var(--ink); text-align:left; text-decoration:none; text-wrap:balance; }
+[class*="st-key-ovt_"] button:hover p { color:var(--brass-deep); text-decoration:underline; text-underline-offset:3px; }
+[class*="st-key-ovt_"] .ov-party b { font-weight:400; }
+[class*="st-key-ovt_"] button, [class*="st-key-ovt_"] button > div, [class*="st-key-ovt_"] button p { padding-left:0 !important; margin-left:0 !important; }
+[class*="st-key-ovt_"] [data-testid="stButton"], [class*="st-key-ovt_"] [data-testid="stElementContainer"] { margin-left:0; padding-left:0; }
+[data-testid="stMain"] [class*="st-key-cell"] button p { font-size:13px !important; font-weight:500 !important; }
 .ov-title { font-family:%(SERIF)s; font-size:1.05rem; line-height:1.15; color:var(--ink); }
-.ov-party { font-size:.76rem; color:#4b5f70; }
+.ov-party { font-size:12.5px; line-height:1.5; color:#4A5D6D; }
 
 /* page header */
 .hero { margin:0 0 1.4rem 0; }
@@ -179,6 +212,9 @@ button[data-testid="stBaseButton-primary"], [data-testid="stBaseButton-primary"]
   background:url(%(STATIC)s/brand/texture-brass.jpg) center/cover; color:#0f1c28; border:1px solid var(--brass-deep);
   font-weight:600; letter-spacing:.02em; border-radius:3px; box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 1px 2px rgba(10,20,30,.3); }
 button[data-testid="stBaseButton-primary"]:hover { filter:brightness(1.08); border-color:#5c4a24; color:#0f1c28; }
+/* the label and icon on brass are always dark ink (Streamlit's own light text colour made them hard to read) */
+button[data-testid="stBaseButton-primary"] p, button[data-testid="stBaseButton-primary"] span, button[data-testid="stBaseButton-primary"] [data-testid="stIconMaterial"] { color:#0f1c28 !important; font-weight:700; text-shadow:0 1px 0 rgba(255,255,255,.28); }
+button[data-testid="stBaseButton-primary"] { background-color:#C4A972; background-blend-mode:lighten; }
 .st-key-ov_back button, .st-key-ov_back button p, .st-key-ov_back button span { color:#fff !important; text-shadow:0 1px 1px rgba(60,45,15,.5); }
 button[data-testid="stBaseButton-primary"]:disabled { filter:saturate(.6); opacity:.5; cursor:not-allowed; }
 button[data-testid="stBaseButton-secondary"] { background:transparent; border:1px solid rgba(20,39,55,.38); color:var(--ink); border-radius:3px; }
@@ -297,13 +333,24 @@ def brand(st):
         st.page_link("app.py", label="Clautra home", help="Back to the home page")
 
 
-def views(st, on_review=False):
+def views(st, on_review=False, senior=False):
     """The switch between the two screens, drawn under the logo (Streamlit's own page menu is off in config.toml).
     The Junior Associate link opens the Overview (the home screen). The Review page belongs to the same role, so while it is open
     (`on_review`) that link is drawn as the current one."""
-    with st.container(key="nav_junior_on" if on_review else "nav_junior"):
+    with st.container(key="nav_junior_on" if on_review and not senior else "nav_junior"):
         st.page_link("app.py", label="Junior Associate", icon=":material/fact_check:")
-    st.page_link("pages/1_Senior_lawyer.py", label="Senior Lawyer", icon=":material/gavel:")
+    with st.container(key="nav_senior_on" if on_review and senior else "nav_senior"):  # the Senior Lawyer can read the contract too
+        st.page_link("pages/1_Senior_lawyer.py", label="Senior Lawyer", icon=":material/gavel:")
+
+
+def nav_gap(st):
+    """Space between the two role links and the actions below them (New review, Export)."""
+    st.markdown('<div class="nav-gap"></div>', unsafe_allow_html=True)
+
+
+def export_link(st):
+    """The Export page, under New review on every screen: the CSV is checked there before it is downloaded."""
+    st.page_link("pages/3_Export.py", label="Export", icon=":material/download:")
 
 
 def kpi_row(st, items):

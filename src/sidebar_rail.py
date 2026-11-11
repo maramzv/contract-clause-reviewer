@@ -84,6 +84,20 @@ section[data-testid="stSidebar"] [class*="st-key-nr_s"] {{ position:relative; ga
 </style>"""
 
 
+def name_key():
+    """The name box's key. It changes after every run, so the next review starts with an empty box."""
+    return f"nr_name_{st.session_state.get('nr_name_n', 0)}"
+
+
+def review_title():
+    """The name typed for the review being set up, or '' (the review is then called 'Contract review')."""
+    return (st.session_state.get(name_key()) or "").strip()
+
+
+def name_used():
+    st.session_state["nr_name_n"] = st.session_state.get("nr_name_n", 0) + 1
+
+
 def _flip(i):
     sel = st.session_state["nr_clauses"]
     sel.symmetric_difference_update({i})
@@ -171,6 +185,9 @@ def render(dev):
             if ready:
                 st.markdown(f'<div class="nr-hint">{len(files)} contract{"s" if len(files) != 1 else ""} · '
                             f'{len(chosen)} clause{"s" if len(chosen) != 1 else ""}</div>', unsafe_allow_html=True)
+                # the review's title: it is what the Senior Lawyer sees at the top of their page and in the list of reviews
+                st.text_input("Name this review", key=name_key(), placeholder="Name this review", max_chars=60, help="Shown to the Senior Lawyer, for example: Company purchase",
+                              label_visibility="collapsed")
                 go = st.button("Run", key="nr_run", type="primary", disabled=bool(blocked), use_container_width=True, on_click=_started)
             else:
                 st.markdown('<div class="nr-hint">Appears once you choose a clause</div>', unsafe_allow_html=True)

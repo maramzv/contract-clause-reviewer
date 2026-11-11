@@ -91,7 +91,7 @@ def _left(st, store, docs, slots, members, todo, pos, doc, cat):
     st.page_link("app.py", label="See every contract and clause in the overview", icon=":material/grid_view:")
 
     if not members:
-        st.success("Everything is decided or marked as checked. Download the CSV from the sidebar, or switch to "
+        st.success("Everything is reviewed or marked as checked. Download the CSV from the sidebar, or switch to "
                    "All clauses below to look back.")
         st.radio("Show", ["To do", "All clauses"], key="ws_mode", horizontal=True)
         return

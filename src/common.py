@@ -17,11 +17,9 @@ def get_store():
 
 
 def result_actions(st, store, res):
-    """Download CSV in the sidebar, the same on every Junior Associate screen, and the refresh icon in the page corner."""
-    from clause_review.export import csv_text
+    """The refresh icon in the page corner of every Junior Associate screen. The CSV is no longer a button here: the Export page in
+    the sidebar shows the table first, and the download is there."""
     refresh_corner(st)
-    st.sidebar.download_button("Download CSV", csv_text(store, res["pid"]), file_name="clause_review.csv",
-                               mime="text/csv")  # no hover text
 
 
 def resume_latest(st, store):
@@ -47,7 +45,7 @@ def _start_new_review():
 
 def new_review_button(container):
     """A button on the other Junior Associate screens that goes to the Review page with the New review section open."""
-    container.button("New review", icon=":material/add:", on_click=_start_new_review, use_container_width=True,
+    container.button("New review", icon=":material/add:", on_click=_start_new_review, use_container_width=True, key="nav_new_review",
                       help="Pick clauses and contracts and run another review. The current one stays in Saved runs.")
 
 

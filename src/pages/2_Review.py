@@ -6,7 +6,7 @@ import streamlit as st
 
 from clause_review.view import load_results
 from common import get_store, new_review_button, resume_latest, result_actions
-from theme import apply_theme, brand, marquee, views
+from theme import apply_theme, brand, export_link, marquee, nav_gap, views
 import workspace
 import workspace_html
 
@@ -17,7 +17,10 @@ store = get_store()
 
 with st.sidebar:
     brand(st)
-    views(st, on_review=True)  # the Review belongs to the Junior Associate
+    views(st, on_review=True, senior=st.session_state.get("review_role") == "senior")  # the Junior Associate's page, or the Senior Lawyer's when they came from a question
+    nav_gap(st)
+    new_review_button(st)
+    export_link(st)
 
 res = resume_latest(st, store)  # opened directly: the latest saved review
 if not res:
@@ -25,7 +28,6 @@ if not res:
     st.page_link("app.py", label="Go to the Overview", icon=":material/grid_view:")
     st.stop()
 
-new_review_button(st.sidebar)
 result_actions(st, store, res)
 docs = load_results(store, res["pid"], res["categories"])
 if st.session_state.get("dev_mode"):

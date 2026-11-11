@@ -26,10 +26,14 @@ def load_results(store, pid, categories=None):
         status = {r["category"]: r["status"] for r in rows}
         reviewed = {r["category"]: bool(r["reviewed"]) for r in rows}
         findings = [dict(r) for r in store.db.execute(
-            "SELECT id, category, quote, page, start, end, source, review, question, answer, qstate FROM Finding "
+            "SELECT id, category, quote, page, start, end, source, review, question, answer, qstate, decided_by FROM Finding "
             "WHERE document_id=? ORDER BY category, start", (d["id"],))]
+        # a question about a clause with nothing found sits on a hidden placeholder row: it is kept apart, so it is never a passage
+        gap_questions = {f["category"]: {k: f[k] for k in ("id", "question", "answer", "qstate")}
+                         for f in findings if f["source"] == "gap" and f["category"] in cats}
         out.append({"id": d["id"], "name": d["name"], "status": d["status"], "error": d["error"],
                     "categories": {c: status.get(c) for c in cats},
                     "reviewed": {c: reviewed.get(c, False) for c in cats},
-                    "findings": [f for f in findings if f["category"] in cats]})
+                    "gap_questions": gap_questions,
+                    "findings": [f for f in findings if f["category"] in cats and f["source"] != "gap"]})
     return out

@@ -58,7 +58,7 @@ class SampleFile:
 
 def contract_files():
     """The ten tested contracts, under their full titled names (the short made-up sample is not one of them)."""
-    return [SampleFile(f"{s['label']}.txt", s["path"]) for s in list_samples() if s["id"] != "sample"]
+    return [SampleFile(f"{s['label']}{Path(s['path']).suffix}", s["path"]) for s in list_samples() if s["id"] != "sample"]  # .pdf or .txt, as the file really is
 
 
 def _toggle(i):

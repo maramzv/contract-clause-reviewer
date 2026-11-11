@@ -6,7 +6,8 @@ Page -> Python: one trigger, `act`, with a dict such as {"type": "accept", "id":
 import re
 from pathlib import Path
 
-from clause_review.review_view import build_slots, clause_state, is_gap, live_findings, overview_stats, passage_html, search_snippets, split_title
+from clause_review.review_view import (build_slots, clause_state, found_by_you, gap_question, is_gap, live_findings, locate, overview_stats, passage_html,
+                                       question_counts, search_snippets, split_title)
 from clause_review.store import ANSWERED, OPEN, RESOLVED
 from workspace import short
 
@@ -32,7 +33,13 @@ def selection(state, slots, by_id):
     index = {it: k for k, it in enumerate(items)}
     pending = {f["id"] for d in by_id.values() for f in d["findings"] if f["review"] == "pending"}
     state.setdefault("ws_mode", "To do")
-    members = [it for it in items if state["ws_mode"] == "All clauses" or it[1] in pending]
+    senior = state.get("review_role") == "senior"
+    if senior:  # the Senior Lawyer steps through the questions that wait for an answer, not through every passage
+        asked = {f["id"] for d in by_id.values() for f in d["findings"] if f["question"] and f["review"] != "removed" and f["qstate"] in (None, "open")}
+        gap_open = {(d["id"], c) for d in by_id.values() for c, q in d["gap_questions"].items() if q["question"] and q["qstate"] in (None, "open")}
+        members = [it for it in items if it[1] in asked or (it[1] is None and slots[it[0]] in gap_open)]
+    else:
+        members = [it for it in items if state["ws_mode"] == "All clauses" or it[1] in pending]
 
     pos = min(state.get("ws_pos", 0), len(slots) - 1)
     live = live_findings(by_id[slots[pos][0]], slots[pos][1])
@@ -60,6 +67,8 @@ def selection(state, slots, by_id):
         # the passage just decided left the list: go to the next one that remains. A clause with nothing found is not in
         # the list either, but someone who opened it on purpose stays on it.
         cur = next((m for m in members if index[m] > index[cur]), members[0])
+    if senior and cur not in members:  # what is on screen always counts, even once its question is answered
+        members = sorted(set(members) | {cur}, key=index.get)
     state["ws_pos"], state["ws_fid"] = cur
     return cur[0], cur[1], members, items, pending
 
@@ -100,8 +109,13 @@ def build_view(store, docs, state, categories=None):
         "clauseCount": len(doc["categories"]),
         "clauses": [{"name": c, "label": short(c), "state": clause_state(doc, c), "active": c == cat} for c in doc["categories"]],
         "current": {"name": short(cat), "state": clause_state(doc, cat), "status": doc["categories"][cat] or "Failed",
-                    "reviewed": bool(doc["reviewed"].get(cat)), "failed": doc["error"] if doc["status"] == "failed" else None},
-        "findings": [_finding(current, [f["id"] for f in live].index(fid) + 1, len(live), doc["name"])] if current else [],
+                    "reviewed": bool(doc["reviewed"].get(cat)), "failed": doc["error"] if doc["status"] == "failed" else None,
+                    "mine": found_by_you(doc, cat)},
+        "role": "senior" if state.get("review_role") == "senior" else "junior",
+        "questions": dict(zip(("open", "total"), question_counts(docs, list(doc["categories"])))),
+        "findings": [_finding(current, [f["id"] for f in live].index(fid) + 1, len(live), doc["name"], paged=bool(store.page_starts(doc_id)))] if current else [],
+        "gapq": _gapq(gap_question(doc, cat)),  # the clause-level question, asked while nothing was found (kept visible after a passage is added)
+        "notice": state.pop("ws_notice", None),
         "removed": [{"id": f["id"], "quote": " ".join(f["quote"].split())}
                     for f in doc["findings"] if f["category"] == cat and f["review"] == "removed"],
         "upNext": [upnext(m) for m in later],
@@ -112,9 +126,14 @@ def build_view(store, docs, state, categories=None):
     return view
 
 
-def _finding(f, i, n, name=""):
-    """One passage for the page. The page number is only passed on for a PDF: a text file has no pages, so "page 1" would mislead."""
-    return {"id": f["id"], "index": i, "of": n, "page": f["page"] if name.lower().endswith(".pdf") and f["page"] else None, "review": f["review"], "quote": " ".join(f["quote"].split()),
+def _gapq(q):
+    return {"id": q["id"], "question": q["question"], "answer": q["answer"] or "", "qstate": q["qstate"] or OPEN} if q else None
+
+
+def _finding(f, i, n, name="", paged=False):
+    """One passage for the page. The page number is only passed on for a document that has pages (a PDF): a plain text file has
+    none, so "page 1" would mislead."""
+    return {"id": f["id"], "index": i, "of": n, "page": f["page"] if (paged or name.lower().endswith(".pdf")) and f["page"] else None, "review": f["review"], "mine": f.get("source") == "manual", "decidedBy": f.get("decided_by") if f["review"] != "pending" else None, "quote": " ".join(f["quote"].split()),
             "question": f["question"] or "", "answer": f["answer"] or "", "qstate": f["qstate"] or (OPEN if f["question"] else None)}
 
 
@@ -141,8 +160,12 @@ def readable(body):
     body = re.sub(r"(?:<br>\s*){2,}", "\x00", body)
     for rx in _BREAKS:
         body = rx.sub("\x00", body)
-    paras = []
+    paras, breaks = [], {}  # breaks: the page that begins before paragraph i
     for p in body.split("\x00"):
+        pm = re.fullmatch(r"\x04(\d+)\x04", p)
+        if pm:  # a page-start marker from _marked: a divider before the next paragraph, not a paragraph itself
+            breaks[len(paras)] = int(pm.group(1))
+            continue
         p = re.sub(r"\s*<br>\s*", " ", p)
         p = re.sub(r"(?:\s?\.){4,}\s*", " … ", p)  # a table of contents' dot leaders ("Term.........") become one ellipsis
         p = re.sub(r"\s+", " ", p).strip()
@@ -161,6 +184,8 @@ def readable(body):
         active = set(range(lo, min(hi, hit[-1] + 5)))
     out = []
     for i, p in enumerate(paras):
+        if i in breaks:
+            out.append(f'<div class="pg" data-page="{breaks[i]}"><span>Page {breaks[i]}</span></div>')
         cls = " ".join(c for c in ("h" if flags[i][0] else "", "" if i in active else "dim") if c)
         out.append(f'<p class="{cls}">{restore(p)}</p>' if cls else f"<p>{restore(p)}</p>")
     return "".join(out)
@@ -173,10 +198,11 @@ def _document(store, doc, cat, current, state):
         snippets, total = search_snippets(text, query)
         return {"mode": "search", "query": query, "total": total, "snippets": snippets, "short": len(query) < 2}
     spans = [(current["start"], current["end"])] if current else []  # only the passage on screen is marked
-    body, _, _ = passage_html(text, spans, len(text), len(text))  # the whole contract, scrolled to the marked passage
+    pages = store.page_starts(doc["id"])  # a PDF has pages: they are drawn as dividers with the page number
+    body, _, _ = passage_html(text, spans, len(text), len(text), pages)  # the whole contract, scrolled to the marked passage
     ticks = [{"top": round(min(96, max(2, 100 * f["start"] / max(1, len(text)))), 1), "now": bool(current) and f["id"] == current["id"],
               "label": short(f["category"])} for f in doc["findings"] if f["review"] != "removed"]
-    return {"mode": "passage", "html": readable(body), "ticks": ticks,
+    return {"mode": "passage", "html": readable(body), "ticks": ticks, "pages": len(pages),
             "hasSpans": bool(spans), "scrollKey": f"{doc['id']}|{cat}|{current['id'] if current else ''}"}
 
 
@@ -185,6 +211,7 @@ def apply_action(store, state, act, docs):
     are ignored (the page can lag a click behind the data)."""
     kind = (act or {}).get("type")
     fid = act.get("id") if act else None
+    role = "senior" if state.get("review_role") == "senior" else "junior"  # who is using the page decides who is recorded
     if kind == "prev":
         state["ws_step"] = -1
     elif kind == "next":
@@ -203,14 +230,30 @@ def apply_action(store, state, act, docs):
             state.pop("ws_fid", None)  # start at that clause's first passage still to decide
             state["ws_pin"] = True  # chosen on purpose, so it is not skipped even if it is already decided
     elif kind in ("accept", "remove", "restore") and fid:
-        store.set_review(fid, {"accept": "accepted", "remove": "removed", "restore": "pending"}[kind])
+        store.set_review(fid, {"accept": "accepted", "remove": "removed", "restore": "pending"}[kind], by=role)
     elif kind == "undo" and fid:  # take the last Accept or Remove back and show that passage again
         store.set_review(fid, "pending")
         slots = build_slots(docs)
         if (act.get("doc"), act.get("name")) in slots:
             state["ws_pos"], state["ws_fid"], state["ws_pin"] = slots.index((act["doc"], act["name"])), fid, True
-    elif kind == "ask" and fid:
+    elif kind == "ask" and fid and role == "junior":
         store.set_question(fid, act.get("text", ""))
+    elif kind == "answer" and fid and role == "senior":  # the Senior Lawyer answers from beside the contract
+        store.set_answer(fid, act.get("text", ""))
+    elif kind == "gapask" and role == "junior":  # a question about a clause where nothing was found
+        if (act.get("doc"), act.get("name")) in build_slots(docs):
+            store.set_gap_question(act["doc"], act["name"], act.get("text", ""))
+    elif kind == "addpassage":  # the reviewer selected text in the contract that the tool missed
+        slots = build_slots(docs)
+        if (act.get("doc"), act.get("name")) in slots:
+            text = store.document_text(act["doc"])
+            span = locate(text, act.get("text", ""))
+            if span is None:
+                state["ws_notice"] = "That text could not be matched to the contract. Select plain sentences, within one section."
+            else:
+                new = store.add_manual_finding(act["doc"], act["name"], text[span[0]:span[1]], span[0], span[1], by=role)
+                state["ws_pos"], state["ws_fid"], state["ws_pin"] = slots.index((act["doc"], act["name"])), new, True
+                state["ws_notice"] = "Added to " + short(act["name"]) + ". It is marked as found by you."
     elif kind == "resolve" and fid:
         store.set_resolved(fid, bool(act.get("on", True)))
     elif kind == "reviewed":
@@ -256,7 +299,7 @@ def render(st, store, res, docs):
     st.markdown(FULL_BLEED, unsafe_allow_html=True)
     _mount()(key="ws_html", data=view, on_act_change=on_act, height="content")
     if st.session_state.pop("ws_goto_overview", False):
-        st.switch_page("app.py")
+        st.switch_page("pages/1_Senior_lawyer.py" if st.session_state.get("review_role") == "senior" else "app.py")
 
 
 def _look_back(st):
@@ -274,8 +317,9 @@ def _completion(st, store, res, docs, view):
     accepted = sum(1 for f in findings if f["review"] == "accepted")
     removed = sum(1 for f in findings if f["review"] == "removed")
     waiting = sum(1 for f in findings if f["review"] != "removed" and f["question"] and f["qstate"] == OPEN)
+    waiting += sum(1 for d in docs for q in d["gap_questions"].values() if q["question"] and q["qstate"] == OPEN)
     nothing = sum(1 for g in view["gaps"] if not g["checked"])
-    st.markdown('<div class="hero"><div class="eyebrow">Clautra &nbsp;/&nbsp; Junior Associate</div><h1>All decided</h1>'
+    st.markdown('<div class="hero"><div class="eyebrow">Clautra &nbsp;/&nbsp; Junior Associate</div><h1>All reviewed</h1>'
                 '<p class="tag">Every passage the tool found has been accepted or removed.</p><hr class="rule"></div>',
                 unsafe_allow_html=True)
     kpi_row(st, [(accepted, "Accepted", None, False), (removed, "Removed", None, False),
@@ -284,7 +328,6 @@ def _completion(st, store, res, docs, view):
                  (nothing, "Clause with nothing found" if nothing == 1 else "Clauses with nothing found",
                   "listed in the CSV as Not found, review required" if nothing else None, nothing > 0)])
     a, b, c = st.columns([1.2, 1.2, 2])
-    a.download_button("Download CSV", csv_text(store, res["pid"]), file_name="clause_review.csv", mime="text/csv",
-                      type="primary", use_container_width=True, key="done_csv")
+    a.page_link("pages/3_Export.py", label="Check and export the CSV", icon=":material/download:")
     b.page_link("app.py", label="See the overview", icon=":material/grid_view:")
     c.button("Look back at the passages", on_click=_look_back, args=(st,))

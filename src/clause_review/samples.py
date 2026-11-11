@@ -7,22 +7,24 @@ import os
 from pathlib import Path
 
 from .chunk import chunk
+from .ingest import ingest
 
 SAMPLES_DIR = Path(__file__).resolve().parent.parent / "samples"
 
-# (file under samples/, short id, title). The ten contracts are public SEC filings; see docs/03-tests/contract-sources.md.
+# (file under samples/, short id, title). The ten contracts are public SEC filings from CUAD; see docs/03-tests/contract-sources.md.
+# Nine are the original PDFs (so a finding has a real page number); contract_03 is not in CUAD as a PDF, so it stays a text file.
 SAMPLES = [
     ("sample_contract.txt", "sample", "Sample master services agreement (short)"),
-    ("contracts/contract_01.txt", "contract_01", "Endorsement Licensing and Co-Branding Agreement (MusclePharm)"),
-    ("contracts/contract_02.txt", "contract_02", "Cooperation Agreement (HPIL Energytech and Ginares)"),
+    ("contracts/contract_01.pdf", "contract_01", "Endorsement Licensing and Co-Branding Agreement (MusclePharm)"),
+    ("contracts/contract_02.pdf", "contract_02", "Cooperation Agreement (HPIL Energytech and Ginares)"),
     ("contracts/contract_03.txt", "contract_03", "Consulting Agreement (Emerald Health Naturals)"),
-    ("contracts/contract_04.txt", "contract_04", "Master Franchise Agreement (Kiosk Concepts)"),
-    ("contracts/contract_05.txt", "contract_05", "Strategic Alliance Agreement (SHBV and Waste2Energy)"),
-    ("contracts/contract_06.txt", "contract_06", "Non-Competition and Right of First Offer (Glamis Gold and Western Copper)"),
-    ("contracts/contract_07.txt", "contract_07", "Joint Filing Agreement (OneMain Holdings)"),
-    ("contracts/contract_08.txt", "contract_08", "Cooperation Agreement, 50MWp Solar Project (Fenyi County)"),
-    ("contracts/contract_09.txt", "contract_09", "Content License Agreement (Xinhua)"),
-    ("contracts/contract_10.txt", "contract_10", "Outsource Technology Development Agreement (DSS and HotApp)"),
+    ("contracts/contract_04.pdf", "contract_04", "Master Franchise Agreement (Kiosk Concepts)"),
+    ("contracts/contract_05.pdf", "contract_05", "Strategic Alliance Agreement (SHBV and Waste2Energy)"),
+    ("contracts/contract_06.pdf", "contract_06", "Non-Competition and Right of First Offer (Glamis Gold and Western Copper)"),
+    ("contracts/contract_07.pdf", "contract_07", "Joint Filing Agreement (OneMain Holdings)"),
+    ("contracts/contract_08.pdf", "contract_08", "Cooperation Agreement, 50MWp Solar Project (Fenyi County)"),
+    ("contracts/contract_09.pdf", "contract_09", "Content License Agreement (Xinhua)"),
+    ("contracts/contract_10.pdf", "contract_10", "Outsource Technology Development Agreement (DSS and HotApp)"),
 ]
 
 # Seconds for one model call (one chunk). anthropic: measured on the Nov 8 test run, 2,096 calls in 14 min 40 s with
@@ -39,7 +41,7 @@ def list_samples():
         path = SAMPLES_DIR / rel
         if not path.is_file():
             continue
-        text = path.read_text(encoding="utf-8", errors="replace")
+        text = ingest(path).text if path.suffix.lower() == ".pdf" else path.read_text(encoding="utf-8", errors="replace")
         out.append({"path": str(path), "id": sid, "title": title, "label": f"{sid} - {title}",
                     "chars": len(text), "chunks": len(chunk(text))})
     return out

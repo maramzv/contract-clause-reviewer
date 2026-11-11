@@ -16,6 +16,11 @@ Rules:
   sentence that only mentions the topic.
 - Follow each category's "Counts" and "Does not count" lines.
 - A passage may be quoted under more than one category if it fits each.
+- Judge by meaning, not by keywords. Also quote a passage that has the same effect as the category but is worded differently
+  (for example "no party may transfer its rights without the other's written approval" is an assignment restriction even
+  though it never says "assign"), or that clearly bears on the category's rule even if it only partly fits (for example a
+  right of first refusal on a sale of the company bears on Change of Control). The reviewer will confirm or remove it. The
+  quotation itself must still be exact.
 Return only a JSON list: [{{"category": "<name>", "quote": "<exact text>"}}]. Return [] if none.
 Categories:
 {cats}

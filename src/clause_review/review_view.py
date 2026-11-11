@@ -17,6 +17,22 @@ def split_title(name):
     return title.strip() or stem, party.strip(), code
 
 
+def run_when(created, with_time=False):
+    """When a review was run, in the reader's own time: '11 Nov' or '11 Nov at 09:15'. The store keeps UTC; '' if unreadable."""
+    from datetime import datetime, timezone
+    try:
+        d = datetime.strptime(created, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc).astimezone()
+    except (TypeError, ValueError):
+        return ""
+    return f"{d.day} {d:%b}" + (f" at {d:%H:%M}" if with_time else "")
+
+
+def run_label(run):
+    """A saved review as one line a person recognises: 'Company purchase · 10 contracts · 11 Nov'."""
+    n = run["docs"]
+    return " · ".join(x for x in (run["name"], f"{n} contract{'s' if n != 1 else ''}", run_when(run.get("created"))) if x)
+
+
 def display_name(name, dev=False):
     """A contract as a person names it: 'Cooperation Agreement (HPIL Energytech and Ginares)'. The test-file number
     ('contract_02') is only added in dev mode. A name that does not fit the pattern is returned as it is, without '.txt'."""
@@ -33,6 +49,52 @@ def build_slots(docs):
 
 def live_findings(doc, category):
     return [f for f in doc["findings"] if f["category"] == category and f["review"] != "removed"]
+
+
+def found_by_you(doc, category):
+    """True when everything standing in this clause is a passage the reviewer highlighted herself (the tool found none)."""
+    live = live_findings(doc, category)
+    return bool(live) and all(f.get("source") == "manual" for f in live)
+
+
+def gap_question(doc, category):
+    """The question asked about a clause with nothing found, or None."""
+    q = doc.get("gap_questions", {}).get(category)
+    return q if q and q["question"] else None
+
+
+def question_flag(doc, category):
+    """'q' while a question about this clause waits for the Senior Lawyer, 'a' once one has an answer to read, else ''.
+    Passage questions and the clause-level question on a gap both count."""
+    qs = [f for f in live_findings(doc, category) if f["question"]]
+    gq = gap_question(doc, category)
+    qs += [gq] if gq else []
+    if any(f["qstate"] in (None, "open") for f in qs):
+        return "q"
+    return "a" if any(f["qstate"] == "answered" for f in qs) else ""
+
+
+def senior_decided(doc, category):
+    """True when the Senior Lawyer accepted or removed a passage in this clause (the Overview marks it with an S)."""
+    return any(f.get("decided_by") == "senior" for f in doc["findings"] if f["category"] == category and f["review"] != "pending")
+
+
+def question_counts(docs, cats):
+    """(open, total): questions waiting for an answer and all questions asked, on passages (not removed ones) and on gaps."""
+    qs = [f for d in docs for f in d["findings"] if f["category"] in cats and f["question"] and f["review"] != "removed"]
+    qs += [q for d in docs for c, q in d.get("gap_questions", {}).items() if c in cats and q["question"]]
+    return sum(1 for q in qs if q["qstate"] in (None, "open")), len(qs)
+
+
+def locate(text, selection, limit=3000):
+    """Where text a reviewer selected on screen sits in the contract: (start, end) or None. The page shows the contract with
+    line breaks reflowed, so the match ignores differences in white space; the passage that is saved is then the contract's
+    own words at that place, never the selection's."""
+    words = (selection or "").split()
+    if not words or len(" ".join(words)) > limit:
+        return None
+    m = re.search(r"\s+".join(re.escape(w) for w in words), text)
+    return m.span() if m else None
 
 
 def needs_work(doc, category):
@@ -86,19 +148,27 @@ def _merge(spans):
     return merged
 
 
-def _marked(text, lo, hi, spans):
-    """text[lo:hi] as HTML-safe text with <mark> around each span and <br> for line breaks. Overlaps are merged."""
-    out, pos = [], lo
-    for a, b in _merge(sorted((max(a, lo), min(b, hi)) for a, b in spans if b > lo and a < hi)):
-        out.append(html.escape(text[pos:a]))
-        out.append("<mark>" + html.escape(text[a:b]) + "</mark>")
-        pos = b
-    out.append(html.escape(text[pos:hi]))
+PAGE_MARK = "\x00\x04{}\x04\x00"  # "page N begins here": its own paragraph for readable(), which turns it into a divider
+
+
+def _marked(text, lo, hi, spans, pages=()):
+    """text[lo:hi] as HTML-safe text with <mark> around each span and <br> for line breaks. Overlaps are merged. `pages` are the
+    offsets where each page of a PDF begins: a page-start marker is put in at each one, and a <mark> that crosses a page break is
+    closed and opened again so the marker always sits between paragraphs."""
+    merged = _merge(sorted((max(a, lo), min(b, hi)) for a, b in spans if b > lo and a < hi))
+    starts = {p: n + 1 for n, p in enumerate(pages) if lo <= p < hi}
+    points = sorted({lo, hi, *starts, *(x for ab in merged for x in ab)})
+    out = []
+    for x, y in zip(points, points[1:]):
+        if x in starts:
+            out.append(PAGE_MARK.format(starts[x]))
+        piece = html.escape(text[x:y])
+        out.append("<mark>" + piece + "</mark>" if any(a <= x and y <= b for a, b in merged) else piece)
     shown = "".join(out).replace("\n", "<br>")
     return re.sub(r"(?:<br>\s*){3,}", "<br><br>", shown)  # long runs of blank lines (page breaks, tables) become one gap
 
 
-def passage_html(text, spans, before=1400, after=2600):
+def passage_html(text, spans, before=1400, after=2600, pages=()):
     """The part of a contract around some quotations, with the quotations marked. With no spans it shows the start of
     the contract. Returns (html, lo, hi): the excerpt's bounds in the text, so a caller can tell whether more lies above
     or below."""
@@ -107,7 +177,7 @@ def passage_html(text, spans, before=1400, after=2600):
         hi = _snap(text, min(len(text), max(b for _, b in spans) + after), forward=True)
     else:
         lo, hi = 0, _snap(text, min(len(text), before + after), forward=True)
-    return _marked(text, lo, hi, spans), lo, hi
+    return _marked(text, lo, hi, spans, pages), lo, hi
 
 
 def search_snippets(text, query, limit=8, context=170):
@@ -133,8 +203,9 @@ def overview_stats(docs, cats):
     removed = sum(1 for f in f_all if f["review"] == "removed")
     accepted = sum(1 for f in f_all if f["review"] == "accepted")
     live = [f for f in f_all if f["review"] != "removed"]
-    waiting = [f for f in live if f["question"] and f["qstate"] in (None, "open")]
-    answered = [f for f in live if f["question"] and f["qstate"] == "answered"]
+    gap_qs = [q for d in docs for c, q in d.get("gap_questions", {}).items() if c in cats and q["question"]]  # questions on gaps
+    waiting = [f for f in live + gap_qs if f["question"] and f["qstate"] in (None, "open")]
+    answered = [f for f in live + gap_qs if f["question"] and f["qstate"] == "answered"]
     states = {(d["id"], c): clause_state(d, c) for d in docs for c in cats}
     return {
         "total": len(f_all), "pending": pending, "accepted": accepted, "removed": removed, "decided": accepted + removed,

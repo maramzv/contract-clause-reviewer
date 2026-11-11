@@ -53,7 +53,7 @@ def run_review(store, project, paths, provider, categories=None, workers=1, on_e
                 store.set_status(did, c, FAILED)
             emit("doc_failed", index=i, doc=Path(path).name, error=str(e))
             continue
-        did = store.add_document(pid, doc.name, doc.text)
+        did = store.add_document(pid, doc.name, doc.text, page_starts=doc.page_starts)
         emit("doc_start", index=i, doc=doc.name, chars=len(doc.text), chunks=len(chunk(doc.text)))
         try:
             kept = find_findings(doc.text, cats, provider, cache=store, workers=workers,

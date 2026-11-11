@@ -22,10 +22,11 @@ import overview
 import sidebar_rail
 from common import DB_PATH, get_store, result_actions, resume_latest
 from progress_ui import ProgressView
-from theme import apply_theme, brand, hero, marquee, views
+from theme import apply_theme, brand, export_link, hero, marquee, nav_gap, views
 
 REPLAY_SPEEDS = {"Original": 1.0, "5×": 5.0, "20×": 20.0, "Skip to results": None}
 
+st.session_state["review_role"] = "junior"  # the Overview is the Junior Associate's; the Senior Lawyer opens the review from a question
 st.set_page_config(page_title="Clautra · Overview", page_icon="static/brand/clautra-mark-transparent.png", layout="wide")
 apply_theme(st)
 marquee(st)
@@ -69,10 +70,12 @@ runs = get_store().list_runs()
 with st.sidebar:
     brand(st)
     views(st)
+    nav_gap(st)
     # open when there is nothing to continue, or when another screen asked for it (kept open until that review is run)
     new_open = "result" not in st.session_state or bool(st.session_state.get("new_review"))
     with st.expander("New review", expanded=new_open, icon=":material/add:"):
         go, chosen, files, provider_name, workers = sidebar_rail.render(dev)
+    export_link(st)  # under New review, the same on every screen
     if tools:  # saved runs and their replay are a developer aid
         # Every finished run is saved with its step-by-step recording, so it can be replayed without calling the model.
         with st.expander("Saved runs", expanded=False):
@@ -120,9 +123,11 @@ if go:
     slot = st.empty()
     recorder = Recorder(forward=ProgressView(st, slot.container(), show_done=False, heading=head_slot).handle)
     try:
+        title = sidebar_rail.review_title() or "Contract review"  # the name the Junior Associate gave it; the project's own name stays a unique timestamp
         pid, provider, project = run(files, chosen, provider_name, on_event=recorder, workers=workers)
+        sidebar_rail.name_used()
         usage = provider.meter.summary()
-        get_store().save_run(project, provider.name, getattr(provider, "model", ""), pid, chosen, usage, recorder.events)
+        get_store().save_run(title, provider.name, getattr(provider, "model", ""), pid, chosen, usage, recorder.events)
         st.session_state["result"] = {"pid": pid, "categories": chosen, "usage": usage, "provider": provider.name}
         st.session_state.pop("new_review", None)  # done: the setup tucks away
         file_window.reset(st)
