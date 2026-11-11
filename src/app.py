@@ -13,10 +13,11 @@ import streamlit as st
 
 from clause_review.categories import CATEGORIES
 from clause_review.pipeline import run_review
-from clause_review.samples import estimate_seconds, format_duration, list_samples, workers_from_env
+from clause_review.samples import format_duration, workers_from_env
 from clause_review.provider_choice import CHOICES, NOTES, default_choice, problem, show_dev_tools, toggle_enabled
 from clause_review.providers import BudgetExceeded, get_provider
 from clause_review.replay import Recorder, play
+import demo_picker
 import overview
 from common import DB_PATH, get_store, result_actions, resume_latest
 from progress_ui import ProgressView
@@ -28,13 +29,13 @@ st.set_page_config(page_title="Clautra · Overview", page_icon="static/brand/cla
 apply_theme(st)
 marquee(st)
 dev = False
-tools = show_dev_tools()  # the dev and demo parts (Dev mode, Demo tag, bundled samples, saved runs and replay) are hidden by default
+tools = show_dev_tools()  # the dev and demo parts (Dev mode, Demo tag, saved runs and replay) are hidden by default
 if tools and toggle_enabled():  # the switch itself is hidden when CLAUSE_DEV_TOGGLE=0, which leaves the app in user mode
     st.session_state.setdefault("dev_mode", st.query_params.get("dev") == "1")
     dev = st.toggle("Dev mode", key="dev_mode", help="Off: just what a reviewer sees. On: model choice, provider notes and usage.")
 
 
-def run(files, categories, provider_name, samples=(), on_event=None, workers=1):
+def run(files, categories, provider_name, on_event=None, workers=1):
     """Write the uploads to a temp folder (one subfolder each, so equal file names do not collide) and review them."""
     store, provider = get_store(), get_provider(provider_name)
     project = time.strftime("Review %Y-%m-%d %H:%M:%S")
@@ -45,12 +46,6 @@ def run(files, categories, provider_name, samples=(), on_event=None, workers=1):
             d.mkdir()
             p = d / Path(f.name).name
             p.write_bytes(f.getvalue())
-            paths.append(p)
-        for j, smp in enumerate(samples):  # bundled sample contracts, named by id and title in the results
-            d = Path(tmp) / f"s{j}"
-            d.mkdir()
-            p = d / f"{smp['label']}.txt"
-            p.write_bytes(Path(smp["path"]).read_bytes())
             paths.append(p)
         pid = run_review(store, project, paths, provider, categories=categories,
                          workers=workers, on_event=on_event)
@@ -69,35 +64,20 @@ def new_review_form(dev):
     if blocked:
         st.error(blocked)
     chosen = st.multiselect("Clause types to look for", list(CATEGORIES), default=list(CATEGORIES))
-    files = st.file_uploader("Upload contracts (PDF or text)", type=["pdf", "txt"], accept_multiple_files=True)
+    if demo_picker.enabled():  # the demo's fake Open window with the ten tested contracts
+        files = demo_picker.render(st)
+    else:
+        files = st.file_uploader("Upload contracts (PDF or text)", type=["pdf", "txt"], accept_multiple_files=True)
     workers = workers_from_env()
-    picked = []
-    if tools:  # the bundled public contracts are a demo aid
-        samples = list_samples()
-        by_id = {smp["id"]: smp for smp in samples}
-
-        def set_samples(everything):
-            st.session_state["sample_pick"] = list(by_id) if everything else []
-
-        st.multiselect("Or use the bundled contracts", list(by_id), key="sample_pick", placeholder="Choose from the bundled contracts",
-                       format_func=lambda i: f"{by_id[i]['title']} · {format_duration(estimate_seconds(by_id[i]['chunks'], provider_name, workers))}",
-                       help="Public contracts that come with the app. The time beside each is a rough estimate for the model chosen.")
-        picked = [by_id[i] for i in st.session_state.get("sample_pick", []) if i in by_id]
-        b1, b2 = st.columns(2)
-        b1.button("Select all", on_click=set_samples, args=(True,), use_container_width=True)
-        b2.button("Clear", on_click=set_samples, args=(False,), use_container_width=True)
-    n = len(files) + len(picked)
+    n = len(files)
     if not n:
         st.caption("Add at least one contract to run a review.")
     elif not chosen:
         st.caption("Pick at least one clause type.")
     else:
-        note = f"{n} contract{'s' if n != 1 else ''} · {len(chosen)} clause type{'s' if len(chosen) != 1 else ''}"
-        if picked:
-            note += f" · about {format_duration(estimate_seconds(sum(x['chunks'] for x in picked), provider_name, workers))} for the bundled ones"
-        st.markdown(f"**{note}**")
-    go = st.button("Run review", type="primary", disabled=not (files or picked) or not chosen or bool(blocked), use_container_width=True)
-    return go, chosen, files, picked, provider_name, workers
+        st.markdown(f"**{n} contract{'s' if n != 1 else ''} · {len(chosen)} clause type{'s' if len(chosen) != 1 else ''}**")
+    go = st.button("Run review", type="primary", disabled=not files or not chosen or bool(blocked), use_container_width=True)
+    return go, chosen, files, provider_name, workers
 
 
 # Coming back: `?open=<run id>` opens that saved run (so a design change can be checked with a refresh); otherwise the latest
@@ -119,7 +99,7 @@ with st.sidebar:
     # open when there is nothing to continue, or when another screen asked for it (kept open until that review is run)
     new_open = "result" not in st.session_state or bool(st.session_state.get("new_review"))
     with st.expander("New review", expanded=new_open, icon=":material/add:"):
-        go, chosen, files, picked, provider_name, workers = new_review_form(dev)
+        go, chosen, files, provider_name, workers = new_review_form(dev)
     if tools:  # saved runs and their replay are a developer and demo aid
         # Every finished run is saved with its step-by-step recording, so it can be replayed without calling the model.
         with st.expander("Saved runs", expanded=False):
@@ -165,11 +145,12 @@ if go:
     slot = st.empty()
     recorder = Recorder(forward=ProgressView(st, slot.container()).handle)
     try:
-        pid, provider, project = run(files, chosen, provider_name, picked, on_event=recorder, workers=workers)
+        pid, provider, project = run(files, chosen, provider_name, on_event=recorder, workers=workers)
         usage = provider.meter.summary()
         get_store().save_run(project, provider.name, getattr(provider, "model", ""), pid, chosen, usage, recorder.events)
         st.session_state["result"] = {"pid": pid, "categories": chosen, "usage": usage, "provider": provider.name}
         st.session_state.pop("new_review", None)  # done: the setup tucks away
+        demo_picker.reset(st)
         st.rerun()  # redraw so the new run appears under Saved runs (the sidebar was drawn before the run)
     except BudgetExceeded as e:
         st.session_state.pop("result", None)
