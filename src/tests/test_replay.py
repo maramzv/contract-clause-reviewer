@@ -122,16 +122,24 @@ class FakeBar:
         self.log.append((self.i, round(value, 2), text))
 
 
+class FakeSlot:
+    def __init__(self, rows, i):
+        self.rows, self.i = rows, i
+
+    def markdown(self, text, **kw):
+        self.rows[self.i] = text  # a slot shows only its latest drawing
+
+
 class FakeBox:
     def __init__(self):
-        self.bars, self.notes = [], []
+        self.rows, self.notes = {}, []
 
-    def markdown(self, text):
+    def markdown(self, text, **kw):
         self.notes.append(("markdown", text))
 
-    def progress(self, value, text=""):
-        self.bars.append((len(self.bars), round(value, 2), text))
-        return FakeBar(self.bars, len(self.bars) - 1)
+    def empty(self):
+        self.rows[len(self.rows)] = ""
+        return FakeSlot(self.rows, len(self.rows) - 1)
 
     def success(self, text):
         self.notes.append(("success", text))
@@ -147,8 +155,6 @@ def test_progress_screen_draws_each_contract_from_a_recording(tmp_path):
     box = FakeBox()
     view = ProgressView(None, box)
     play(events, view.handle, speed=None)
-    last = {}
-    for i, value, text in box.bars:
-        last[i] = (value, text)
-    assert last[0][1].startswith(":material/error: empty.txt") and last[1][0] == 1.0 and last[1][1].startswith(":material/check_circle: long.txt")
+    assert "pr-failed" in box.rows[0] and "empty" in box.rows[0] and "Failed" in box.rows[0]
+    assert "pr-done" in box.rows[1] and "width:100%" in box.rows[1] and "finding" in box.rows[1] and "long" in box.rows[1]
     assert ("success", "Done. Your contracts have been read.") in box.notes

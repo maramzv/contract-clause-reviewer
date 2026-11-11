@@ -193,7 +193,21 @@ section[data-testid="stSidebar"] [data-testid="stSidebarContent"] { overflow-x:h
   background:rgba(243,239,230,.94); border:1px solid var(--line); box-shadow:0 1px 4px rgba(20,39,55,.18); color:var(--ink); }
 [class*="st-key-refresh_corner"] button:hover { border-color:var(--brass-deep); background:#fff; }
 [class*="st-key-refresh_corner"] [data-testid="stIconMaterial"] { font-size:1.25rem; }
-[data-testid="stProgress"] span[role="img"] { color:var(--brass-deep); }  /* the finished / failed mark on the run screen */
+/* the run screen: one row per contract */
+.pr-head { font-family:%(SERIF)s; font-size:1.55rem; color:var(--ink); margin:.2rem 0 .4rem; }
+.pr { padding:.55rem 0 .7rem; border-bottom:1px solid var(--line); }
+.pr-top { display:flex; justify-content:space-between; align-items:baseline; gap:1rem; margin-bottom:.4rem; }
+.pr-name { min-width:0; display:flex; flex-wrap:wrap; align-items:baseline; gap:.1rem .7rem; }
+.pr-title { font-family:%(SERIF)s; font-size:1.12rem; line-height:1.2; color:var(--ink); }
+.pr-party { font-size:.82rem; color:#4b5f70; }
+.pr-note { flex:none; display:inline-flex; align-items:center; gap:.35rem; font-size:.85rem; font-weight:600; color:#4b5f70; white-space:nowrap; }
+.pr-done .pr-note { color:var(--brass-deep); }
+.pr-failed .pr-note { color:#8a2f25; white-space:normal; text-align:right; }
+.pr-waiting .pr-title { color:#6b7c8b; }
+.pr-bar { height:5px; border-radius:3px; background:rgba(20,39,55,.12); overflow:hidden; }
+.pr-bar span { display:block; height:100%%; border-radius:3px; background:var(--brass-deep); transition:width .25s ease; }
+.pr-failed .pr-bar span { background:#a8473b; }
+.pr-ic { flex:none; }
 span[data-baseweb="tag"] { background:#C4A972 !important; color:#142737 !important; border-radius:3px; }
 section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] { background:rgba(255,255,255,.05); border:1px dashed #6f8aa3; }
 </style>
