@@ -47,7 +47,7 @@ function left(d) {
   return out.join('');
 }
 
-// The clause strip shows the clauses that have findings (and the one on screen); the rest fold into one "N not found" chip.
+// The clause strip shows the clauses that have findings (and the one on screen); the rest fold into one "N with nothing found" chip.
 function chips(d) {
   const chip = (k) => `<button class="chip ${k.state}${k.active ? ' active' : ''}" data-clause="${esc(k.name)}"><i></i>${esc(k.label)}</button>`;
   const hasFinding = (k) => k.state === 'found' || k.state === 'accepted';
@@ -55,7 +55,7 @@ function chips(d) {
   const hidden = d.clauses.length - shown.length;
   const more = ui.chipsAll
     ? '<button class="chip more" data-chipsall>show fewer</button>'
-    : hidden ? `<button class="chip more" data-chipsall>${hidden} not found</button>` : '';
+    : hidden ? `<button class="chip more" data-chipsall>${hidden} with nothing found</button>` : '';
   return `<div class="chips">${shown.map(chip).join('')}${more}</div>`;
 }
 

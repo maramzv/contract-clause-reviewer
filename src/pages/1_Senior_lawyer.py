@@ -68,7 +68,7 @@ count = {k: sum(1 for _, f in asked if f["qstate"] == k) for k in (OPEN, ANSWERE
 gaps = [(d, c) for d in docs for c in cats if d["categories"][c] != FOUND]
 kpi_row(st, [(count[OPEN], "Open question" if count[OPEN] == 1 else "Open questions", "waiting for your answer", count[OPEN] > 0),
              (count[ANSWERED] + count[RESOLVED], "Answered", None, False),
-             (len(gaps), "Clause with nothing found" if len(gaps) == 1 else "Clauses with nothing found", "not found or failed", len(gaps) > 0)])
+             (len(gaps), "Clause with nothing found" if len(gaps) == 1 else "Clauses with nothing found", "no passage found, or the file failed", len(gaps) > 0)])
 st.sidebar.download_button("Download questions CSV", questions_csv_text(store, pid), file_name="questions_for_senior_lawyer.csv",
                            mime="text/csv")
 st.sidebar.download_button("Download full table CSV", csv_text(store, pid), file_name="clause_review.csv", mime="text/csv")
