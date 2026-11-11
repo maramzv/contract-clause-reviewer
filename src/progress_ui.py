@@ -26,7 +26,8 @@ def row_html(name, fraction, state, note=""):
 
 
 class ProgressView:
-    def __init__(self, st, container=None):
+    def __init__(self, st, container=None, show_done=True):
+        self.show_done = show_done  # False when the caller draws its own finish bar (with the View results button in it)
         self.box = container if container is not None else st.container()
         self.rows = {}
         # Streamlit may only be drawn to from the thread that runs the page. A live run with several workers reports
@@ -52,7 +53,7 @@ class ProgressView:
             self._draw(d.get("index"), 1.0, "failed", f"Failed: {str(d['error'])[:90]}")
         elif kind == "run_aborted":
             self.box.error(f"The review stopped: {d['error']}")
-        elif kind == "run_done":
+        elif kind == "run_done" and self.show_done:
             self.box.success("Done. Your contracts have been read.")
 
     def _draw(self, index, fraction, state, note):

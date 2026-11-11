@@ -208,6 +208,9 @@ section[data-testid="stSidebar"] [data-testid="stSidebarContent"] { overflow-x:h
 .pr-bar span { display:block; height:100%%; border-radius:3px; background:var(--brass-deep); transition:width .25s ease; }
 .pr-failed .pr-bar span { background:#a8473b; }
 .pr-ic { flex:none; }
+[class*="st-key-pr_done"] { margin-top:.9rem; padding:.55rem .9rem .55rem 1.1rem; border:1px solid var(--line); border-left:3px solid var(--brass);
+  border-radius:3px; background:rgba(185,200,212,.35); }
+[class*="st-key-pr_done"] p { margin:0; font-size:1rem; color:var(--ink); }
 span[data-baseweb="tag"] { background:#C4A972 !important; color:#142737 !important; border-radius:3px; }
 section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] { background:rgba(255,255,255,.05); border:1px dashed #6f8aa3; }
 </style>
