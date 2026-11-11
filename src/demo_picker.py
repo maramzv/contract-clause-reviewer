@@ -74,26 +74,18 @@ def _all(n, on):
 def _dialog(files):
     st.markdown(_CSS, unsafe_allow_html=True)
     sel = st.session_state.setdefault("fd_sel", set(range(len(files))))
-    st.markdown('<div class="fd-bar"><span>←  →  ↑</span><span class="path">This computer  ›  Documents  ›  Contracts to review</span>'
-                '<span class="search">Search Contracts to review</span></div>', unsafe_allow_html=True)
-    side, main = st.columns([1.1, 4.4])
-    side.markdown('<div class="fd-places"><b>Quick access</b><span>Desktop</span><span>Downloads</span><span>Documents</span>'
-                  '<b>This computer</b><span class="on">Contracts to review</span></div>', unsafe_allow_html=True)
-    with main:
-        per_row = 4
-        for r in range(0, len(files), per_row):
-            cols = st.columns(per_row)
-            for c, i in zip(cols, range(r, min(r + per_row, len(files)))):
-                with c.container(key=f"fdc{i}_{'on' if i in sel else 'off'}"):
-                    st.button(files[i].name, key=f"fdb{i}", on_click=_toggle, args=(i,), use_container_width=True)
-    names = [files[i].name for i in sorted(sel)]
-    label = (f'"{names[0]}"' if len(names) == 1 else f"{len(names)} files selected") if names else "No file selected"
-    st.markdown(f'<div class="fd-foot"><span>File name:</span><span class="name">{label}</span><span>All files</span></div>',
-                unsafe_allow_html=True)
-    a, b, _, c = st.columns([1.2, 1.2, 2.4, 1.4])
+    per_row = 5
+    for r in range(0, len(files), per_row):
+        cols = st.columns(per_row)
+        for c, i in zip(cols, range(r, min(r + per_row, len(files)))):
+            with c.container(key=f"fdc{i}_{'on' if i in sel else 'off'}"):
+                st.button(files[i].name, key=f"fdb{i}", on_click=_toggle, args=(i,), use_container_width=True)
+    a, b, _, c, d = st.columns([1.2, 1.1, 1.6, 1.1, 1.1])
     a.button("Select all", on_click=_all, args=(len(files), True), use_container_width=True)
     b.button("Clear", on_click=_all, args=(len(files), False), use_container_width=True)
-    if c.button("Open", type="primary", disabled=not sel, use_container_width=True, key="fd_open"):
+    if c.button("Cancel", use_container_width=True, key="fd_cancel"):
+        st.rerun()  # closes the window without adding anything
+    if d.button("Open", type="primary", disabled=not sel, use_container_width=True, key="fd_open"):
         st.session_state["fd_files"] = [files[i] for i in sorted(sel)]
         st.session_state["nr_ok"] = False  # new contracts: the clause step is shown again
         st.rerun()
