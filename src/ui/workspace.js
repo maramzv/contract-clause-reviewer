@@ -28,7 +28,7 @@ function left(d) {
       <button class="btn" data-act="next" aria-label="Next">Next</button></span></div>
     <div class="status"><span class="count">${count}</span><span class="bar"><span style="width:${Math.max(2, Math.round(d.progress * 100))}%"></span></span></div>${gaps(d)}
     <div><div class="title">${esc(d.title)}</div>
-      <div class="sub">${esc(d.party ? d.party + ' · ' : '')}contract ${d.contractNo} of ${d.contracts} · ${d.foundCount} of ${d.clauseCount} clauses found</div></div>
+      <div class="sub">${esc(d.party ? d.party + ' · ' : '')}contract ${d.contractNo} of ${d.contracts}</div></div>
     ${chips(d)}
     <div class="section">
       <div class="head"><span class="name">${esc(c.name)}</span><span class="tag ${c.state}">${esc(STATE_TAG[c.state] || c.status)}</span>
@@ -77,7 +77,8 @@ function finding(f, first) {
   const asking = ui.ask === f.id;
   const st = f.qstate;
   const chip = st === 'answered' ? 'Answered by the senior lawyer' : st === 'resolved' ? 'Question resolved' : 'Question open: waiting for the senior lawyer';
-  let h = `<div class="head"><span class="of">Passage ${f.index} of ${f.of} · ${status}</span></div>
+  const meta = [f.page ? `Page ${f.page}` : '', f.of > 1 ? `Passage ${f.index} of ${f.of}` : '', status].filter(Boolean).join(' · ');
+  let h = `<div class="head"><span class="of">${meta}</span></div>
     <div class="quote">${esc(f.quote)}</div>
     <div class="hint">Check the highlighted passage in the contract says the same, word for word.</div>
     <div class="acts">
@@ -135,9 +136,13 @@ export default function (component) {
   const prevLeft = root.querySelector('.left'), prevDoc = root.querySelector('[data-doc]');
   if (prevLeft) ui.leftTop = prevLeft.scrollTop;
   if (prevDoc) ui.docTop = prevDoc.scrollTop;
+  // a different passage starts at the top of the panel, so the buttons and the count are always where they were
+  const passageKey = `${data.docId}|${data.category}|${data.findings[0] ? data.findings[0].id : ''}`;
+  if (passageKey !== ui.passageKey) { ui.leftTop = 0; ui.passageKey = passageKey; }
   root.innerHTML = `<div class="left">${left(data)}</div><div class="right">${right(data)}</div>`;
   const leftEl = root.querySelector('.left'), docEl = root.querySelector('[data-doc]');
   leftEl.scrollTop = ui.leftTop;
+  paintToast();
 
   // keep the reader where they were, but bring a newly shown passage into view
   const key = data.document.scrollKey || data.document.query;
@@ -153,7 +158,11 @@ export default function (component) {
     const t = e.target.closest('button');
     if (!t || t.disabled) return;
     const ds = t.dataset;
-    if (ds.act) { if (['prev','next','pprev','pnext'].includes(ds.act)) ui.leftTop = 0; send({ type: ds.act, id: ds.id ? Number(ds.id) : undefined, on: ds.on === undefined ? undefined : ds.on === '1' }); }
+    if (t.hasAttribute('data-undo')) {
+      const u = ui.undo; ui.undo = null; paintToast();
+      if (u) send({ type: 'undo', id: u.id, doc: u.doc, name: u.name });
+    }
+    else if (ds.act) { if (ds.act === 'accept' || ds.act === 'remove') armUndo(Number(ds.id), ds.act); if (['prev','next','pprev','pnext'].includes(ds.act)) ui.leftTop = 0; send({ type: ds.act, id: ds.id ? Number(ds.id) : undefined, on: ds.on === undefined ? undefined : ds.on === '1' }); }
     else if (ds.clause) { ui.leftTop = 0; send({ type: 'clause', name: ds.clause }); }
     else if (t.hasAttribute('data-chipsall')) { ui.chipsAll = !ui.chipsAll; rerender(); }
     else if (ds.gapname) { ui.leftTop = 0; ui.gapsOpen = false; send({ type: 'jump', doc: Number(ds.doc), name: ds.gapname }); }
@@ -189,6 +198,23 @@ export default function (component) {
     root.innerHTML = `<div class="left">${left(data)}</div><div class="right">${right(data)}</div>`;
     root.querySelector('.left').scrollTop = ui.leftTop; root.querySelector('[data-doc]').scrollTop = ui.docTop;
     root.querySelector('[data-draft]')?.focus();
+    paintToast();
+  }
+
+  // "Accepted · Undo" for a few seconds after Accept or Remove: Undo puts the passage back to not yet reviewed and shows it again
+  function armUndo(id, verb) {
+    ui.undo = { id, doc: data.docId, name: data.category, text: verb === 'accept' ? 'Accepted' : 'Removed', until: Date.now() + 8000 };
+  }
+  function paintToast() {
+    root.querySelector('.toast')?.remove();
+    clearTimeout(ui.undoTimer);
+    const u = ui.undo;
+    if (!u || Date.now() >= u.until) { ui.undo = null; return; }
+    const el = document.createElement('div');
+    el.className = 'toast'; el.setAttribute('role', 'status');
+    el.innerHTML = `${esc(u.text)} <button class="btn" data-undo>Undo</button>`;
+    root.appendChild(el);
+    ui.undoTimer = setTimeout(() => { if (ui.undo === u) ui.undo = null; el.remove(); }, u.until - Date.now());
   }
 
   // keyboard: A accept, R remove, Q ask (the first passage still to review), when not typing
@@ -197,8 +223,9 @@ export default function (component) {
     const f = data.findings.find((x) => x.review === 'pending') || data.findings[0];
     if (!f) return;
     const k = e.key.toLowerCase();
-    if (k === 'a' && f.review !== 'accepted') send({ type: 'accept', id: f.id });
-    else if (k === 'r') send({ type: 'remove', id: f.id });
+    if (k === 'a' && f.review !== 'accepted') { armUndo(f.id, 'accept'); send({ type: 'accept', id: f.id }); }
+    else if (k === 'r') { armUndo(f.id, 'remove'); send({ type: 'remove', id: f.id }); }
+    else if (k === 'z' && ui.undo) { const u = ui.undo; ui.undo = null; paintToast(); send({ type: 'undo', id: u.id, doc: u.doc, name: u.name }); }
     else if (k === 'q') { e.preventDefault(); ui.ask = f.id; rerender(); }
   };
   document.addEventListener('keydown', onKey);

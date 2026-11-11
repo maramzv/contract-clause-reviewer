@@ -4,7 +4,7 @@
   --blue:#2F5F82; --mist:#B9C8D4; --quote:#DCE4EB; --panel:#EAF0F4; --strip:#EAE4D5; --hl:#E4D3A6;
   --serif:'Cormorant Garamond','Latin Modern Roman',Georgia,serif;
   height: max(620px, 100vh); display: flex; background: var(--ivory); color: var(--ink); font-family: Inter, system-ui, sans-serif; font-size: 14px;
-  overflow: hidden; }
+  overflow: hidden; position: relative; }
 button { font-family: inherit; font-size: inherit; cursor: pointer; color: var(--ink); }
 button:disabled { opacity: .4; cursor: default; }
 kbd { font: inherit; }
@@ -50,7 +50,10 @@ kbd { font: inherit; }
 .quote { background: var(--quote); border-radius: 3px; padding: 12px 15px; font-family: var(--serif); font-size: 19px; line-height: 1.36; color: #0f1f2c; }
 .quote.removed { opacity: .55; text-decoration: line-through; font-size: 16px; }
 .hint { font-size: 13px; color: var(--muted); }
-.acts { display: flex; gap: 8px; }
+.acts { display: flex; gap: 8px; position: sticky; bottom: 0; z-index: 3; background: var(--paper); padding: 10px 0 12px; margin: 0; box-shadow: 0 -12px 12px -10px rgba(20,39,55,.16); }
+.toast { position: absolute; right: 64px; bottom: 28px; z-index: 20; display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 16px; border-radius: 4px; background: var(--ink); color: var(--ivory); font-size: 14px; box-shadow: 0 6px 18px rgba(10,20,30,.35); }
+.toast .btn { height: 28px; border-color: rgba(243,239,230,.5); color: var(--ivory); }
+.toast .btn:hover { background: rgba(243,239,230,.12); }
 .act { flex: 1; min-width: 0; white-space: nowrap; height: 44px; border-radius: 3px; border: 1px solid rgba(20,39,55,.45); background: transparent; font-size: 14px; }
 .act:hover:not(:disabled) { background: rgba(20,39,55,.06); }
 .act small { font-size: 12px; opacity: .75; font-weight: 500; }

@@ -129,3 +129,25 @@ def test_next_and_previous_walk_the_passages_and_passage_buttons_reach_decided_o
     apply_action(s, state, {"type": "pprev"}, docs())
     v = build_view(s, docs(), state)
     assert v["findings"][0]["id"] == ids[0] and v["mode"] == "All clauses"  # the decided passage can still be looked at
+
+
+def test_undo_puts_a_decided_passage_back_and_shows_it_again():
+    s, docs = _renewal_store()
+    state = {}
+    ids = [f["id"] for f in docs()[0]["findings"]]
+    v = build_view(s, docs(), state)
+    first = v["findings"][0]["id"]
+    apply_action(s, state, {"type": "accept", "id": first}, docs())
+    v = build_view(s, docs(), state)
+    assert v["findings"][0]["id"] == ids[1]  # moved on to the next passage
+    apply_action(s, state, {"type": "undo", "id": first, "doc": v["docId"], "name": v["category"]}, docs())
+    v = build_view(s, docs(), state)
+    assert v["findings"][0]["id"] == first and v["findings"][0]["review"] == "pending"
+    assert v["position"]["of"] == len(ids)  # back in the queue
+
+
+def test_page_number_is_only_shown_for_pdfs():
+    from workspace_html import _finding
+    f = {"id": 1, "page": 14, "review": "pending", "quote": "q", "question": None, "answer": None, "qstate": None}
+    assert _finding(f, 1, 1, "deal.pdf")["page"] == 14
+    assert _finding(f, 1, 1, "contract_01 - Title (Party).txt")["page"] is None  # a text file has no pages

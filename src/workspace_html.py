@@ -100,7 +100,7 @@ def build_view(store, docs, state, categories=None):
         "clauses": [{"name": c, "label": short(c), "state": clause_state(doc, c), "active": c == cat} for c in doc["categories"]],
         "current": {"name": short(cat), "state": clause_state(doc, cat), "status": doc["categories"][cat] or "Failed",
                     "reviewed": bool(doc["reviewed"].get(cat)), "failed": doc["error"] if doc["status"] == "failed" else None},
-        "findings": [_finding(current, [f["id"] for f in live].index(fid) + 1, len(live))] if current else [],
+        "findings": [_finding(current, [f["id"] for f in live].index(fid) + 1, len(live), doc["name"])] if current else [],
         "removed": [{"id": f["id"], "quote": " ".join(f["quote"].split())}
                     for f in doc["findings"] if f["category"] == cat and f["review"] == "removed"],
         "upNext": [upnext(m) for m in later],
@@ -111,8 +111,9 @@ def build_view(store, docs, state, categories=None):
     return view
 
 
-def _finding(f, i, n):
-    return {"id": f["id"], "index": i, "of": n, "review": f["review"], "quote": " ".join(f["quote"].split()),
+def _finding(f, i, n, name=""):
+    """One passage for the page. The page number is only passed on for a PDF: a text file has no pages, so "page 1" would mislead."""
+    return {"id": f["id"], "index": i, "of": n, "page": f["page"] if name.lower().endswith(".pdf") and f["page"] else None, "review": f["review"], "quote": " ".join(f["quote"].split()),
             "question": f["question"] or "", "answer": f["answer"] or "", "qstate": f["qstate"] or (OPEN if f["question"] else None)}
 
 
@@ -202,6 +203,11 @@ def apply_action(store, state, act, docs):
             state["ws_pin"] = True  # chosen on purpose, so it is not skipped even if it is already decided
     elif kind in ("accept", "remove", "restore") and fid:
         store.set_review(fid, {"accept": "accepted", "remove": "removed", "restore": "pending"}[kind])
+    elif kind == "undo" and fid:  # take the last Accept or Remove back and show that passage again
+        store.set_review(fid, "pending")
+        slots = build_slots(docs)
+        if (act.get("doc"), act.get("name")) in slots:
+            state["ws_pos"], state["ws_fid"], state["ws_pin"] = slots.index((act["doc"], act["name"])), fid, True
     elif kind == "ask" and fid:
         store.set_question(fid, act.get("text", ""))
     elif kind == "resolve" and fid:
