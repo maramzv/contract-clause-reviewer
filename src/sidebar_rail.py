@@ -1,14 +1,14 @@
 """New review in the left sidebar as three steps down a thin rail: add contracts, choose clauses, run.
 
 A finished step shrinks to one line with its own tick and the next one opens. The contracts come from a browse-or-drop box
-(in the demo it opens the fake Open window, see demo_picker) and the clause types are slim rows with an icon that fill in brass
+(it opens the Open window, see file_window) and the clause types are slim rows with an icon that fill in brass
 when chosen. Drawing and clicks only: the run itself is app.run."""
 import html
 import urllib.parse
 
 import streamlit as st
 
-import demo_picker
+import file_window
 from clause_review.categories import CATEGORIES
 from clause_review.provider_choice import CHOICES, default_choice, problem
 from clause_review.review_view import display_name
@@ -121,19 +121,19 @@ def render(dev):
     st.session_state.setdefault("nr_clauses", set())  # nothing is preselected: the person chooses
     st.session_state.setdefault("nr_ok", False)
     sel = st.session_state["nr_clauses"]
-    demo = demo_picker.enabled()
+    windowed = file_window.enabled()
     go = False
 
     with st.container(key="nr_rail"):
         # 1. contracts
-        files = demo_picker.chosen() if demo else (st.session_state.get("nr_upload") or [])
+        files = file_window.chosen() if windowed else (st.session_state.get("nr_upload") or [])
         with st.container(key="nr_s1_" + ("done" if files else "now")):
             st.markdown('<div class="nr-h">Add contracts</div>', unsafe_allow_html=True)
-            if demo:
+            if windowed:
                 if not files:
                     with st.container(key="nr_browse"):
                         if st.button("**Browse** or drop contracts", key="nr_browse_btn", use_container_width=True):
-                            demo_picker.open_dialog()
+                            file_window.open_dialog()
                 else:
                     items = "".join(f'<li><span class="d"></span><span class="n" title="{html.escape(f.name)}">'
                                     f'{html.escape(display_name(f.name))}</span><span class="s">{_kb(f.size)}</span></li>' for f in files)
@@ -143,7 +143,7 @@ def render(dev):
                                f'{_kb(sum(f.size for f in files))}</div>', unsafe_allow_html=True)
                     with b.container(key="nr_link_files"):
                         if st.button("Change", key="nr_change_files"):
-                            demo_picker.open_dialog()
+                            file_window.open_dialog()
             else:
                 files = st.file_uploader("Upload contracts (PDF or text)", type=["pdf", "txt"], accept_multiple_files=True,
                                          key="nr_upload", label_visibility="collapsed") or []

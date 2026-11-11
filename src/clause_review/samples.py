@@ -1,4 +1,4 @@
-"""Sample contracts bundled with the app for demos, with an estimate of how long a review of each will take.
+"""Sample contracts bundled with the app for trying it out, with an estimate of how long a review of each will take.
 
 The estimate counts the chunks a contract is cut into (one model call each) and multiplies by a typical time per call
 for the chosen provider. The per-call times are rough: see SECONDS_PER_CALL."""

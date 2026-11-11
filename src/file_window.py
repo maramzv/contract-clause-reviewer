@@ -1,8 +1,8 @@
-"""A demo prop: when someone clicks Upload, an "Open" window that looks like a computer's file dialog pops up with the ten tested
+"""An "Open" window: when someone clicks Browse, a window that looks like a computer's file dialog pops up with the ten tested
 contracts shown as document files, all selected. Open adds them to the review as if they had been picked from a folder.
 
 It is not an operating-system dialog and it does not read anything from the computer: the files are the ten contracts bundled
-with the app. Turn it off with CLAUSE_DEMO_PICKER=0 to get the normal upload box back."""
+with the app. Turn it off with CLAUSE_FILE_WINDOW=0 to get the normal upload box back."""
 import os
 import urllib.parse
 from pathlib import Path
@@ -39,11 +39,11 @@ _CSS = f"""<style>
 
 
 def enabled(environ=None):
-    """The fake Open window is on unless CLAUSE_DEMO_PICKER=0."""
-    return (environ if environ is not None else os.environ).get("CLAUSE_DEMO_PICKER", "1") != "0"
+    """The fake Open window is on unless CLAUSE_FILE_WINDOW=0."""
+    return (environ if environ is not None else os.environ).get("CLAUSE_FILE_WINDOW", "1") != "0"
 
 
-class DemoFile:
+class SampleFile:
     """Looks like an uploaded file to the rest of the app: a name and the bytes."""
     def __init__(self, name, path):
         self.name, self._path = name, path
@@ -56,9 +56,9 @@ class DemoFile:
         return Path(self._path).read_bytes()
 
 
-def demo_files():
+def contract_files():
     """The ten tested contracts, under their full titled names (the short made-up sample is not one of them)."""
-    return [DemoFile(f"{s['label']}.txt", s["path"]) for s in list_samples() if s["id"] != "sample"]
+    return [SampleFile(f"{s['label']}.txt", s["path"]) for s in list_samples() if s["id"] != "sample"]
 
 
 def _toggle(i):
@@ -98,7 +98,7 @@ def chosen():
 
 def open_dialog():
     """Pop up the fake Open window with all ten contracts selected."""
-    files = demo_files()
+    files = contract_files()
     st.session_state["fd_sel"] = set(range(len(files)))
     _dialog(files)
 

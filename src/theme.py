@@ -312,10 +312,10 @@ def kpi_row(st, items):
     st.markdown('<div class="kpis">' + "".join(tiles) + "</div>", unsafe_allow_html=True)
 
 
-def hero(st, demo=False):
-    """The page header. `demo` adds a small 'Demo mode' tag to the eyebrow line (shown in user mode when the offline
-    keyword demo is the model, so the results are never mistaken for a real model's)."""
-    tag = '&nbsp;&nbsp;·&nbsp;&nbsp;Demo mode' if demo else ''
+def hero(st, offline=False):
+    """The page header. `offline` adds a small 'Offline mode' tag to the eyebrow line (shown when the offline
+    keyword provider is the model, so the results are never mistaken for a real model's)."""
+    tag = '&nbsp;&nbsp;·&nbsp;&nbsp;Offline mode' if offline else ''
     st.markdown(
         f'<div class="hero"><div class="eyebrow">Clautra &nbsp;/&nbsp; Contract review{tag}</div>'
         '<h1>Contract review</h1><p class="tag">Every clause, accounted for.</p><hr class="rule">'

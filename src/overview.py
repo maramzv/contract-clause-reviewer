@@ -7,6 +7,7 @@ import html
 from clause_review.categories import CATEGORIES
 from clause_review.review_view import build_slots, clause_state, live_findings, overview_stats, split_title
 from clause_review.view import load_results
+from theme import kpi_row
 from workspace import short
 
 REVIEW_PAGE = "pages/2_Review.py"
@@ -24,7 +25,6 @@ def render(st, store, res):
     slots = build_slots(docs)
     by_id = {d["id"]: d for d in docs}
     s = overview_stats(docs, cats)
-    where = {f["id"]: (d["id"], f["category"]) for d in docs for f in d["findings"]}  # a passage -> its (contract, clause)
 
     def go(slot=None, fid=None, mode="All clauses"):
         """Open the Review page: on a given clause (and passage), or on the next passage still to decide."""
@@ -49,58 +49,26 @@ def render(st, store, res):
             slot = next((x for x in slots if x[0] == doc["id"]), None)
         go(slot, fid, "To do" if fid else "All clauses")
 
-    def open_passage(fid):
-        go(where[fid], fid)
-
-    def filter_to(name):
-        st.session_state["ov_filter"] = name
-
     # ---- the title row, with the way to carry on ----
-    run_name = next((r["name"] for r in store.list_runs() if r["project_id"] == res["pid"]), "")
-    sub = " · ".join(x for x in (_noun(len(docs), "contract", "contracts"), _noun(len(cats), "clause", "clauses"),
-                                 run_name.replace("Review ", "run ") if run_name else "") if x)
     title_col, go_col = st.columns([5, 1.6], vertical_alignment="center")
     title_col.markdown('<div class="hero"><div class="eyebrow">Clautra &nbsp;/&nbsp; Junior Associate</div><h1>Overview</h1>'
-                       f'<p class="tag">{html.escape(sub)}</p></div>', unsafe_allow_html=True)
+                       f'<p class="tag">{html.escape(_noun(len(docs), "contract", "contracts"))}</p></div>', unsafe_allow_html=True)
     if s["pending"]:
         label = "Continue reviewing"
     else:
         label = "Finish and export" if s["total"] else "Open the review"
     if go_col.button(label, type="primary", icon=":material/arrow_forward:", use_container_width=True, key="ov_go"):
         go(None, None, "To do")
-    if s["pending"]:
-        go_col.markdown(f'<div class="ov-gonote">{_noun(s["pending"], "passage", "passages")} left to decide</div>', unsafe_allow_html=True)
     st.markdown('<hr class="rule" style="margin:.2rem 0 1rem">', unsafe_allow_html=True)
 
-    # ---- progress, and what is waiting on whom ----
-    with st.container(key="ov_prog"):
-        left, right = st.columns([2.3, 1.7], gap="large")
-        pct = round(100 * s["decided"] / s["total"]) if s["total"] else 100
-        if not s["total"]:
-            status = "No passages were found. Search the contracts yourself for the clauses with nothing found."
-        elif not s["pending"] and not s["waiting"]:
-            status = "Everything is decided. It is ready to export."
-        elif not s["pending"]:
-            status = f'Everything is decided, but {_noun(s["waiting"], "question is", "questions are")} still waiting on the Senior Lawyer.'
-        else:
-            bits = [f'{s["accepted"]} accepted', f'{s["removed"]} removed']
-            status = " · ".join(bits)
-        left.markdown(f'<div class="ov-big"><b>{s["decided"]}</b> of {s["total"]} passages decided</div>'
-                      f'<div class="ov-bar"><span style="width:{pct}%"></span></div><div class="ov-status">{html.escape(status)}</div>',
-                      unsafe_allow_html=True)
-        with right.container(key="ov_stats"):
-            if s["waiting"]:
-                right.button(f'{s["waiting"]}  waiting on the Senior Lawyer', key="ov_stat_wait", on_click=open_passage, args=(s["waiting_ids"][0],))
-            else:
-                right.markdown('<div class="ov-stat-off">0  waiting on the Senior Lawyer</div>', unsafe_allow_html=True)
-            if s["answered"]:
-                right.button(f'{s["answered"]}  answered, ready for you', key="ov_stat_ans", on_click=open_passage, args=(s["answered_ids"][0],))
-            else:
-                right.markdown('<div class="ov-stat-off">0  answered, ready for you</div>', unsafe_allow_html=True)
-            if s["nothing"]:
-                right.button(f'{_noun(s["nothing"], "clause", "clauses")} with nothing found', key="ov_stat_none", on_click=filter_to, args=("Nothing found",))
-            if s["failed"]:
-                right.button(f'{_noun(s["failed"], "file or clause", "files or clauses")} failed', key="ov_stat_fail", on_click=filter_to, args=("Nothing found",))
+    # ---- the four numbers ----
+    kpi_row(st, [
+        (s["pending"], "Passage to review" if s["pending"] == 1 else "Passages to review",
+         f'{s["accepted"]} accepted · {s["removed"]} removed', s["pending"] > 0),
+        (s["waiting"], "Waiting on the Senior Lawyer", "questions you have asked" if s["waiting"] else None, s["waiting"] > 0),
+        (s["answered"], "Answered, waiting for you", "read the answer, then mark it resolved" if s["answered"] else None, s["answered"] > 0),
+        (s["nothing"] + s["failed"], "Clause with nothing found" if s["nothing"] + s["failed"] == 1 else "Clauses with nothing found",
+         "no passage found, or the file failed" if s["nothing"] + s["failed"] else None, False)])
 
     # ---- the filter row (and a search once the list is long) ----
     many = len(docs) > 8

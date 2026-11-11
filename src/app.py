@@ -17,7 +17,7 @@ from clause_review.samples import format_duration, workers_from_env
 from clause_review.provider_choice import CHOICES, NOTES, default_choice, problem, show_dev_tools, toggle_enabled
 from clause_review.providers import BudgetExceeded, get_provider
 from clause_review.replay import Recorder, play
-import demo_picker
+import file_window
 import overview
 import sidebar_rail
 from common import DB_PATH, get_store, result_actions, resume_latest
@@ -30,7 +30,7 @@ st.set_page_config(page_title="Clautra · Overview", page_icon="static/brand/cla
 apply_theme(st)
 marquee(st)
 dev = False
-tools = show_dev_tools()  # the dev and demo parts (Dev mode, Demo tag, saved runs and replay) are hidden by default
+tools = show_dev_tools()  # the developer parts (Dev mode, the offline tag, saved runs and replay) are hidden by default
 if tools and toggle_enabled():  # the switch itself is hidden when CLAUSE_DEV_TOGGLE=0, which leaves the app in user mode
     st.session_state.setdefault("dev_mode", st.query_params.get("dev") == "1")
     dev = st.toggle("Dev mode", key="dev_mode", help="Off: just what a Junior Associate sees. On: model choice, provider notes and usage.")
@@ -73,7 +73,7 @@ with st.sidebar:
     new_open = "result" not in st.session_state or bool(st.session_state.get("new_review"))
     with st.expander("New review", expanded=new_open, icon=":material/add:"):
         go, chosen, files, provider_name, workers = sidebar_rail.render(dev)
-    if tools:  # saved runs and their replay are a developer and demo aid
+    if tools:  # saved runs and their replay are a developer aid
         # Every finished run is saved with its step-by-step recording, so it can be replayed without calling the model.
         with st.expander("Saved runs", expanded=False):
             if not runs:
@@ -110,7 +110,7 @@ start_slot = None
 if "result" not in st.session_state and not go:  # nothing to continue: say how to begin
     start_slot = st.empty()
     with start_slot.container():
-        hero(st, demo=tools and not dev and default_choice() == "mock")
+        hero(st, offline=tools and not dev and default_choice() == "mock")
         st.info("Open **New review** on the left: choose the clauses, upload your contracts and press Run. "
                 "Your last review, if you have one, opens here by itself.")
 
@@ -125,7 +125,7 @@ if go:
         get_store().save_run(project, provider.name, getattr(provider, "model", ""), pid, chosen, usage, recorder.events)
         st.session_state["result"] = {"pid": pid, "categories": chosen, "usage": usage, "provider": provider.name}
         st.session_state.pop("new_review", None)  # done: the setup tucks away
-        demo_picker.reset(st)
+        file_window.reset(st)
         st.session_state.pop("nr_ok", None)
         # stay on the progress screen and offer View results there (the sidebar was drawn before the run; pressing the
         # button reruns the page, which then shows the Overview and the up-to-date sidebar)

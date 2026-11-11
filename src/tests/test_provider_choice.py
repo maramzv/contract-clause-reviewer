@@ -35,7 +35,7 @@ def test_every_choice_is_a_real_provider():
     assert all(f'"{name}"' in src for name in pc.CHOICES)
 
 
-def test_dev_and_demo_parts_are_hidden_unless_asked_for():
+def test_developer_parts_are_hidden_unless_asked_for():
     assert not pc.show_dev_tools({})
     assert not pc.show_dev_tools({"CLAUSE_SHOW_DEV": "0"})
     assert pc.show_dev_tools({"CLAUSE_SHOW_DEV": "1"})
