@@ -3,6 +3,7 @@ and push: this page shows it. Until then it says the video is coming."""
 from pathlib import Path
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Clautra · Video", page_icon="static/brand/clautra-mark-transparent.png", layout="wide", initial_sidebar_state="collapsed")
 st.markdown("""<style>
@@ -16,5 +17,20 @@ here = Path(__file__).resolve().parent.parent / "static" / "video"
 if (here / "clautra_demo.mp4").is_file():
     # st.video sends the file through Streamlit itself, so it works on any host with no static-file setting
     st.video(str(here / "clautra_demo.mp4"), subtitles=str(here / "clautra_demo.vtt") if (here / "clautra_demo.vtt").is_file() else None)
+    # Play and the timeline stay; the browser's extras (download, picture-in-picture, casting, speed, fullscreen, right-click menu) go.
+    # Streamlit draws the <video> itself, so this small script sets those attributes on it (it also catches a re-draw).
+    components.html("""<script>
+    const d = window.parent.document;
+    function lock() {
+      d.querySelectorAll('video').forEach(v => {
+        v.setAttribute('controlsList', 'nodownload noplaybackrate nofullscreen');
+        v.setAttribute('disablepictureinpicture', ''); v.disablePictureInPicture = true;
+        v.setAttribute('disableremoteplayback', ''); v.disableRemotePlayback = true;
+        if (!v.__locked) { v.__locked = true; v.addEventListener('contextmenu', e => e.preventDefault()); }
+      });
+    }
+    lock();
+    new MutationObserver(lock).observe(d.body, {childList: true, subtree: true});
+    </script>""", height=0)
 else:
     st.info("The demo video is on its way. Check back soon.")
