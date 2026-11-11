@@ -19,6 +19,7 @@ from clause_review.providers import BudgetExceeded, get_provider
 from clause_review.replay import Recorder, play
 import demo_picker
 import overview
+import sidebar_rail
 from common import DB_PATH, get_store, result_actions, resume_latest
 from progress_ui import ProgressView
 from theme import apply_theme, brand, hero, marquee, views
@@ -52,34 +53,6 @@ def run(files, categories, provider_name, on_event=None, workers=1):
     return pid, provider, project
 
 
-def new_review_form(dev):
-    """The setup for a review, drawn in the sidebar under "New review": which clauses, which contracts, and Run.
-    Returns what a run needs."""
-    provider_name = default_choice()
-    if dev:  # choose how this run is done: Mock, the local Claude agent, or the API (dev mode only)
-        options = list(CHOICES) + ([provider_name] if provider_name not in CHOICES else [])  # keep e.g. CLAUSE_PROVIDER=local
-        provider_name = st.selectbox("Run with", options, index=options.index(provider_name),
-                                     format_func=lambda n: CHOICES.get(n, f"{n} (set by CLAUSE_PROVIDER)"))
-    blocked = problem(provider_name)  # for everyone (#24): a missing key shows here, before Run, and disables Run
-    if blocked:
-        st.error(blocked)
-    chosen = st.multiselect("Clause types to look for", list(CATEGORIES), default=list(CATEGORIES))
-    if demo_picker.enabled():  # the demo's fake Open window with the ten tested contracts
-        files = demo_picker.render(st)
-    else:
-        files = st.file_uploader("Upload contracts (PDF or text)", type=["pdf", "txt"], accept_multiple_files=True)
-    workers = workers_from_env()
-    n = len(files)
-    if not n:
-        st.caption("Add at least one contract to run a review.")
-    elif not chosen:
-        st.caption("Pick at least one clause type.")
-    else:
-        st.markdown(f"**{n} contract{'s' if n != 1 else ''} · {len(chosen)} clause type{'s' if len(chosen) != 1 else ''}**")
-    go = st.button("Run review", type="primary", disabled=not files or not chosen or bool(blocked), use_container_width=True)
-    return go, chosen, files, provider_name, workers
-
-
 # Coming back: `?open=<run id>` opens that saved run (so a design change can be checked with a refresh); otherwise the latest
 # saved review opens by itself, once per visit.
 if "result" not in st.session_state and st.query_params.get("open", "").isdigit():
@@ -99,7 +72,7 @@ with st.sidebar:
     # open when there is nothing to continue, or when another screen asked for it (kept open until that review is run)
     new_open = "result" not in st.session_state or bool(st.session_state.get("new_review"))
     with st.expander("New review", expanded=new_open, icon=":material/add:"):
-        go, chosen, files, provider_name, workers = new_review_form(dev)
+        go, chosen, files, provider_name, workers = sidebar_rail.render(dev)
     if tools:  # saved runs and their replay are a developer and demo aid
         # Every finished run is saved with its step-by-step recording, so it can be replayed without calling the model.
         with st.expander("Saved runs", expanded=False):
@@ -151,6 +124,7 @@ if go:
         st.session_state["result"] = {"pid": pid, "categories": chosen, "usage": usage, "provider": provider.name}
         st.session_state.pop("new_review", None)  # done: the setup tucks away
         demo_picker.reset(st)
+        st.session_state.pop("nr_ok", None)
         st.rerun()  # redraw so the new run appears under Saved runs (the sidebar was drawn before the run)
     except BudgetExceeded as e:
         st.session_state.pop("result", None)

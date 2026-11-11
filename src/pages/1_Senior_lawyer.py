@@ -10,7 +10,7 @@ from clause_review.export import csv_text, questions_csv_text
 from clause_review.review_view import display_name
 from clause_review.store import ANSWERED, FOUND, OPEN, RESOLVED
 from clause_review.view import load_results, md_escape
-from common import get_store
+from common import get_store, refresh_corner
 from theme import apply_theme, brand, category_heading, kpi_row, marquee, views
 
 st.set_page_config(page_title="Clautra · Senior lawyer", page_icon="static/brand/clautra-mark-transparent.png", layout="wide")
@@ -54,7 +54,7 @@ with st.sidebar:
             default = ids.index(int(st.query_params["open"]))
         run_id = st.selectbox("Saved review", ids, index=default, format_func=lambda i: next(
             f"{r['name']} · {r['docs']} contract(s)" for r in runs if r["id"] == i))
-        st.button("Refresh", help="Reloads the review, to pick up questions the junior associate has just saved.", use_container_width=True)
+        refresh_corner(st)  # the refresh icon sits in the page corner, not in the left nav
 
 if not runs:
     st.info("There is nothing to review yet. Ask the junior associate to run a review, then open this page again.")

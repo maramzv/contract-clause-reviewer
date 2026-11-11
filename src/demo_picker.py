@@ -35,9 +35,6 @@ _CSS = f"""<style>
   -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; color:#1f2933; margin:0; }}
 [class*="st-key-fdc"] button:hover {{ background:#e9eff7; }}
 [class*="st-key-fdc"][class*="_on"] button {{ background:#cfe1fa; border-color:#7aa7e0; }}
-.fd-chips {{ max-height:150px; overflow-y:auto; border:1px solid rgba(243,239,230,.25); border-radius:3px; padding:4px 8px; }}
-.fd-chip {{ font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:2px 0; }}
-.fd-chip::before {{ content:"📄 "; }}
 </style>"""
 
 
@@ -98,21 +95,20 @@ def _dialog(files):
     b.button("Clear", on_click=_all, args=(len(files), False), use_container_width=True)
     if c.button("Open", type="primary", disabled=not sel, use_container_width=True, key="fd_open"):
         st.session_state["fd_files"] = [files[i] for i in sorted(sel)]
+        st.session_state["nr_ok"] = False  # new contracts: the clause step is shown again
         st.rerun()
 
 
-def render(st_):
-    """The Upload button and, under it, the files that were opened. Returns those files (empty until Open is pressed)."""
+def chosen():
+    """The files that were opened in the window (empty until Open is pressed)."""
+    return st.session_state.get("fd_files", [])
+
+
+def open_dialog():
+    """Pop up the fake Open window with all ten contracts selected."""
     files = demo_files()
-    if st_.button("Upload contracts", icon=":material/upload_file:", use_container_width=True, key="fd_upload"):
-        st_.session_state["fd_sel"] = set(range(len(files)))  # every time the window opens, all ten are selected
-        _dialog(files)
-    chosen = st_.session_state.get("fd_files", [])
-    if chosen:
-        st_.markdown(_CSS, unsafe_allow_html=True)
-        st_.markdown('<div class="fd-chips">' + "".join(f'<div class="fd-chip" title="{f.name}">{f.name}</div>' for f in chosen) + "</div>",
-                     unsafe_allow_html=True)
-    return chosen
+    st.session_state["fd_sel"] = set(range(len(files)))
+    _dialog(files)
 
 
 def reset(st_):

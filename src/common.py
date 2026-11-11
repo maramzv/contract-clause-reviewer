@@ -17,10 +17,9 @@ def get_store():
 
 
 def result_actions(st, store, res):
-    """Refresh and Download CSV at the bottom of the sidebar, the same on every junior associate screen."""
+    """Download CSV in the sidebar, the same on every junior associate screen, and the refresh icon in the page corner."""
     from clause_review.export import csv_text
-    st.sidebar.button("Refresh", help="Reloads the results, to pick up answers the senior lawyer has just saved.",
-                      use_container_width=True)
+    refresh_corner(st)
     st.sidebar.download_button("Download CSV", csv_text(store, res["pid"]), file_name="clause_review.csv",
                                mime="text/csv", help="Accepted and not-yet-reviewed findings, plus every category still to check.")
 
@@ -50,3 +49,10 @@ def new_review_button(container):
     """A button on the other junior associate screens that goes to the Review page with the New review section open."""
     container.button("New review", icon=":material/add:", on_click=_start_new_review, use_container_width=True,
                       help="Pick clauses and contracts and run another review. The current one stays in Saved runs.")
+
+
+def refresh_corner(st):
+    """A refresh icon fixed in the top-right corner of a dashboard (not in the left nav). Pressing it reruns the page, which
+    reloads the results from the saved review, so answers the other person just saved show up."""
+    with st.container(key="refresh_corner"):
+        st.button("", icon=":material/refresh:", key="refresh_btn", help="Refresh: reload the latest answers and decisions.")

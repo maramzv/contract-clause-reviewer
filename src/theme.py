@@ -184,6 +184,13 @@ section[data-testid="stSidebar"] [data-testid="stAlert"], section[data-testid="s
 section[data-testid="stSidebar"] [data-testid="stAlertContainer"] p { color:var(--ivory) !important; }
 section[data-testid="stSidebar"] [data-testid="stAlert"] { color:var(--ivory); border-color:#34506A; border-left-color:#C4A972; }
 [data-testid="stProgress"] > div > div { background-color:rgba(20,39,55,.12); }
+/* the refresh icon fixed in the corner of a dashboard; its wrapper leaves the page flow so it adds no gap above the title */
+[data-testid="stLayoutWrapper"]:has(> [class*="st-key-refresh_corner"]) { position:absolute; width:0; height:0; overflow:visible; }
+[class*="st-key-refresh_corner"] { position:fixed; top:.6rem; right:1.1rem; z-index:1000001; width:auto; }
+[class*="st-key-refresh_corner"] button { width:2.2rem; height:2.2rem; min-height:0; padding:0; border-radius:50%%;
+  background:rgba(243,239,230,.94); border:1px solid var(--line); box-shadow:0 1px 4px rgba(20,39,55,.18); color:var(--ink); }
+[class*="st-key-refresh_corner"] button:hover { border-color:var(--brass-deep); background:#fff; }
+[class*="st-key-refresh_corner"] [data-testid="stIconMaterial"] { font-size:1.25rem; }
 [data-testid="stProgress"] span[role="img"] { color:var(--brass-deep); }  /* the finished / failed mark on the run screen */
 span[data-baseweb="tag"] { background:#C4A972 !important; color:#142737 !important; border-radius:3px; }
 section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] { background:rgba(255,255,255,.05); border:1px dashed #6f8aa3; }
