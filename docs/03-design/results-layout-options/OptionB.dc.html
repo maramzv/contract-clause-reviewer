@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Matrix of contracts and clauses</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button{font-family:Inter,system-ui,sans-serif;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 1360px; height: 860px; box-sizing: border-box; display: flex; flex-direction: column; background: #F3EFE6; color: #142737; font-family: Inter, system-ui, sans-serif; font-size: 14px; overflow: hidden">
+
+<div style="height: 56px; flex: none; background: #142737; display: flex; align-items: center; gap: 28px; padding: 0 24px">
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 26px; font-weight: 600; color: #C4A972; letter-spacing: 0.02em">Clautra</span>
+<span style="display: flex; gap: 6px">
+<a href="#" style="padding: 8px 14px; border-radius: 3px; background: rgba(196,169,114,0.18); color: #E4D3A6; text-decoration: none; font-weight: 600">Junior associate</a>
+<a href="#" style="padding: 8px 14px; border-radius: 3px; color: #F3EFE6; text-decoration: none">Senior lawyer</a>
+</span>
+<span style="flex-grow: 1"></span>
+<span style="color: #B9C8D4; font-size: 13px">Review 10 Nov · 30 contracts · 5 clauses</span>
+<button style="height: 36px; padding: 0 16px; border-radius: 3px; border: 1px solid #A58A58; background: #C4A972; color: #0f1c28; font-weight: 600">Download CSV</button>
+</div>
+
+<div style="flex: 1; min-height: 0; display: flex">
+
+<div style="flex: 1; min-width: 0; box-sizing: border-box; padding: 20px 28px; display: flex; flex-direction: column; gap: 14px; overflow: hidden">
+<div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px">
+<div>
+<h1 style="margin: 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 34px; font-weight: 500; line-height: 1.05">Where every clause stands</h1>
+<div style="margin-top: 4px; font-size: 13px; color: #3d5163">150 cells: 124 found · 21 to check · 5 failed · 4 questions waiting</div>
+</div>
+<div style="display: flex; gap: 6px">
+<button style="height: 32px; padding: 0 14px; border-radius: 16px; border: 1px solid #142737; background: #142737; color: #F3EFE6; font-size: 13px">All contracts</button>
+<button style="height: 32px; padding: 0 14px; border-radius: 16px; border: 1px solid #A58A58; background: transparent; color: #142737; font-size: 13px">To check only</button>
+<button style="height: 32px; padding: 0 14px; border-radius: 16px; border: 1px solid #A58A58; background: transparent; color: #142737; font-size: 13px">Has a question</button>
+</div>
+</div>
+
+<div style="background: #FFFDF8; border: 1px solid #D3CAB4; border-radius: 4px; display: flex; flex-direction: column; min-height: 0; overflow: hidden">
+<div style="display: flex; align-items: flex-end; padding: 10px 16px; border-bottom: 1px solid #D3CAB4; background: #EAE4D5; font-size: 12.5px; font-weight: 600; color: #142737">
+<span style="width: 230px; flex: none">Contract</span>
+<span style="flex: 1; min-width: 0">Assignment</span>
+<span style="flex: 1; min-width: 0">Change of control</span>
+<span style="flex: 1; min-width: 0">Termination for convenience</span>
+<span style="flex: 1; min-width: 0">Renewal</span>
+<span style="flex: 1; min-width: 0">Governing law</span>
+</div>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="12">
+<div style="display: flex; align-items: center; padding: 0 16px; height: 46px; flex: none; border-bottom: 1px solid #E6DFCC; background: {{r.bg}}">
+<span style="width: 230px; flex: none; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 10px">{{r.name}}</span>
+<sc-for list="{{r.cells}}" as="c" hint-placeholder-count="5">
+<span style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 5px">
+<span style="display: inline-block; padding: 3px 9px; border-radius: 5px; font-size: 12px; font-weight: 600; white-space: nowrap; background: {{c.bg}}; color: {{c.fg}}; outline: {{c.outline}}; outline-offset: 1px">{{c.label}}</span>
+<sc-if value="{{c.q}}" hint-placeholder-val="{{ false }}"><span title="Question for the senior lawyer" style="width: 18px; height: 18px; border-radius: 9px; background: #142737; color: #F3EFE6; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center">?</span></sc-if>
+</span>
+</sc-for>
+</div>
+</sc-for>
+<div style="padding: 10px 16px; font-size: 12.5px; color: #3d5163">Showing 14 of 30 contracts · Sorted by most to check first</div>
+</div>
+
+<div style="display: flex; gap: 18px; font-size: 12.5px; color: #3d5163; flex-wrap: wrap">
+<span><strong style="color: #142737">Accepted</strong> you confirmed the quote</span>
+<span><strong style="color: #142737">p. 14</strong> found, not yet checked</span>
+<span><strong style="color: #142737">To check</strong> nothing found: search the contract yourself</span>
+<span><strong style="color: #142737">Failed</strong> the file could not be read</span>
+</div>
+</div>
+
+<div style="width: 380px; flex: none; box-sizing: border-box; background: #FFFDF8; border-left: 1px solid #D3CAB4; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px">
+<div style="font-size: 11.5px; letter-spacing: 0.2em; text-transform: uppercase; color: #7A6334; font-weight: 600">Selected cell</div>
+<div style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 26px; font-weight: 600; line-height: 1.1">Northwind Hosting Agreement</div>
+<div style="display: flex; align-items: center; gap: 10px"><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 20px">Assignment</span><span style="padding: 2px 10px; border-radius: 5px; font-size: 12px; font-weight: 600; background: #B9C8D4; color: #10202d">Found</span><span style="font-size: 12.5px; color: #3d5163">Page 14</span></div>
+<div style="background: #DCE4EB; border-radius: 3px; padding: 12px 14px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18px; line-height: 1.38; color: #0f1f2c">Neither party may assign this Agreement without the prior written consent of the other party, which shall not be unreasonably withheld.</div>
+<button style="align-self: flex-start; border: 0; background: transparent; color: #7A6334; text-decoration: underline; padding: 0; font-size: 13.5px">Open page 14 in the contract</button>
+<div style="display: flex; gap: 8px">
+<button style="height: 36px; padding: 0 18px; border-radius: 3px; border: 1px solid #7A6334; background: #C4A972; color: #0f1c28; font-weight: 600">Accept</button>
+<button style="height: 36px; padding: 0 18px; border-radius: 3px; border: 1px solid rgba(20,39,55,0.4); background: transparent; color: #142737">Remove</button>
+</div>
+<div style="border-top: 1px solid #D3CAB4; padding-top: 12px; display: flex; flex-direction: column; gap: 8px">
+<label for="q-b" style="font-weight: 600; font-size: 13.5px">Question for the senior lawyer</label>
+<textarea id="q-b" rows="3" style="box-sizing: border-box; width: 100%; resize: none; border: 1px solid #D3CAB4; border-radius: 3px; padding: 8px 10px; font-family: Inter, system-ui, sans-serif; font-size: 13.5px; background: #fff; color: #142737">Does a transfer to an affiliate count as assignment here?</textarea>
+<div style="background: #EAF0F4; border-radius: 3px; padding: 8px 12px; font-size: 13.5px"><strong>Senior lawyer:</strong> Yes. Section 14.2 treats affiliate transfers as assignments. Flag it for the deal list.</div>
+</div>
+<div style="margin-top: auto; display: flex; gap: 8px">
+<button style="height: 34px; padding: 0 14px; border-radius: 3px; border: 1px solid rgba(20,39,55,0.4); background: transparent; color: #142737">Previous cell</button>
+<button style="height: 34px; padding: 0 14px; border-radius: 3px; border: 1px solid rgba(20,39,55,0.4); background: transparent; color: #142737">Next to check</button>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":860}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const cell = (kind, page, q, sel) => {
+      const base = { q: !!q, outline: sel ? '2px solid #142737' : 'none' };
+      if (kind === 'A') return { ...base, label: 'Accepted · p.' + page, bg: '#2F5F82', fg: '#FFFFFF' };
+      if (kind === 'F') return { ...base, label: 'p.' + page, bg: '#B9C8D4', fg: '#10202d' };
+      if (kind === 'C') return { ...base, label: 'To check', bg: '#EBD8B0', fg: '#57431a' };
+      return { ...base, label: 'Failed', bg: '#E6C7C1', fg: '#6a2a22' };
+    };
+    const row = (name, cells, sel) => ({ name, bg: sel ? '#F6EFD9' : 'transparent', cells });
+    const rows = [
+      row('Pinnacle Software License', [cell('X'), cell('X'), cell('X'), cell('X'), cell('X')]),
+      row('Cascade Data Processing Addendum', [cell('F', 11), cell('C'), cell('C'), cell('F', 2), cell('F', 16)]),
+      row('Tidewater Consulting Agreement', [cell('C'), cell('C'), cell('F', 7), cell('F', 2), cell('F', 12)]),
+      row('Northwind Hosting Agreement', [cell('F', 14, true, true), cell('C'), cell('A', 9), cell('F', 3), cell('A', 18)], true),
+      row('Brightwater Services Agreement', [cell('A', 12), cell('C'), cell('A', 8), cell('A', 4), cell('A', 15)]),
+      row('Redwood Supply Agreement', [cell('A', 10), cell('A', 10), cell('C'), cell('A', 3), cell('A', 14)]),
+      row('Lakeshore Licence Agreement', [cell('F', 8, true), cell('F', 9), cell('F', 6), cell('C'), cell('F', 11)]),
+      row('Maple Reseller Agreement', [cell('A', 13), cell('A', 13), cell('A', 7), cell('A', 2), cell('A', 17)]),
+      row('Orchard Distribution Agreement', [cell('A', 9), cell('A', 9), cell('A', 5), cell('A', 2), cell('A', 12)]),
+      row('Acme Reseller Agreement', [cell('A', 11), cell('A', 12), cell('A', 6), cell('A', 2), cell('A', 15)]),
+      row('Summit Maintenance Agreement', [cell('A', 7), cell('A', 7), cell('A', 4), cell('A', 2), cell('A', 9)]),
+      row('Harbor Franchise Agreement', [cell('A', 16), cell('A', 16), cell('A', 10), cell('A', 3), cell('A', 20)]),
+      row('Granite Subcontract Agreement', [cell('A', 6), cell('A', 6), cell('A', 4), cell('A', 2), cell('A', 8)]),
+      row('Evergreen Support Agreement', [cell('A', 8), cell('A', 8), cell('A', 5), cell('A', 2), cell('A', 10)])
+    ];
+    return { rows };
+  }
+}
+</script>
+</body>
+</html>

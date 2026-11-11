@@ -1,0 +1,25 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-11-10T15:00:00Z" },
+  "title": "Junior associate results: layout options",
+  "launch": { "view": "canvas", "page": "direction" },
+  "pages": [
+    { "id": "options", "name": "Four options" },
+    { "id": "direction", "name": "Chosen direction" }
+  ],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 260, "w": 1360, "h": 860, "title": "A · Contract by contract", "page": "options" },
+    "OptionB.dc.html": { "x": 1440, "y": 260, "w": 1360, "h": 860, "title": "B · Matrix: all contracts at a glance", "page": "options" },
+    "OptionC.dc.html": { "x": 0, "y": 1240, "w": 1360, "h": 860, "title": "C · Clause by clause, compared across contracts", "page": "options" },
+    "OptionD.dc.html": { "x": 1440, "y": 1240, "w": 1360, "h": 860, "title": "D · Verify queue with the contract beside it", "page": "options" },
+    "Workspace.dc.html": { "x": 0, "y": 260, "w": 1440, "h": 860, "title": "Main page · Review workspace", "page": "direction", "is_interactive": false },
+    "Overview.dc.html": { "x": 1520, "y": 260, "w": 1440, "h": 860, "title": "Secondary page · Overview", "page": "direction" }
+  },
+  "order": ["Main.dc.html", "OptionB.dc.html", "OptionC.dc.html", "OptionD.dc.html", "Workspace.dc.html", "Overview.dc.html"],
+  "notes": {
+    "title": { "x": 0, "y": 0, "text": "Junior associate results: four ways to lay out 30 contracts × 5 clauses", "kind": "title1", "maxW": 2800, "page": "options" },
+    "title2": { "x": 0, "y": 0, "text": "Chosen direction: review workspace first, overview second", "kind": "title1", "maxW": 2800, "page": "direction" },
+    "data": { "x": 0, "y": 140, "text": "Contract names come from your run. Which clauses were found in each is illustrative.", "w": 520, "page": "direction", "fill": "gray" }
+  },
+  "designSystems": []
+}
