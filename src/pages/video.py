@@ -7,7 +7,9 @@ import streamlit as st
 st.set_page_config(page_title="Clautra · Video", page_icon="static/brand/clautra-mark-transparent.png", layout="centered", initial_sidebar_state="collapsed")
 st.markdown("""<style>
 [data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"], [data-testid="stToolbar"], header { display: none !important; }
-video { width: 100%; border-radius: 8px; background: #0d1b27; }
+.stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: #0d1b27 !important; }
+h1 { color: #F3EFE6 !important; font-family: Georgia, 'Times New Roman', serif !important; font-weight: 400 !important; text-align: center; }
+video { width: 100%; border-radius: 8px; background: #0d1b27; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
 </style>""", unsafe_allow_html=True)
 
 st.title("Clautra")
