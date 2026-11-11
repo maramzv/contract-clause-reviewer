@@ -23,6 +23,12 @@ def toggle_enabled(environ=None):
     return (environ if environ is not None else os.environ).get("CLAUSE_DEV_TOGGLE", "1") != "0"
 
 
+def show_dev_tools(environ=None):
+    """The developer and demo parts of the screens (the Dev mode switch, the Demo mode tag, the bundled sample contracts, the
+    saved runs and their replay) are hidden unless CLAUSE_SHOW_DEV=1, so by default the app shows only what a user would see."""
+    return (environ if environ is not None else os.environ).get("CLAUSE_SHOW_DEV", "0") == "1"
+
+
 def default_choice(environ=None):
     """What CLAUSE_PROVIDER names, as written (so `local` still works with the toggle off); mock if unset."""
     return (environ if environ is not None else os.environ).get("CLAUSE_PROVIDER", "mock")

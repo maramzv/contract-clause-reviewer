@@ -237,10 +237,10 @@ def brand(st):
 
 def views(st, on_review=False):
     """The switch between the two screens, drawn under the logo (Streamlit's own page menu is off in config.toml).
-    The Junior associate link opens the Overview. The Review page belongs to the same role, so while it is open
+    The Junior associate link opens the Overview (the home screen). The Review page belongs to the same role, so while it is open
     (`on_review`) that link is drawn as the current one."""
     with st.container(key="nav_junior_on" if on_review else "nav_junior"):
-        st.page_link("pages/2_Overview.py", label="Junior associate", icon=":material/fact_check:")
+        st.page_link("app.py", label="Junior associate", icon=":material/fact_check:")
     st.page_link("pages/1_Senior_lawyer.py", label="Senior lawyer", icon=":material/gavel:")
 
 

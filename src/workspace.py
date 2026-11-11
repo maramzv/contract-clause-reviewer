@@ -88,7 +88,7 @@ def _left(st, store, docs, slots, members, todo, pos, doc, cat):
     b_prev.button("Previous", key="ws_prev", on_click=_set, args=(st, "ws_step", -1), use_container_width=True, disabled=not members)
     b_next.button("Next", key="ws_next", on_click=_set, args=(st, "ws_step", 1), use_container_width=True, disabled=not members)
     st.progress((len(slots) - len(todo)) / len(slots))
-    st.page_link("pages/2_Overview.py", label="See every contract and clause in the overview", icon=":material/grid_view:")
+    st.page_link("app.py", label="See every contract and clause in the overview", icon=":material/grid_view:")
 
     if not members:
         st.success("Everything is decided or marked as checked. Download the CSV from the sidebar, or switch to "

@@ -26,10 +26,12 @@ def result_actions(st, store, res):
 
 
 def resume_latest(st, store):
-    """Coming back to the app: open the latest saved review, unless one is already open or the person chose to start a new
-    one. Returns the open review's session entry, or None when there is none yet."""
-    if "result" in st.session_state or st.session_state.get("new_review"):
+    """Coming back to the app: open the latest saved review, once per visit. After that the person is in charge: if they
+    closed or lost the open review, it does not reopen by itself. Returns the open review's session entry, or None."""
+    if st.session_state.get("_resumed") or "result" in st.session_state:
+        st.session_state["_resumed"] = True
         return st.session_state.get("result")
+    st.session_state["_resumed"] = True
     runs = store.list_runs()
     if not runs:
         return None
@@ -40,13 +42,11 @@ def resume_latest(st, store):
 
 
 def _start_new_review():
-    st.session_state["new_review"] = True
-    st.session_state.pop("result", None)
+    st.session_state["new_review"] = True  # app.py opens the New review section in the sidebar
     st.switch_page("app.py")
 
 
 def new_review_button(container):
-    """One button that goes to the start screen, from any junior associate screen. `container` is where to draw it
-    (st.sidebar, or a container reserved in the sidebar so it can be filled in later)."""
+    """A button on the other junior associate screens that goes to the Review page with the New review section open."""
     container.button("New review", icon=":material/add:", on_click=_start_new_review, use_container_width=True,
                       help="Pick clauses and contracts and run another review. The current one stays in Saved runs.")

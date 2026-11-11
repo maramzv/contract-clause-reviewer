@@ -16,7 +16,7 @@ from theme import apply_theme, brand, category_heading, kpi_row, marquee, views
 st.set_page_config(page_title="Clautra · Senior lawyer", page_icon="static/brand/clautra-mark-transparent.png", layout="wide")
 apply_theme(st)
 marquee(st)
-st.markdown('<div class="hero"><div class="eyebrow">Clautra &nbsp;/&nbsp; Senior lawyer</div><h1>Senior review</h1>'
+st.markdown('<div class="hero"><div class="eyebrow">Clautra &nbsp;/&nbsp; Senior lawyer</div><h1>Overview</h1>'
             "<p class=\"tag\">Answer the junior associate's questions and see where the review stands.</p><hr class=\"rule\">"
             "<p class=\"lede\">The junior associate checks each clause the tool found and flags anything they are unsure about. "
             "<strong>Questions</strong> lists those flags beside the passage they are about: answer them here and the answer "

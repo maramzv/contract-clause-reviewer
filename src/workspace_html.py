@@ -255,7 +255,7 @@ def render(st, store, res, docs):
     st.markdown(FULL_BLEED, unsafe_allow_html=True)
     _mount()(key="ws_html", data=view, on_act_change=on_act, height="content")
     if st.session_state.pop("ws_goto_overview", False):
-        st.switch_page("pages/2_Overview.py")
+        st.switch_page("app.py")
 
 
 def _look_back(st):
@@ -286,5 +286,5 @@ def _completion(st, store, res, docs, view):
     a.download_button("Download CSV", csv_text(store, res["pid"]), file_name="clause_review.csv", mime="text/csv",
                       type="primary", use_container_width=True, key="done_csv",
                       help="Every finding with its review state, plus a row for every clause with nothing found.")
-    b.page_link("pages/2_Overview.py", label="See the overview", icon=":material/grid_view:")
+    b.page_link("app.py", label="See the overview", icon=":material/grid_view:")
     c.button("Look back at the passages", on_click=_look_back, args=(st,))
