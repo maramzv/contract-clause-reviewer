@@ -49,22 +49,21 @@ def render(st, store, res):
             slot = next((x for x in slots if x[0] == doc["id"]), None)
         go(slot, fid, "To do" if fid else "All clauses")
 
-    # ---- the title row, with the way to carry on ----
-    title_col, go_col = st.columns([5, 1.6], vertical_alignment="center")
-    title_col.markdown('<div class="hero"><div class="eyebrow">Clautra &nbsp;/&nbsp; Junior Associate</div><h1>Overview</h1>'
-                       '<p class="tag">Where every clause stands.</p></div>', unsafe_allow_html=True)
+    # ---- the title ----
+    st.markdown('<div class="hero"><div class="eyebrow">Clautra &nbsp;/&nbsp; Junior Associate</div><h1>Overview</h1>'
+                '<p class="tag">Where every clause stands.</p><hr class="rule"></div>', unsafe_allow_html=True)
+
+    # ---- how far along (the same numbers and bar as at the top of the Review), with the way to carry on beside it ----
+    pct = round(100 * s["decided"] / s["total"]) if s["total"] else 100
+    prog_col, go_col = st.columns([4, 1.3], vertical_alignment="bottom", gap="large")
+    prog_col.markdown(f'<div class="ov-prog"><div class="ov-prog-t"><b>{s["decided"]} of {s["total"]}</b> passages decided · {s["pending"]} left</div>'
+                      f'<div class="ov-bar"><span style="width:{max(2, pct) if s["total"] else 100}%"></span></div></div>', unsafe_allow_html=True)
     if s["pending"]:
         label = "Continue reviewing"
     else:
         label = "Finish and export" if s["total"] else "Open the review"
     if go_col.button(label, type="primary", icon=":material/arrow_forward:", use_container_width=True, key="ov_go"):
         go(None, None, "To do")
-    st.markdown('<hr class="rule" style="margin:.2rem 0 1rem">', unsafe_allow_html=True)
-
-    # ---- how far along: the same numbers and bar as at the top of the Review ----
-    pct = round(100 * s["decided"] / s["total"]) if s["total"] else 100
-    st.markdown(f'<div class="ov-prog"><div class="ov-prog-t"><b>{s["decided"]} of {s["total"]}</b> passages decided · {s["pending"]} left</div>'
-                f'<div class="ov-bar"><span style="width:{max(2, pct) if s["total"] else 100}%"></span></div></div>', unsafe_allow_html=True)
 
     # ---- the four numbers ----
     kpi_row(st, [

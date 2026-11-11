@@ -130,7 +130,8 @@ section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"][aria-current
 [data-testid="stMain"] .hero:has(+ *) { margin-bottom:0; }
 .ov-gonote { margin-top:.3rem; text-align:center; font-size:.8rem; color:#4b5f70; }
 [class*="st-key-ov_prog"] { background:#FFFDF8; border:1px solid var(--line); border-radius:4px; padding:1.1rem 1.3rem; margin-bottom:1rem; }
-.ov-prog { margin:.1rem 0 1rem; }
+.ov-prog { margin:.1rem 0 .1rem; }
+[class*="st-key-ov_go"] { margin-bottom:-.35rem; }
 .ov-prog-t { font-size:1rem; color:var(--ink); margin-bottom:.35rem; }
 .ov-prog-t b { font-family:%(SERIF)s; font-size:1.35rem; font-weight:600; }
 .ov-big { font-family:%(SERIF)s; font-size:1.5rem; line-height:1.1; color:var(--ink); }
