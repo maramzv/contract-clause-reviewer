@@ -81,3 +81,24 @@ def test_display_name_drops_the_file_number_and_extension_unless_dev():
     assert display_name(n) == "Cooperation Agreement (HPIL Energytech and Ginares)"
     assert display_name(n, dev=True) == "contract_02 · Cooperation Agreement (HPIL Energytech and Ginares)"
     assert display_name("Master services.pdf") == "Master services"
+
+
+def test_overview_stats_count_progress_questions_and_gaps():
+    from clause_review.review_view import overview_stats
+    s, pid = reviewed()
+    cats = ["Governing Law", "Assignment"]
+    docs = lambda: load_results(s, pid, cats)
+    (law,) = finding_ids(s, "Governing Law")
+    (assign,) = finding_ids(s, "Assignment")
+    st0 = overview_stats(docs(), cats)
+    assert (st0["total"], st0["pending"], st0["decided"], st0["nothing"], st0["failed"]) == (2, 2, 0, 0, 0)
+    assert st0["found_in"] == {"Governing Law": 1, "Assignment": 1} and sum(st0["left"].values()) == 2
+    s.set_review(law, "accepted")
+    s.set_review(assign, "removed")
+    s.set_question(law, "Which law applies?")
+    st1 = overview_stats(docs(), cats)
+    assert (st1["pending"], st1["accepted"], st1["removed"], st1["decided"], st1["nothing"]) == (0, 1, 1, 2, 1)
+    assert st1["waiting"] == 1 and st1["answered"] == 0
+    s.set_answer(law, "English law.")
+    st2 = overview_stats(docs(), cats)
+    assert st2["waiting"] == 0 and st2["answered"] == 1 and st2["answered_ids"] == [law]

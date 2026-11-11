@@ -154,10 +154,4 @@ if not res:
 result_actions(st, get_store(), res)
 if dev:
     st.caption(f"Model: {res.get('provider', '?')}. Usage: {res['usage']}")
-title_col, go_col = st.columns([5, 1.3], vertical_alignment="center")
-title_col.markdown('<div class="hero"><div class="eyebrow">Clautra &nbsp;/&nbsp; Junior Associate</div><h1>Overview</h1>'
-                   '<p class="tag">Where every clause stands.</p></div>', unsafe_allow_html=True)
-if go_col.button("Continue reviewing", type="primary", icon=":material/arrow_forward:", use_container_width=True, key="ov_back"):
-    st.switch_page("pages/2_Review.py")
-st.markdown('<hr class="rule">', unsafe_allow_html=True)
 overview.render(st, get_store(), res)

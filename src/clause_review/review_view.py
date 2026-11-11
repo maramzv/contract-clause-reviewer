@@ -122,3 +122,25 @@ def search_snippets(text, query, limit=8, context=170):
         lo, hi = max(0, a - context), min(len(text), b + context)
         snippets.append(("… " if lo else "") + _marked(text, lo, hi, [(a, b)]) + (" …" if hi < len(text) else ""))
     return snippets, len(hits)
+
+
+def overview_stats(docs, cats):
+    """Everything the Overview shows, counted once: how much is decided, what waits on the Senior Lawyer, what is ready for
+    the Junior Associate to resolve, how many clauses have nothing found or failed, per-contract work left and, for each
+    clause, in how many contracts something was found. `docs` come from load_results."""
+    f_all = [f for d in docs for f in d["findings"] if f["category"] in cats]
+    pending = sum(1 for f in f_all if f["review"] == "pending")
+    removed = sum(1 for f in f_all if f["review"] == "removed")
+    accepted = sum(1 for f in f_all if f["review"] == "accepted")
+    live = [f for f in f_all if f["review"] != "removed"]
+    waiting = [f for f in live if f["question"] and f["qstate"] in (None, "open")]
+    answered = [f for f in live if f["question"] and f["qstate"] == "answered"]
+    states = {(d["id"], c): clause_state(d, c) for d in docs for c in cats}
+    return {
+        "total": len(f_all), "pending": pending, "accepted": accepted, "removed": removed, "decided": accepted + removed,
+        "waiting": len(waiting), "answered": len(answered),
+        "waiting_ids": [f["id"] for f in waiting], "answered_ids": [f["id"] for f in answered],
+        "nothing": sum(1 for v in states.values() if v == "check"), "failed": sum(1 for v in states.values() if v == "failed"),
+        "left": {d["id"]: sum(1 for f in d["findings"] if f["category"] in cats and f["review"] == "pending") for d in docs},
+        "found_in": {c: sum(1 for d in docs if states[(d["id"], c)] in ("found", "accepted")) for c in cats},
+    }
