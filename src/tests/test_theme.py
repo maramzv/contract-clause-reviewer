@@ -47,11 +47,11 @@ def test_demo_tag_appears_in_the_header_only_when_asked():
     assert "Demo mode" in on.out[0] and "Demo mode" not in off.out[0]
 
 
-def test_marquee_script_is_sent_with_scripts_allowed():
+def test_marquee_is_switched_off_so_no_script_is_sent():
     calls = []
 
     class St:
         def html(self, text, **kw):
             calls.append((text, kw))
     theme.marquee(St())
-    assert calls[0][1] == {"unsafe_allow_javascript": True} and "clautra-marquee" in calls[0][0]
+    assert calls == []  # long names no longer slide on hover

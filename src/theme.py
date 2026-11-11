@@ -218,6 +218,8 @@ _MARQUEE_JS = """
   document.addEventListener('mouseover', function (e) {
     var el = e.target, hops = 0;
     while (el && el !== document.body && hops < 5 && !clipped(el)) { el = el.parentElement; hops++; }
+    // only a line of text slides: never a container such as the whole sidebar or a panel with many parts inside
+    if (el && (el.matches('section, [data-testid="stSidebarContent"], [data-testid="stSidebar"], [data-testid="stMain"]') || el.getElementsByTagName('*').length > 8)) { stop(); return; }
     if (!el || el === document.body || !clipped(el)) { stop(); return; }
     if (el === active) return;
     stop();
@@ -234,8 +236,9 @@ _MARQUEE_JS = """
 
 
 def marquee(st):
-    """Long names slide sideways on hover so they can be read in full (see .clautra-marquee in the CSS)."""
-    st.html(f"<script>{_MARQUEE_JS}</script>", unsafe_allow_javascript=True)
+    """Switched off: long names are cut off with "..." and show in full as a tooltip, they no longer slide on hover. The calls on
+    every page are kept so the slide can come back by restoring the one line below."""
+    return None  # st.html(f"<script>{_MARQUEE_JS}</script>", unsafe_allow_javascript=True)
 
 
 def brand(st):
