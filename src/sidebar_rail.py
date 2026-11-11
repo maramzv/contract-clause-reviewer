@@ -64,6 +64,8 @@ section[data-testid="stSidebar"] [class*="st-key-nr_s"] {{ position:relative; ga
 [class*="st-key-nr_browse"] button p {{ font-size:13px; color:#9fb1c0; }}
 [class*="st-key-nr_browse"] button p strong {{ color:#F3EFE6; text-decoration:underline; text-underline-offset:3px; }}
 [class*="st-key-nr_browse"] button:hover {{ border-color:#C4A972 !important; }}
+[class*="st-key-nr_run"] button {{ padding:.35rem .4rem; }}
+[class*="st-key-nr_run"] button p {{ font-size:12.5px; line-height:1.25; letter-spacing:0; }}
 /* Change and Next read as small links */
 [class*="st-key-nr_link"] button {{ background:transparent !important; border:0 !important; box-shadow:none; min-height:0; height:auto; padding:0; color:#B9C8D4 !important; justify-content:flex-end; }}
 [class*="st-key-nr_link"] button p {{ white-space:nowrap; font-size:12.5px; text-decoration:underline; text-underline-offset:3px; color:#B9C8D4; }}
@@ -85,7 +87,7 @@ section[data-testid="stSidebar"] [class*="st-key-nr_s"] {{ position:relative; ga
 def _flip(i):
     sel = st.session_state["nr_clauses"]
     sel.symmetric_difference_update({i})
-    st.session_state["nr_ok"] = False  # the choice changed: confirm it again
+    st.session_state["nr_ok"] = False  # the choice changed: the rows stay open until Next
 
 
 def _confirm():
@@ -112,7 +114,7 @@ def render(dev):
         st.error(blocked)
     st.markdown(_css(), unsafe_allow_html=True)
     cats = list(CATEGORIES)
-    st.session_state.setdefault("nr_clauses", set(range(len(cats))))
+    st.session_state.setdefault("nr_clauses", set())  # nothing is preselected: the person chooses
     st.session_state.setdefault("nr_ok", False)
     sel = st.session_state["nr_clauses"]
     demo = demo_picker.enabled()
@@ -145,33 +147,37 @@ def render(dev):
         if not have:
             st.session_state["nr_ok"] = False
         chosen = [c for i, c in enumerate(cats) if i in sel]
-        ok = have and st.session_state["nr_ok"] and bool(chosen)
+        ready = have and bool(chosen)  # one clause is enough: step 2 ticks and Run appears
+        collapsed = ready and st.session_state["nr_ok"]  # Next folds the rows into one line
 
         # 2. clauses
-        state2 = "done" if ok else ("now" if have else "dim")
+        state2 = "done" if ready else ("now" if have else "dim")
         with st.container(key=f"nr_s2_{state2}"):
             st.markdown('<div class="nr-h">Choose clauses</div>', unsafe_allow_html=True)
             if state2 == "dim":
                 st.markdown('<div class="nr-hint">Opens once contracts are added</div>', unsafe_allow_html=True)
-            elif state2 == "now":
+            elif not collapsed:
                 for i, c in enumerate(cats):
                     with st.container(key=f"nrc{i}_{'on' if i in sel else 'off'}"):
                         st.button(c[:1] + c[1:].lower(), key=f"nrb{i}", on_click=_flip, args=(i,), use_container_width=True)
-                a, b = st.columns([2.6, 1])
-                with b.container(key="nr_link_next"):
-                    st.button("Next", key="nr_next", on_click=_confirm, disabled=not chosen)
+                if ready:
+                    a, b = st.columns([2.6, 1])
+                    a.markdown(f'<div class="nr-hint">{len(chosen)} clause{"s" if len(chosen) != 1 else ""}</div>', unsafe_allow_html=True)
+                    with b.container(key="nr_link_next"):
+                        st.button("Next", key="nr_next", on_click=_confirm)
             else:
                 a, b = st.columns([2.6, 1])
                 a.markdown(f'<div class="nr-hint">{len(chosen)} clause{"s" if len(chosen) != 1 else ""}</div>', unsafe_allow_html=True)
                 with b.container(key="nr_link_clauses"):
                     st.button("Change", key="nr_change_clauses", on_click=_reopen)
 
-        # 3. run
-        with st.container(key=f"nr_s3_{'now' if ok else 'dim'}"):
+        # 3. run: appears as soon as one clause is chosen
+        with st.container(key=f"nr_s3_{'now' if ready else 'dim'}"):
             st.markdown('<div class="nr-h">Run</div>', unsafe_allow_html=True)
-            if ok:
-                st.markdown(f'<div class="nr-hint">{len(files)} contract{"s" if len(files) != 1 else ""} · '
-                            f'{len(chosen)} clause{"s" if len(chosen) != 1 else ""}</div>', unsafe_allow_html=True)
-            label = "Run review"
-            go = st.button(label, key="nr_run", type="primary", disabled=not ok or bool(blocked), use_container_width=True)
+            if ready:
+                label = (f"Run review · {len(files)} contract{'s' if len(files) != 1 else ''} · "
+                         f"{len(chosen)} clause{'s' if len(chosen) != 1 else ''}")
+                go = st.button(label, key="nr_run", type="primary", disabled=bool(blocked), use_container_width=True)
+            else:
+                st.markdown('<div class="nr-hint">Appears once you choose a clause</div>', unsafe_allow_html=True)
     return go, chosen, files or [], provider_name, workers_from_env()
