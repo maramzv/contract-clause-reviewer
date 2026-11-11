@@ -1,4 +1,4 @@
-"""Review: one passage at a time with the contract beside it. The junior associate gets here from the Overview (the home
+"""Review: one passage at a time with the contract beside it. The Junior Associate gets here from the Overview (the home
 screen): a cell opens that clause, Continue reviewing opens the first passage still to decide."""
 import os
 
@@ -17,7 +17,7 @@ store = get_store()
 
 with st.sidebar:
     brand(st)
-    views(st, on_review=True)  # the Review belongs to the Junior associate
+    views(st, on_review=True)  # the Review belongs to the Junior Associate
 
 res = resume_latest(st, store)  # opened directly: the latest saved review
 if not res:

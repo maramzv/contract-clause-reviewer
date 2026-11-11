@@ -11,7 +11,7 @@ const ui = { chipsAll: false, gapsOpen: false, ask: null, drafts: {}, findOpen: 
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const BACK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>`;
-const STATE_TAG = { found: 'Found', accepted: 'Accepted', check: 'To check', failed: 'Failed' };
+const STATE_TAG = { found: 'Found', accepted: 'Accepted', check: 'Nothing found', failed: 'Failed' };
 
 function left(d) {
   if (d.nothingLeft) {
@@ -34,9 +34,9 @@ function left(d) {
       <div class="head"><span class="name">${esc(c.name)}</span><span class="tag ${c.state}">${esc(STATE_TAG[c.state] || c.status)}</span>
         ${c.reviewed ? '<span class="of">✔ reviewed</span>' : ''}</div>`];
   if (c.failed) out.push(`<div class="qa">Failed to process: ${esc(c.failed)}</div>`);
-  d.findings.forEach((f, i) => out.push(finding(f, i === d.findings.findIndex((x) => x.review === 'pending'))));
+  d.findings.forEach((f, i) => out.push(finding(f, i === d.findings.findIndex((x) => x.review === 'pending'), { clause: d.current.name, contract: d.title })));
   if (!d.findings.length) {
-    out.push(`<div class="hint">Nothing confirmed here. An empty result is not proof the clause is absent, so if this clause matters for the deal, search the contract yourself.</div>
+    out.push(`<div class="hint">Nothing found here. An empty result is not proof the clause is absent, so if this clause matters for the deal, search the contract yourself.</div>
       <button class="btn" data-findtoggle>Search the contract</button>`);
   }
   d.removed.forEach((r) => out.push(`<div class="restore"><div class="quote removed">${esc(r.quote)}</div><button class="btn" data-act="restore" data-id="${r.id}">Restore</button></div>`));
@@ -71,12 +71,13 @@ function modes(d) {
   return `<div class="modes"><button data-mode="To do" class="${d.mode === 'To do' ? 'on' : ''}">To do</button><button data-mode="All clauses" class="${d.mode === 'All clauses' ? 'on' : ''}">All clauses</button></div>`;
 }
 
-function finding(f, first) {
+// `about` says which clause and which contract the passage belongs to, so a question is never ambiguous
+function finding(f, first, about) {
   const status = f.review === 'pending' ? 'Not yet reviewed' : f.review[0].toUpperCase() + f.review.slice(1);
   const accepted = f.review === 'accepted';
   const asking = ui.ask === f.id;
   const st = f.qstate;
-  const chip = st === 'answered' ? 'Answered by the senior lawyer' : st === 'resolved' ? 'Question resolved' : 'Question open: waiting for the senior lawyer';
+  const chip = st === 'answered' ? 'Answered by the Senior Lawyer' : st === 'resolved' ? 'Question resolved' : 'Question open: waiting for the Senior Lawyer';
   const meta = [f.page ? `Page ${f.page}` : '', f.of > 1 ? `Passage ${f.index} of ${f.of}` : '', status].filter(Boolean).join(' · ');
   let h = `<div class="head"><span class="of">${meta}</span></div>
     <div class="quote">${esc(f.quote)}</div>
@@ -88,16 +89,16 @@ function finding(f, first) {
     </div>`;
   if (asking) {
     const val = ui.drafts[f.id] ?? f.question;
-    h += `<div class="ask"><textarea data-draft="${f.id}" placeholder="e.g. Does a transfer to an affiliate count as assignment here?">${esc(val)}</textarea>
-      <div class="hint">One question per finding. Saving new text reopens it; saving empty text removes it.</div>
+    h += `<div class="ask"><div class="about">Your question about <strong>${esc(about.clause)}</strong> in ${esc(about.contract)}</div><textarea data-draft="${f.id}" placeholder="e.g. Does a transfer to an affiliate count as assignment here?">${esc(val)}</textarea>
+      <div class="hint">One question per passage. Saving new text reopens it; saving empty text removes it.</div>
       <span class="btns"><button class="btn" data-save="${f.id}">Save question</button><button class="btn" data-cancel>Cancel</button></span></div>`;
   }
   if (!f.question) {
-    h += `<div class="qa quiet"><span class="tag">Senior lawyer</span><span>No question asked on this passage. Press <strong>Ask senior</strong>${first ? ' (Q)' : ''} to flag it for the senior lawyer; the answer shows up here.</span></div>`;
+    h += `<div class="qa quiet"><span class="tag">Senior Lawyer</span><span>No question asked about this ${esc(about.clause)} passage. Press <strong>Ask senior</strong>${first ? ' (Q)' : ''} to flag it for the Senior Lawyer; the answer shows up here.</span></div>`;
   } else {
-    h += `<div class="qa"><span class="tag">${chip}</span><span><strong>You asked:</strong> ${esc(f.question)}</span>`;
+    h += `<div class="qa"><span class="tag">${chip}</span><span class="about">About <strong>${esc(about.clause)}</strong> in ${esc(about.contract)}</span><span><strong>You asked:</strong> ${esc(f.question)}</span>`;
     if (f.answer) {
-      h += `<span><strong>Senior lawyer:</strong> ${esc(f.answer)}</span>`;
+      h += `<span><strong>Senior Lawyer:</strong> ${esc(f.answer)}</span>`;
       h += st === 'resolved' ? `<button class="btn" data-act="resolve" data-on="0" data-id="${f.id}">Reopen</button>`
                              : `<button class="btn" data-act="resolve" data-on="1" data-id="${f.id}">Mark resolved</button>`;
     }

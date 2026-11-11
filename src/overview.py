@@ -1,4 +1,4 @@
-"""The junior associate's home screen: every contract against every clause in one grid, so the reviewer sees at a glance
+"""The Junior Associate's home screen: every contract against every clause in one grid, so the reviewer sees at a glance
 where the work is. A cell opens that clause in the Review page. Drawing and clicks only; what each cell means comes from
 clause_review.review_view."""
 from clause_review.categories import CATEGORIES
@@ -9,7 +9,7 @@ from theme import kpi_row
 from workspace import short
 
 REVIEW_PAGE = "pages/2_Review.py"
-LABEL = {"found": "{n} found", "accepted": "Accepted", "check": "To check", "failed": "Failed"}
+LABEL = {"found": "{n} found", "accepted": "Accepted", "check": "Nothing found", "failed": "Failed"}
 
 
 def render(st, store, res):
@@ -22,13 +22,13 @@ def render(st, store, res):
     n_check = sum(1 for d in docs for c in cats if clause_state(d, c) in ("check", "failed"))
     answered = sum(1 for f in all_f if f["review"] != "removed" and f["qstate"] == ANSWERED)
     kpi_row(st, [(len(docs), "Contract" if len(docs) == 1 else "Contracts", None, False),
-                 (tally["pending"], "Finding to verify" if tally["pending"] == 1 else "Findings to verify",
+                 (tally["pending"], "Passage to decide" if tally["pending"] == 1 else "Passages to decide",
                   f"{tally['accepted']} accepted · {tally['removed']} removed", tally["pending"] > 0),
-                 (n_check, "Clause to check by hand" if n_check == 1 else "Clauses to check by hand", "nothing found or file failed", n_check > 0),
+                 (n_check, "Clause with nothing found" if n_check == 1 else "Clauses with nothing found", "nothing found or file failed", n_check > 0),
                  (answered, "Question answered" if answered == 1 else "Questions answered", "waiting for you to resolve", answered > 0)])
 
     fcol, scol = st.columns([3, 2])
-    view = fcol.radio("Show", ["All contracts", "To check by hand", "Has a question"], horizontal=True, label_visibility="collapsed")
+    view = fcol.radio("Show", ["All contracts", "Nothing found", "Has a question"], horizontal=True, label_visibility="collapsed")
     order = scol.radio("Sort", ["Most to do first", "As uploaded"], horizontal=True, label_visibility="collapsed")
 
     def n_open(d):
@@ -38,7 +38,7 @@ def render(st, store, res):
         return any(f["question"] and f["review"] != "removed" for f in d["findings"])
 
     rows = docs
-    if view == "To check by hand":
+    if view == "Nothing found":
         rows = [d for d in rows if any(clause_state(d, c) in ("check", "failed") for c in cats)]
     elif view == "Has a question":
         rows = [d for d in rows if has_question(d)]
@@ -53,11 +53,11 @@ def render(st, store, res):
 
     st.markdown(
         '<div class="ov-key" role="list" aria-label="What each cell means">'
-        '<span class="ov-key-i"><span class="ov-sw found">N found</span>quotes found, not reviewed yet</span>'
-        '<span class="ov-key-i"><span class="ov-sw accepted">Accepted</span>you confirmed the quote</span>'
-        '<span class="ov-key-i"><span class="ov-sw check">To check</span>nothing found: search the contract yourself</span>'
+        '<span class="ov-key-i"><span class="ov-sw found">N found</span>passages found, not decided yet</span>'
+        '<span class="ov-key-i"><span class="ov-sw accepted">Accepted</span>you accepted the passage</span>'
+        '<span class="ov-key-i"><span class="ov-sw check">Nothing found</span>search the contract yourself</span>'
         '<span class="ov-key-i"><span class="ov-sw failed">Failed</span>the file could not be read</span>'
-        '<span class="ov-key-i"><span class="ov-sw q">?</span>a question for the senior lawyer</span></div>', unsafe_allow_html=True)
+        '<span class="ov-key-i"><span class="ov-sw q">?</span>a question for the Senior Lawyer</span></div>', unsafe_allow_html=True)
     widths = [3.4] + [1.25] * len(cats)
     head = st.columns(widths)
     head[0].markdown('<div class="ov-head">Contract</div>', unsafe_allow_html=True)

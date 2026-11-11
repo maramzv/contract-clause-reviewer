@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS RunEvent(run_id INT, seq INT, t REAL, kind TEXT, data
 """
 FOUND, NOT_FOUND, FAILED = "Found", "Not found, review required", "Failed to process"
 REVIEW_STATES = ("pending", "accepted", "removed")
-# A question for the senior lawyer: None (no question), then open -> answered -> resolved.
+# A question for the Senior Lawyer: None (no question), then open -> answered -> resolved.
 OPEN, ANSWERED, RESOLVED = "open", "answered", "resolved"
 
 
@@ -80,7 +80,7 @@ class Store:
         return row
 
     def set_question(self, finding_id, text):
-        """Maya's question for the senior lawyer on one finding. New or changed text makes it 'open' again and drops any
+        """Maya's question for the Senior Lawyer on one finding. New or changed text makes it 'open' again and drops any
         earlier answer (it answered a different question); empty text removes the question."""
         text = (text or "").strip()
         with self._lock:
@@ -92,7 +92,7 @@ class Store:
             self.db.commit()
 
     def set_answer(self, finding_id, text):
-        """The senior lawyer's answer. Empty text takes the answer back and the question returns to 'open'."""
+        """The Senior Lawyer's answer. Empty text takes the answer back and the question returns to 'open'."""
         text = (text or "").strip()
         with self._lock:
             if not self._finding_row(finding_id)["question"]:

@@ -11,7 +11,7 @@ from clause_review.store import ANSWERED, OPEN, RESOLVED
 from workspace import short
 
 UI = Path(__file__).parent / "ui"
-STATE_LABEL = {"found": "Found", "accepted": "Accepted", "check": "To check", "failed": "Failed"}
+STATE_LABEL = {"found": "Found", "accepted": "Accepted", "check": "Nothing found", "failed": "Failed"}
 
 
 def build_items(slots, by_id):
@@ -274,14 +274,14 @@ def _completion(st, store, res, docs, view):
     removed = sum(1 for f in findings if f["review"] == "removed")
     waiting = sum(1 for f in findings if f["review"] != "removed" and f["question"] and f["qstate"] == OPEN)
     nothing = sum(1 for g in view["gaps"] if not g["checked"])
-    st.markdown('<div class="hero"><div class="eyebrow">Clautra &nbsp;/&nbsp; Junior associate</div><h1>All decided</h1>'
+    st.markdown('<div class="hero"><div class="eyebrow">Clautra &nbsp;/&nbsp; Junior Associate</div><h1>All decided</h1>'
                 '<p class="tag">Every passage the tool found has been accepted or removed.</p><hr class="rule"></div>',
                 unsafe_allow_html=True)
     kpi_row(st, [(accepted, "Accepted", None, False), (removed, "Removed", None, False),
-                 (waiting, "Question waiting for the senior lawyer" if waiting == 1 else "Questions waiting for the senior lawyer",
+                 (waiting, "Question waiting for the Senior Lawyer" if waiting == 1 else "Questions waiting for the Senior Lawyer",
                   "export again once they answer" if waiting else None, waiting > 0),
                  (nothing, "Clause with nothing found" if nothing == 1 else "Clauses with nothing found",
-                  "listed in the CSV as Not found, for you to check by hand" if nothing else None, nothing > 0)])
+                  "listed in the CSV as Not found, review required" if nothing else None, nothing > 0)])
     a, b, c = st.columns([1.2, 1.2, 2])
     a.download_button("Download CSV", csv_text(store, res["pid"]), file_name="clause_review.csv", mime="text/csv",
                       type="primary", use_container_width=True, key="done_csv")

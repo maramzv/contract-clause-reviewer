@@ -24,7 +24,7 @@ def write_csv(store, pid, fh):
 
 
 def questions_csv_text(store, pid):
-    """Only the findings Maya asked about (not removed ones), with the answers so far: the senior lawyer's own list."""
+    """Only the findings Maya asked about (not removed ones), with the answers so far: the Senior Lawyer's own list."""
     rows = store.db.execute("""
         SELECT d.name doc, f.category, f.quote, f.page, f.question, f.answer, f.qstate
         FROM Finding f JOIN Document d ON d.id=f.document_id

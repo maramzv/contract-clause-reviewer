@@ -33,7 +33,7 @@ dev = False
 tools = show_dev_tools()  # the dev and demo parts (Dev mode, Demo tag, saved runs and replay) are hidden by default
 if tools and toggle_enabled():  # the switch itself is hidden when CLAUSE_DEV_TOGGLE=0, which leaves the app in user mode
     st.session_state.setdefault("dev_mode", st.query_params.get("dev") == "1")
-    dev = st.toggle("Dev mode", key="dev_mode", help="Off: just what a reviewer sees. On: model choice, provider notes and usage.")
+    dev = st.toggle("Dev mode", key="dev_mode", help="Off: just what a Junior Associate sees. On: model choice, provider notes and usage.")
 
 
 def run(files, categories, provider_name, on_event=None, workers=1):
@@ -111,7 +111,7 @@ if "result" not in st.session_state and not go:  # nothing to continue: say how 
     start_slot = st.empty()
     with start_slot.container():
         hero(st, demo=tools and not dev and default_choice() == "mock")
-        st.info("Open **New review** on the left: choose the clause types, upload your contracts and press Run. "
+        st.info("Open **New review** on the left: choose the clauses, upload your contracts and press Run. "
                 "Your last review, if you have one, opens here by itself.")
 
 if go:
@@ -155,7 +155,7 @@ result_actions(st, get_store(), res)
 if dev:
     st.caption(f"Model: {res.get('provider', '?')}. Usage: {res['usage']}")
 title_col, go_col = st.columns([5, 1.3], vertical_alignment="center")
-title_col.markdown('<div class="hero"><div class="eyebrow">Clautra &nbsp;/&nbsp; Junior associate</div><h1>Overview</h1>'
+title_col.markdown('<div class="hero"><div class="eyebrow">Clautra &nbsp;/&nbsp; Junior Associate</div><h1>Overview</h1>'
                    '<p class="tag">Where every clause stands.</p></div>', unsafe_allow_html=True)
 if go_col.button("Continue reviewing", type="primary", icon=":material/arrow_forward:", use_container_width=True, key="ov_back"):
     st.switch_page("pages/2_Review.py")

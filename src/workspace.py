@@ -9,8 +9,8 @@ from clause_review.store import ANSWERED, OPEN, RESOLVED
 from clause_review.view import md_escape
 from theme import category_heading
 
-QSTATE_CHIP = {OPEN: ("chip-miss", "Question open: waiting for the senior lawyer"),
-               ANSWERED: ("chip-found", "Answered by the senior lawyer"), RESOLVED: ("chip-found", "Question resolved")}
+QSTATE_CHIP = {OPEN: ("chip-miss", "Question open: waiting for the Senior Lawyer"),
+               ANSWERED: ("chip-found", "Answered by the Senior Lawyer"), RESOLVED: ("chip-found", "Question resolved")}
 DOT = {"found": "●", "accepted": "●", "check": "○", "failed": "■"}
 SHORT = {"Termination for Convenience": "Termination"}  # short names for the clause strip
 MORE = 2500  # characters added each time "Earlier text" or "Later text" is pressed
@@ -150,7 +150,7 @@ def _finding(st, store, f, i, n):
               use_container_width=True)
     qkey = f"q{f['id']}"
     with b3.popover("Edit question" if f["question"] else "Ask senior", use_container_width=True):
-        st.text_area("Question for the senior lawyer", value=f["question"] or "", key=qkey, height=100,
+        st.text_area("Question for the Senior Lawyer", value=f["question"] or "", key=qkey, height=100,
                      placeholder="e.g. Does a transfer to an affiliate count as assignment here?",
                      help="One question per finding. Saving new text reopens it; saving empty text removes it.")
         st.button("Save question", key=f"saveq{f['id']}", on_click=_question, args=(st, store, f["id"], qkey))
@@ -160,7 +160,7 @@ def _finding(st, store, f, i, n):
             st.markdown(f'<span class="chip {cls}">{text}</span>', unsafe_allow_html=True)
             st.markdown("**You asked:** " + md_escape(f["question"]))
             if f["answer"]:
-                st.markdown("**Senior lawyer:** " + md_escape(f["answer"]))
+                st.markdown("**Senior Lawyer:** " + md_escape(f["answer"]))
                 if f["qstate"] == RESOLVED:
                     st.button("Reopen", key=f"reopen{f['id']}", on_click=_resolve, args=(st, store, f["id"], False))
                 else:

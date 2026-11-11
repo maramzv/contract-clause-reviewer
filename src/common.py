@@ -1,5 +1,5 @@
-"""Shared by the reviewer screen (app.py) and the senior lawyer dashboard (pages/): one SQLite store, so a question
-Maya saves is the one the senior lawyer sees and his answer is the one she sees."""
+"""Shared by the reviewer screen (app.py) and the Senior Lawyer dashboard (pages/): one SQLite store, so a question
+Maya saves is the one the Senior Lawyer sees and his answer is the one she sees."""
 import os
 
 import streamlit as st
@@ -17,7 +17,7 @@ def get_store():
 
 
 def result_actions(st, store, res):
-    """Download CSV in the sidebar, the same on every junior associate screen, and the refresh icon in the page corner."""
+    """Download CSV in the sidebar, the same on every Junior Associate screen, and the refresh icon in the page corner."""
     from clause_review.export import csv_text
     refresh_corner(st)
     st.sidebar.download_button("Download CSV", csv_text(store, res["pid"]), file_name="clause_review.csv",
@@ -46,7 +46,7 @@ def _start_new_review():
 
 
 def new_review_button(container):
-    """A button on the other junior associate screens that goes to the Review page with the New review section open."""
+    """A button on the other Junior Associate screens that goes to the Review page with the New review section open."""
     container.button("New review", icon=":material/add:", on_click=_start_new_review, use_container_width=True,
                       help="Pick clauses and contracts and run another review. The current one stays in Saved runs.")
 
