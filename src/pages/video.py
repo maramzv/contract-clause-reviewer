@@ -11,6 +11,8 @@ st.markdown("""<style>
 .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: #0d1b27 !important; }
 .block-container { max-width: min(1500px, calc((100vh - 2rem) * 1.6)) !important; padding: 1rem 1rem 0 !important; }  /* the biggest 16:10 picture that fits the window, no scrolling */
 video { width: 100%; border-radius: 8px; background: #0d1b27; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+/* the video has no sound, so no volume button */
+video::-webkit-media-controls-mute-button, video::-webkit-media-controls-volume-slider, video::-webkit-media-controls-volume-control-container { display: none !important; }
 </style>""", unsafe_allow_html=True)
 
 here = Path(__file__).resolve().parent.parent / "static" / "video"
