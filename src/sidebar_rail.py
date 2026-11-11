@@ -94,6 +94,10 @@ def _confirm():
     st.session_state["nr_ok"] = True
 
 
+def _started():
+    st.session_state["nr_running"] = True  # the Review step ticks as soon as Run is pressed
+
+
 def _reopen():
     st.session_state["nr_ok"] = False
 
@@ -161,12 +165,13 @@ def render(dev):
                         st.button(c[:1] + c[1:].lower(), key=f"nrb{i}", on_click=_flip, args=(i,), use_container_width=True)
 
         # 3. run: appears as soon as one clause is chosen
-        with st.container(key=f"nr_s3_{'now' if ready else 'dim'}"):
+        s3 = "done" if st.session_state.get("nr_running") else ("now" if ready else "dim")
+        with st.container(key=f"nr_s3_{s3}"):
             st.markdown('<div class="nr-h">Review</div>', unsafe_allow_html=True)
             if ready:
                 st.markdown(f'<div class="nr-hint">{len(files)} contract{"s" if len(files) != 1 else ""} · '
                             f'{len(chosen)} clause{"s" if len(chosen) != 1 else ""}</div>', unsafe_allow_html=True)
-                go = st.button("Run", key="nr_run", type="primary", disabled=bool(blocked), use_container_width=True)
+                go = st.button("Run", key="nr_run", type="primary", disabled=bool(blocked), use_container_width=True, on_click=_started)
             else:
                 st.markdown('<div class="nr-hint">Appears once you choose a clause</div>', unsafe_allow_html=True)
     return go, chosen, files or [], provider_name, workers_from_env()

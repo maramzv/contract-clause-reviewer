@@ -127,15 +127,18 @@ if go:
         st.session_state.pop("nr_ok", None)
         # stay on the progress screen and offer View results there (the sidebar was drawn before the run; pressing the
         # button reruns the page, which then shows the Overview and the up-to-date sidebar)
+        st.session_state.pop("nr_running", None)  # the next visit starts the steps again
         st.button("View results", type="primary", icon=":material/arrow_forward:", key="view_results")
         st.stop()  # redraw so the new run appears under Saved runs (the sidebar was drawn before the run)
     except BudgetExceeded as e:
+        st.session_state.pop("nr_running", None)
         st.session_state.pop("result", None)
         st.error(f"Stopped at the spending limit: {e}. Responses already paid for are saved and are reused on a rerun.")
         if dev and provider_name == "anthropic":
             st.info("Dev toggle: switch Run with to Local Claude agent and run again. Responses already paid for are cached.")
     except Exception as e:  # never show a half-finished table as if it were complete
         logging.exception("Review failed")
+        st.session_state.pop("nr_running", None)
         st.session_state.pop("result", None)
         st.error(f"The review could not be completed: {e}")
         if dev and provider_name == "anthropic":
