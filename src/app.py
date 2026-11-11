@@ -22,7 +22,7 @@ import os
 
 import workspace
 import workspace_html
-from common import DB_PATH, get_store, result_actions
+from common import DB_PATH, get_store, new_review_button, result_actions, resume_latest
 from progress_ui import ProgressView
 from theme import apply_theme, brand, hero, marquee, views
 
@@ -60,12 +60,9 @@ def run(files, categories, provider_name, samples=(), on_event=None, workers=1):
     return pid, provider, project
 
 
-provider_name = default_choice()
-blocked = None
-with st.sidebar:
-    brand(st)
-    views(st, on_review=True)
-    st.header("New review")
+def start_form(dev):
+    """The start screen: pick the clauses, add the contracts, run. Returns what a run needs."""
+    provider_name = default_choice()
     if dev:  # choose how this run is done: Mock, the local Claude agent, or the API (dev mode only)
         options = list(CHOICES) + ([provider_name] if provider_name not in CHOICES else [])  # keep e.g. CLAUSE_PROVIDER=local
         provider_name = st.selectbox("Run with", options, index=options.index(provider_name),
@@ -73,8 +70,8 @@ with st.sidebar:
     blocked = problem(provider_name)  # for everyone (#24): a missing key shows here, before Run, and disables Run
     if blocked:
         st.error(blocked)
-    chosen = st.multiselect("Clause categories", list(CATEGORIES), default=list(CATEGORIES))
-    files = st.file_uploader("Contracts (PDF or text)", type=["pdf", "txt"], accept_multiple_files=True)
+    if dev and NOTES.get(provider_name):
+        st.warning(NOTES[provider_name])
     samples = list_samples()
     workers = workers_from_env()
     by_id = {smp["id"]: smp for smp in samples}
@@ -82,39 +79,58 @@ with st.sidebar:
     def set_samples(everything):
         st.session_state["sample_pick"] = list(by_id) if everything else []
 
-    st.multiselect("Sample contracts", list(by_id), key="sample_pick", placeholder="Choose from the bundled contracts",
-                   format_func=lambda i: f"{by_id[i]['title']} · {format_duration(estimate_seconds(by_id[i]['chunks'], provider_name, workers))}",
-                   help="Public contracts that come with the app. The time beside each is a rough estimate for the model chosen.")
-    picked = [by_id[i] for i in st.session_state.get("sample_pick", []) if i in by_id]
-    b1, b2 = st.columns(2)
-    b1.button("Select all samples", on_click=set_samples, args=(True,), use_container_width=True)
-    b2.button("Clear", on_click=set_samples, args=(False,), use_container_width=True)
-    if picked:
-        total = estimate_seconds(sum(x["chunks"] for x in picked), provider_name, workers)
-        st.markdown(f"**{len(picked)} selected · {format_duration(total)} in total**")
-    go = st.button("Run review", type="primary", disabled=not (files or picked) or not chosen or bool(blocked))
-
-    # Every finished run is saved with its step-by-step recording, so it can be replayed without calling the model.
-    replay_req = open_req = None
-    st.header("Saved runs")
-    saved_runs = get_store().list_runs()
-    if not saved_runs:
-        st.caption("Each review you run is saved here automatically, so you can replay it later.")
+    left, right = st.columns(2, gap="large")
+    with left:
+        st.markdown("### 1 · Pick the clauses")
+        chosen = st.multiselect("Clause categories", list(CATEGORIES), default=list(CATEGORIES), label_visibility="collapsed")
+    with right:
+        st.markdown("### 2 · Add the contracts")
+        files = st.file_uploader("Contracts (PDF or text)", type=["pdf", "txt"], accept_multiple_files=True)
+        st.multiselect("Sample contracts", list(by_id), key="sample_pick", placeholder="Or choose from the bundled contracts",
+                       format_func=lambda i: f"{by_id[i]['title']} · {format_duration(estimate_seconds(by_id[i]['chunks'], provider_name, workers))}",
+                       help="Public contracts that come with the app. The time beside each is a rough estimate for the model chosen.")
+        picked = [by_id[i] for i in st.session_state.get("sample_pick", []) if i in by_id]
+        b1, b2, _ = st.columns([1, 1, 2])
+        b1.button("Select all", on_click=set_samples, args=(True,), use_container_width=True)
+        b2.button("Clear", on_click=set_samples, args=(False,), use_container_width=True)
+    st.markdown("### 3 · Run")
+    n = len(files) + len(picked)
+    if not n:
+        note = "Add at least one contract to run a review."
+    elif not chosen:
+        note = "Pick at least one clause."
     else:
-        run_id = st.selectbox("Saved run", [r["id"] for r in saved_runs],
-                              format_func=lambda i: next(f"{r['name']} · {r['docs']} contract(s) · {r['provider']} · "
-                                                         f"took {format_duration(r['duration']).replace('instant', 'under a second')}"
-                                                         for r in saved_runs if r["id"] == i))
-        speed_label = st.radio("Replay speed", list(REPLAY_SPEEDS), index=2, horizontal=True)
-        r1, r2 = st.columns(2)
-        if r1.button("Replay", type="primary", use_container_width=True, help="Plays the saved run again with no model calls. "
-                     "Starts fresh: nothing is accepted or removed, and questions and answers are not copied."):
-            replay_req = (run_id, REPLAY_SPEEDS[speed_label])
-        if r2.button("Open results", use_container_width=True, help="Opens the saved results as they were left."):
-            open_req = run_id
+        note = f"{n} contract{'s' if n != 1 else ''} · {len(chosen)} clause{'s' if len(chosen) != 1 else ''}"
+        if picked:
+            note += f" · about {format_duration(estimate_seconds(sum(x['chunks'] for x in picked), provider_name, workers))} for the bundled ones"
+    st.caption(note)
+    go = st.button("Run review", type="primary", disabled=not (files or picked) or not chosen or bool(blocked))
+    return go, chosen, files, picked, provider_name, workers
 
-if dev and NOTES.get(provider_name):
-    st.warning(NOTES[provider_name])
+
+# Sidebar: the two screens, a way to start another review, and the saved runs. The setup form is on the start screen.
+replay_req = open_req = None
+runs = get_store().list_runs()
+with st.sidebar:
+    brand(st)
+    views(st, on_review=True)
+    new_review_slot = st.container()  # filled below, once it is known whether a review is open
+    # Every finished run is saved with its step-by-step recording, so it can be replayed without calling the model.
+    with st.expander("Saved runs", expanded=False):
+        if not runs:
+            st.caption("Each review you run is saved here automatically, so you can replay it later.")
+        else:
+            run_id = st.selectbox("Saved run", [r["id"] for r in runs],
+                                  format_func=lambda i: next(f"{r['name']} · {r['docs']} contract(s) · {r['provider']} · "
+                                                             f"took {format_duration(r['duration']).replace('instant', 'under a second')}"
+                                                             for r in runs if r["id"] == i))
+            speed_label = st.radio("Replay speed", list(REPLAY_SPEEDS), index=2, horizontal=True)
+            r1, r2 = st.columns(2)
+            if r1.button("Replay", type="primary", use_container_width=True, help="Plays the saved run again with no model calls. "
+                         "Starts fresh: nothing is accepted or removed, and questions and answers are not copied."):
+                replay_req = (run_id, REPLAY_SPEEDS[speed_label])
+            if r2.button("Open results", use_container_width=True, help="Opens the saved results as they were left."):
+                open_req = run_id
 
 if replay_req:
     saved = get_store().get_run(replay_req[0])
@@ -123,14 +139,27 @@ if replay_req:
     pid = get_store().clone_project(saved["project_id"], f"Replay of run {saved['id']} ({saved['name']}) at {time.strftime('%H:%M:%S')}")
     st.session_state["result"] = {"pid": pid, "categories": saved["categories"], "provider": f"{saved['provider']} (replay)",
                                   "usage": "replay of a saved run, no model was called"}
+    st.session_state.pop("new_review", None)
     slot.empty()
 elif open_req or (st.query_params.get("open", "").isdigit() and "result" not in st.session_state):
     # `?open=<run id>` in the address opens a saved run's results directly, so a design change can be checked with a refresh
     saved = get_store().get_run(open_req or int(st.query_params["open"]))
     st.session_state["result"] = {"pid": saved["project_id"], "categories": saved["categories"],
                                   "provider": f"{saved['provider']} (saved run)", "usage": saved["usage"] or ""}
+    st.session_state.pop("new_review", None)
+else:
+    resume_latest(st, get_store())  # coming back: pick up the latest saved review where it was left
+
+go = False
+start_slot = None
+if "result" not in st.session_state:  # nothing to continue: the start screen
+    start_slot = st.empty()
+    with start_slot.container():
+        hero(st, demo=not dev and default_choice() == "mock")
+        go, chosen, files, picked, provider_name, workers = start_form(dev)
 
 if go:
+    start_slot.empty()
     slot = st.empty()
     recorder = Recorder(forward=ProgressView(st, slot.container()).handle)
     try:
@@ -138,24 +167,29 @@ if go:
         usage = provider.meter.summary()
         get_store().save_run(project, provider.name, getattr(provider, "model", ""), pid, chosen, usage, recorder.events)
         st.session_state["result"] = {"pid": pid, "categories": chosen, "usage": usage, "provider": provider.name}
+        st.session_state.pop("new_review", None)
         st.rerun()  # redraw so the new run appears under Saved runs (the sidebar was drawn before the run)
     except BudgetExceeded as e:
         st.session_state.pop("result", None)
+        st.session_state["new_review"] = True  # so the start screen comes back, not the latest saved review
         st.error(f"Stopped at the spending limit: {e}. Responses already paid for are saved and are reused on a rerun.")
         if dev and provider_name == "anthropic":
             st.info("Dev toggle: switch Run with to Local Claude agent and run again. Responses already paid for are cached.")
+        st.button("Back to the start screen")
     except Exception as e:  # never show a half-finished table as if it were complete
         logging.exception("Review failed")
         st.session_state.pop("result", None)
+        st.session_state["new_review"] = True
         st.error(f"The review could not be completed: {e}")
         if dev and provider_name == "anthropic":
             st.info("Dev toggle: switch Run with to Local Claude agent and run again. Responses already paid for are cached.")
+        st.button("Back to the start screen")
 
 res = st.session_state.get("result")
+if res:
+    new_review_button(new_review_slot)
 if not res:
-    hero(st, demo=not dev and default_choice() == "mock")
-    st.info("Choose categories, upload one or more contracts and select Run review.")
-    st.stop()
+    st.stop()  # the start screen (or the error above) is what is on the page
 
 docs = load_results(get_store(), res["pid"], res["categories"])
 result_actions(st, get_store(), res)

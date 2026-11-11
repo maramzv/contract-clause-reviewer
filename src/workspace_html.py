@@ -249,7 +249,42 @@ def render(st, store, res, docs):
         if apply_action(store, st.session_state, act, docs) == "overview":
             st.session_state["ws_goto_overview"] = True
 
+    if view["nothingLeft"] and view["mode"] == "To do":
+        _completion(st, store, res, docs, view)
+        return
     st.markdown(FULL_BLEED, unsafe_allow_html=True)
     _mount()(key="ws_html", data=view, on_act_change=on_act, height="content")
     if st.session_state.pop("ws_goto_overview", False):
         st.switch_page("pages/2_Overview.py")
+
+
+def _look_back(st):
+    st.session_state["ws_mode"] = "All clauses"
+    st.session_state["ws_pos"] = 0  # from the first passage
+    st.session_state.pop("ws_fid", None)
+    st.session_state["ws_pin"] = True
+
+
+def _completion(st, store, res, docs, view):
+    """The finish line: every passage the tool found has been decided. A summary, the CSV, and the way back."""
+    from clause_review.export import csv_text
+    from theme import kpi_row
+    findings = [f for d in docs for f in d["findings"]]
+    accepted = sum(1 for f in findings if f["review"] == "accepted")
+    removed = sum(1 for f in findings if f["review"] == "removed")
+    waiting = sum(1 for f in findings if f["review"] != "removed" and f["question"] and f["qstate"] == OPEN)
+    nothing = sum(1 for g in view["gaps"] if not g["checked"])
+    st.markdown('<div class="hero"><div class="eyebrow">Clautra &nbsp;/&nbsp; Junior associate</div><h1>All decided</h1>'
+                '<p class="tag">Every passage the tool found has been accepted or removed.</p><hr class="rule"></div>',
+                unsafe_allow_html=True)
+    kpi_row(st, [(accepted, "Accepted", None, False), (removed, "Removed", None, False),
+                 (waiting, "Question waiting for the senior lawyer" if waiting == 1 else "Questions waiting for the senior lawyer",
+                  "export again once they answer" if waiting else None, waiting > 0),
+                 (nothing, "Clause with nothing found" if nothing == 1 else "Clauses with nothing found",
+                  "listed in the CSV as Not found, for you to check by hand" if nothing else None, nothing > 0)])
+    a, b, c = st.columns([1.2, 1.2, 2])
+    a.download_button("Download CSV", csv_text(store, res["pid"]), file_name="clause_review.csv", mime="text/csv",
+                      type="primary", use_container_width=True, key="done_csv",
+                      help="Every finding with its review state, plus a row for every clause with nothing found.")
+    b.page_link("pages/2_Overview.py", label="See the overview", icon=":material/grid_view:")
+    c.button("Look back at the passages", on_click=_look_back, args=(st,))

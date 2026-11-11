@@ -6,7 +6,7 @@ from clause_review.categories import CATEGORIES
 from clause_review.review_view import build_slots, clause_state, live_findings, split_title
 from clause_review.store import ANSWERED
 from clause_review.view import load_results
-from common import get_store, result_actions
+from common import get_store, new_review_button, resume_latest, result_actions
 from theme import apply_theme, brand, kpi_row, marquee, views
 from workspace import short
 
@@ -19,7 +19,7 @@ with st.sidebar:
     brand(st)
     views(st)
 
-res = st.session_state.get("result")
+res = resume_latest(st, store)  # coming back: the latest saved review opens by itself
 title_col, back_col = st.columns([5, 1.3], vertical_alignment="center")
 title_col.markdown('<div class="hero"><div class="eyebrow">Clautra &nbsp;/&nbsp; Junior associate</div><h1>Overview</h1>'
                    '<p class="tag">Where every clause stands.</p></div>', unsafe_allow_html=True)
@@ -28,20 +28,11 @@ if res and back_col.button("Back to the review", type="primary", icon=":material
 st.markdown('<hr class="rule">', unsafe_allow_html=True)
 
 if not res:
-    runs = store.list_runs()
-    if not runs:
-        st.info("There is nothing to show yet. Run a review first; it is saved automatically and shows up here.")
-        st.page_link("app.py", label="Start a new review", icon=":material/upload_file:")
-        st.stop()
-    pick = st.selectbox("Open a saved review", [r["id"] for r in runs], format_func=lambda i: next(
-        f"{r['name']} · {r['docs']} contract(s)" for r in runs if r["id"] == i))
-    if st.button("Open", type="primary"):
-        r = store.get_run(pick)
-        st.session_state["result"] = {"pid": r["project_id"], "categories": r["categories"],
-                                      "provider": f"{r['provider']} (saved run)", "usage": r["usage"] or ""}
-        st.rerun()
+    st.info("There is nothing to show yet. Run a review first; it is saved automatically and shows up here.")
+    st.page_link("app.py", label="Start a new review", icon=":material/upload_file:")
     st.stop()
 
+new_review_button(st.sidebar)
 result_actions(st, store, res)
 docs = load_results(store, res["pid"], res["categories"])
 cats = [c for c in CATEGORIES if c in res["categories"]]

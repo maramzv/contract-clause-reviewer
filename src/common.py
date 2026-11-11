@@ -23,3 +23,30 @@ def result_actions(st, store, res):
                       use_container_width=True)
     st.sidebar.download_button("Download CSV", csv_text(store, res["pid"]), file_name="clause_review.csv",
                                mime="text/csv", help="Accepted and not-yet-reviewed findings, plus every category still to check.")
+
+
+def resume_latest(st, store):
+    """Coming back to the app: open the latest saved review, unless one is already open or the person chose to start a new
+    one. Returns the open review's session entry, or None when there is none yet."""
+    if "result" in st.session_state or st.session_state.get("new_review"):
+        return st.session_state.get("result")
+    runs = store.list_runs()
+    if not runs:
+        return None
+    r = runs[0]
+    st.session_state["result"] = {"pid": r["project_id"], "categories": r["categories"],
+                                  "provider": f"{r['provider']} (saved run)", "usage": r["usage"] or ""}
+    return st.session_state["result"]
+
+
+def _start_new_review():
+    st.session_state["new_review"] = True
+    st.session_state.pop("result", None)
+    st.switch_page("app.py")
+
+
+def new_review_button(container):
+    """One button that goes to the start screen, from any junior associate screen. `container` is where to draw it
+    (st.sidebar, or a container reserved in the sidebar so it can be filled in later)."""
+    container.button("New review", icon=":material/add:", on_click=_start_new_review, use_container_width=True,
+                      help="Pick clauses and contracts and run another review. The current one stays in Saved runs.")
