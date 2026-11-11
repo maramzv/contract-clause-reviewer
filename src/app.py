@@ -115,8 +115,10 @@ if "result" not in st.session_state and not go:  # nothing to continue: say how 
                 "Your last review, if you have one, opens here by itself.")
 
 if go:
+    top, top_button = st.columns([4, 1.25], vertical_alignment="center")  # the title line, with View results beside it at the end
+    head_slot, button_slot = top.empty(), top_button.empty()
     slot = st.empty()
-    recorder = Recorder(forward=ProgressView(st, slot.container(), show_done=False).handle)
+    recorder = Recorder(forward=ProgressView(st, slot.container(), show_done=False, heading=head_slot).handle)
     try:
         pid, provider, project = run(files, chosen, provider_name, on_event=recorder, workers=workers)
         usage = provider.meter.summary()
@@ -128,10 +130,8 @@ if go:
         # stay on the progress screen and offer View results there (the sidebar was drawn before the run; pressing the
         # button reruns the page, which then shows the Overview and the up-to-date sidebar)
         st.session_state.pop("nr_running", None)  # the next visit starts the steps again
-        with st.container(key="pr_done"):  # one bar: the message on the left, the button on its right
-            msg, btn = st.columns([4, 1.25], vertical_alignment="center")
-            msg.markdown("Done. Your contracts have been read.")
-            btn.button("View results", type="primary", icon=":material/arrow_forward:", key="view_results", use_container_width=True)
+        with button_slot:
+            st.button("View results", type="primary", icon=":material/arrow_forward:", key="view_results", use_container_width=True)
         st.stop()  # redraw so the new run appears under Saved runs (the sidebar was drawn before the run)
     except BudgetExceeded as e:
         st.session_state.pop("nr_running", None)

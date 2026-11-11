@@ -26,8 +26,9 @@ def row_html(name, fraction, state, note=""):
 
 
 class ProgressView:
-    def __init__(self, st, container=None, show_done=True):
-        self.show_done = show_done  # False when the caller draws its own finish bar (with the View results button in it)
+    def __init__(self, st, container=None, show_done=True, heading=None):
+        self.show_done = show_done  # False when the caller shows the finish itself
+        self.heading = heading  # an optional slot for the title line, so the caller can put a button beside it
         self.box = container if container is not None else st.container()
         self.rows = {}
         # Streamlit may only be drawn to from the thread that runs the page. A live run with several workers reports
@@ -38,7 +39,7 @@ class ProgressView:
         if threading.current_thread() is not self._owner:
             return
         if kind == "run_start":
-            self.box.markdown('<div class="pr-head">Reading your contracts</div>', unsafe_allow_html=True)  # plain text: a heading would get a link icon
+            self._title("Reading your contracts")
             for i, name in enumerate(d["documents"]):
                 self.rows[i] = {"name": name, "slot": self.box.empty()}
                 self._draw(i, 0.0, "waiting", "Waiting")
@@ -53,8 +54,15 @@ class ProgressView:
             self._draw(d.get("index"), 1.0, "failed", f"Failed: {str(d['error'])[:90]}")
         elif kind == "run_aborted":
             self.box.error(f"The review stopped: {d['error']}")
-        elif kind == "run_done" and self.show_done:
-            self.box.success("Done. Your contracts have been read.")
+        elif kind == "run_done":
+            if self.show_done:
+                self.box.success("Done. Your contracts have been read.")
+            else:
+                self._title("Your contracts have been reviewed")
+
+    def _title(self, text):
+        """The line above the rows. Plain HTML, not a heading, which would get a link icon."""
+        (self.heading if self.heading is not None else self.box).markdown(f'<div class="pr-head">{text}</div>', unsafe_allow_html=True)
 
     def _draw(self, index, fraction, state, note):
         row = self.rows.get(index)
