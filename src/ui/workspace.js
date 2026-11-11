@@ -19,9 +19,7 @@ function left(d) {
       <div class="done"><strong>Nothing left to do.</strong> Every quote the tool found has been accepted or removed. Download the CSV from the sidebar, or switch to All clauses below to look back.</div>${gaps(d)}${modes(d)}`;
   }
   const c = d.current;
-  const count = d.mode === 'To do'
-    ? `<strong>${d.position.at} of ${d.position.of}</strong> still to do`
-    : `<strong>${d.position.at} of ${d.position.of}</strong> passages and clauses`;
+  const count = `<strong>${d.decided} of ${d.total}</strong> passages decided · ${d.left} left`;  // the same numbers as the Overview
   const out = [`
     <div class="top"><button class="btn back" data-act="overview" title="Every contract and clause in one grid">${BACK}Overview</button>
       <span class="btns"><button class="btn" data-act="prev" aria-label="Previous">Previous</button>

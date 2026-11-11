@@ -6,7 +6,7 @@ Page -> Python: one trigger, `act`, with a dict such as {"type": "accept", "id":
 import re
 from pathlib import Path
 
-from clause_review.review_view import build_slots, clause_state, is_gap, live_findings, passage_html, search_snippets, split_title
+from clause_review.review_view import build_slots, clause_state, is_gap, live_findings, overview_stats, passage_html, search_snippets, split_title
 from clause_review.store import ANSWERED, OPEN, RESOLVED
 from workspace import short
 
@@ -79,7 +79,7 @@ def build_view(store, docs, state, categories=None):
     cur = (pos, fid)
     where = members.index(cur) + 1 if cur in members else 0
     later = [m for m in members if items.index(m) > items.index(cur)][:2]
-    total = sum(1 for it in items if it[1])
+    stats = overview_stats(docs, list(docs[0]["categories"]))  # the same numbers the Overview shows
 
     def upnext(m):
         d, c = slots[m[0]]
@@ -91,7 +91,8 @@ def build_view(store, docs, state, categories=None):
     view = {
         "empty": False, "docId": doc_id, "category": cat, "nothingLeft": not members, "mode": state["ws_mode"],
         "position": {"at": where, "of": len(members)},
-        "progress": 1.0 if not total else (total - len(pending)) / total,
+        "progress": 1.0 if not stats["total"] else stats["decided"] / stats["total"],
+        "decided": stats["decided"], "total": stats["total"], "left": stats["pending"],
         "gaps": [{"doc": d, "name": c, "title": split_title(by_id[d]["name"])[0], "clause": short(c), "state": clause_state(by_id[d], c),
                   "checked": bool(by_id[d]["reviewed"].get(c))} for d, c in slots if is_gap(by_id[d], c)],
         "title": title, "party": party, "contractNo": docs.index(doc) + 1, "contracts": len(docs),

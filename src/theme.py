@@ -52,10 +52,10 @@ span[data-baseweb="tag"] { max-width:100%%; }
 @media (prefers-reduced-motion: reduce) { .clautra-marquee { animation:none; text-overflow:ellipsis !important; } }
 
 /* KPI row: the three headline numbers of a review */
-.kpis { display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:1rem; margin:.3rem 0 1.1rem; }
+.kpis { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:.8rem; margin:.3rem 0 1.1rem; }
 .kpi { background:rgba(255,253,248,.78); border:1px solid var(--line); border-top:3px solid var(--brass); border-radius:3px; padding:.75rem 1.1rem .85rem; }
 .kpi .num { font-family:%(SERIF)s; font-size:2.9rem; line-height:1; color:var(--ink); }
-.kpi .lbl { margin-top:.35rem; font-size:.72rem; letter-spacing:.2em; text-transform:uppercase; font-weight:600; color:var(--brass-deep); }
+.kpi .lbl { margin-top:.35rem; font-size:.68rem; letter-spacing:.14em; text-transform:uppercase; font-weight:600; color:var(--brass-deep); }
 .kpi .note { margin-top:.15rem; font-size:.8rem; color:#4b5f70; }
 .kpi.flag { background:#EFE2BF; border-color:#D9C38C; border-top-color:var(--brass-deep); }
 .kpi.flag .lbl { color:#5c4719; }
@@ -130,6 +130,9 @@ section[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"][aria-current
 [data-testid="stMain"] .hero:has(+ *) { margin-bottom:0; }
 .ov-gonote { margin-top:.3rem; text-align:center; font-size:.8rem; color:#4b5f70; }
 [class*="st-key-ov_prog"] { background:#FFFDF8; border:1px solid var(--line); border-radius:4px; padding:1.1rem 1.3rem; margin-bottom:1rem; }
+.ov-prog { margin:.1rem 0 1rem; }
+.ov-prog-t { font-size:1rem; color:var(--ink); margin-bottom:.35rem; }
+.ov-prog-t b { font-family:%(SERIF)s; font-size:1.35rem; font-weight:600; }
 .ov-big { font-family:%(SERIF)s; font-size:1.5rem; line-height:1.1; color:var(--ink); }
 .ov-big b { font-size:2.3rem; font-weight:600; }
 .ov-bar { height:8px; border-radius:4px; background:rgba(20,39,55,.12); margin:.55rem 0 .45rem; overflow:hidden; }

@@ -52,7 +52,7 @@ def render(st, store, res):
     # ---- the title row, with the way to carry on ----
     title_col, go_col = st.columns([5, 1.6], vertical_alignment="center")
     title_col.markdown('<div class="hero"><div class="eyebrow">Clautra &nbsp;/&nbsp; Junior Associate</div><h1>Overview</h1>'
-                       f'<p class="tag">{html.escape(_noun(len(docs), "contract", "contracts"))}</p></div>', unsafe_allow_html=True)
+                       '<p class="tag">Where every clause stands.</p></div>', unsafe_allow_html=True)
     if s["pending"]:
         label = "Continue reviewing"
     else:
@@ -61,8 +61,14 @@ def render(st, store, res):
         go(None, None, "To do")
     st.markdown('<hr class="rule" style="margin:.2rem 0 1rem">', unsafe_allow_html=True)
 
+    # ---- how far along: the same numbers and bar as at the top of the Review ----
+    pct = round(100 * s["decided"] / s["total"]) if s["total"] else 100
+    st.markdown(f'<div class="ov-prog"><div class="ov-prog-t"><b>{s["decided"]} of {s["total"]}</b> passages decided · {s["pending"]} left</div>'
+                f'<div class="ov-bar"><span style="width:{max(2, pct) if s["total"] else 100}%"></span></div></div>', unsafe_allow_html=True)
+
     # ---- the four numbers ----
     kpi_row(st, [
+        (len(docs), "Contract" if len(docs) == 1 else "Contracts", None, False),
         (s["pending"], "Passage to review" if s["pending"] == 1 else "Passages to review",
          f'{s["accepted"]} accepted · {s["removed"]} removed', s["pending"] > 0),
         (s["waiting"], "Waiting on the Senior Lawyer", "questions you have asked" if s["waiting"] else None, s["waiting"] > 0),

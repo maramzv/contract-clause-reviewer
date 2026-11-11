@@ -82,7 +82,7 @@ def test_gaps_are_listed_but_do_not_count_as_to_do_and_can_be_opened_on_purpose(
     v = build_view(s, docs(), state)
     assert v["category"] == "Governing Law" and v["findings"] == []  # opened on purpose, so it stays put
     assert any(g["name"] == "Governing Law" for g in v["gaps"])
-    assert v["progress"] == 0.0 and v["position"]["of"] == 1  # only Assignment is left to decide; the gap is not counted
+    assert v["position"]["of"] == 1 and (v["decided"], v["total"], v["left"]) == (1, 2, 1) and v["progress"] == 0.5  # Governing Law removed, Assignment left; same numbers as the Overview
 
 
 def _renewal_store():
