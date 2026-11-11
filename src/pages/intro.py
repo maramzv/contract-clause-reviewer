@@ -13,6 +13,9 @@ st.markdown("""<style>
 [data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"], [data-testid="stToolbar"], header { display: none !important; }
 .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: #0d1b27 !important; }
 .block-container { max-width: 100% !important; padding: .6rem 1rem 0 !important; }
+[data-testid="stMain"], [data-testid="stAppViewContainer"] { overflow: hidden !important; }
+[data-testid="stVerticalBlock"] { gap: 0 !important; }
+iframe[srcdoc] { height: calc(100vh - 1.4rem) !important; height: calc(100dvh - 1.4rem) !important; display: block; }  /* fills the window, so the slide fits without scrolling */
 </style>""", unsafe_allow_html=True)
 
 _DIR = Path(__file__).resolve().parent.parent / "static" / "slides" / "deck"
@@ -27,15 +30,16 @@ _SHOW = """<!doctype html><html><head><meta charset="utf-8"><style>
 #dots i{width:9px;height:9px;border-radius:50%;background:rgba(243,239,230,.3);cursor:pointer;transition:background .2s,transform .2s}
 #dots i.on{background:#C4A972;transform:scale(1.25)}
 #count{min-width:56px;font-variant-numeric:tabular-nums}
-#present{border:0;background:transparent;color:rgba(243,239,230,.45);padding:2px;width:22px;height:22px;cursor:pointer;display:grid;place-items:center}
-#present:hover{color:#C4A972}#present svg{width:16px;height:16px}
+#present{position:absolute;right:16px;bottom:76px;z-index:5;border:0;background:transparent;color:rgba(243,239,230,.55);padding:2px;width:28px;height:28px;cursor:pointer;display:grid;place-items:center}
+#present:hover{color:#C4A972}#present svg{width:18px;height:18px}
 #show:fullscreen #bar{display:none}
+#show:fullscreen #present{bottom:14px}
 #show:fullscreen #stage{padding:0}
 #show:fullscreen #stage img{box-shadow:none;border-radius:0}
 #show:fullscreen{cursor:none}#show:fullscreen:hover{cursor:default}
 </style></head><body>
 <div id="show"><div id="stage" title="Click for the next slide"><img id="img" alt=""></div>
-<div id="bar"><span id="count"></span><div id="dots"></div><button id="present" aria-label="Full screen" title="Full screen (F)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M1 5V1h4M11 1h4v4M15 11v4h-4M5 15H1v-4"/></svg></button></div></div>
+<div id="bar"><span id="count"></span><div id="dots"></div></div><button id="present" aria-label="Full screen" title="Full screen on / off (F). Esc also leaves full screen"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M1 5V1h4M11 1h4v4M15 11v4h-4M5 15H1v-4"/></svg></button></div>
 <script>
 const S = __SLIDES__; let i = 0; const $ = id => document.getElementById(id), img = $('img'), show = $('show');
 $('dots').innerHTML = S.map((_, k) => `<i data-k="${k}" title="Slide ${k + 1}"></i>`).join('');
