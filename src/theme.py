@@ -184,6 +184,7 @@ section[data-testid="stSidebar"] [data-testid="stAlert"], section[data-testid="s
 section[data-testid="stSidebar"] [data-testid="stAlertContainer"] p { color:var(--ivory) !important; }
 section[data-testid="stSidebar"] [data-testid="stAlert"] { color:var(--ivory); border-color:#34506A; border-left-color:#C4A972; }
 [data-testid="stProgress"] > div > div { background-color:rgba(20,39,55,.12); }
+[data-testid="stProgress"] span[role="img"] { color:var(--brass-deep); }  /* the finished / failed mark on the run screen */
 span[data-baseweb="tag"] { background:#C4A972 !important; color:#142737 !important; border-radius:3px; }
 section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] { background:rgba(255,255,255,.05); border:1px dashed #6f8aa3; }
 </style>

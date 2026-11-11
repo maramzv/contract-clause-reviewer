@@ -27,9 +27,9 @@ class ProgressView:
             self._bar(d, d["done"] / max(1, d["total"]), f"{d['doc']} · part {d['done']} of {d['total']}")
         elif kind == "doc_done":
             n = d["findings"]
-            self._bar(d, 1.0, f"✅ {d['doc']} · {n} finding{'s' if n != 1 else ''}")
+            self._bar(d, 1.0, f":material/check_circle: {d['doc']} · {n} finding{'s' if n != 1 else ''}")
         elif kind == "doc_failed":
-            self._bar(d, 1.0, f"❌ {d['doc']} · failed: {str(d['error'])[:120]}")
+            self._bar(d, 1.0, f":material/error: {d['doc']} · failed: {str(d['error'])[:120]}")
         elif kind == "run_aborted":
             self.box.error(f"The review stopped: {d['error']}")
         elif kind == "run_done":
