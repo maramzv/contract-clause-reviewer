@@ -33,7 +33,7 @@ class ProgressView:
         elif kind == "run_aborted":
             self.box.error(f"The review stopped: {d['error']}")
         elif kind == "run_done":
-            self.box.success("Done. The results are below.")
+            self.box.success("Done. Your contracts have been read.")
 
     def _bar(self, d, fraction, text):
         row = self.rows.get(d.get("index"))

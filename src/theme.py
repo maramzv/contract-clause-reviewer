@@ -186,7 +186,6 @@ section[data-testid="stSidebar"] [data-testid="stAlert"] { color:var(--ivory); b
 [data-testid="stProgress"] > div > div { background-color:rgba(20,39,55,.12); }
 /* the left nav scrolls up and down only, never sideways */
 section[data-testid="stSidebar"] [data-testid="stSidebarContent"] { overflow-x:hidden !important; overflow-y:auto; }
-section[data-testid="stSidebar"] [data-testid="stSidebarContent"] * { max-width:100%%; }
 /* the refresh icon fixed in the corner of a dashboard; its wrapper leaves the page flow so it adds no gap above the title */
 [data-testid="stLayoutWrapper"]:has(> [class*="st-key-refresh_corner"]) { position:absolute; width:0; height:0; overflow:visible; }
 [class*="st-key-refresh_corner"] { position:fixed; top:.6rem; right:1.1rem; z-index:1000001; width:auto; }

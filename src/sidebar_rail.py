@@ -148,7 +148,6 @@ def render(dev):
             st.session_state["nr_ok"] = False
         chosen = [c for i, c in enumerate(cats) if i in sel]
         ready = have and bool(chosen)  # one clause is enough: step 2 ticks and Run appears
-        collapsed = ready and st.session_state["nr_ok"]  # Next folds the rows into one line
 
         # 2. clauses
         state2 = "done" if ready else ("now" if have else "dim")
@@ -156,20 +155,10 @@ def render(dev):
             st.markdown('<div class="nr-h">Choose clauses</div>', unsafe_allow_html=True)
             if state2 == "dim":
                 st.markdown('<div class="nr-hint">Opens once contracts are added</div>', unsafe_allow_html=True)
-            elif not collapsed:
+            else:  # the rows stay open: choose one or more, step 2 ticks with the first
                 for i, c in enumerate(cats):
                     with st.container(key=f"nrc{i}_{'on' if i in sel else 'off'}"):
                         st.button(c[:1] + c[1:].lower(), key=f"nrb{i}", on_click=_flip, args=(i,), use_container_width=True)
-                if ready:
-                    a, b = st.columns([2.6, 1])
-                    a.markdown(f'<div class="nr-hint">{len(chosen)} clause{"s" if len(chosen) != 1 else ""}</div>', unsafe_allow_html=True)
-                    with b.container(key="nr_link_next"):
-                        st.button("Next", key="nr_next", on_click=_confirm)
-            else:
-                a, b = st.columns([2.6, 1])
-                a.markdown(f'<div class="nr-hint">{len(chosen)} clause{"s" if len(chosen) != 1 else ""}</div>', unsafe_allow_html=True)
-                with b.container(key="nr_link_clauses"):
-                    st.button("Change", key="nr_change_clauses", on_click=_reopen)
 
         # 3. run: appears as soon as one clause is chosen
         with st.container(key=f"nr_s3_{'now' if ready else 'dim'}"):

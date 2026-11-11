@@ -151,4 +151,4 @@ def test_progress_screen_draws_each_contract_from_a_recording(tmp_path):
     for i, value, text in box.bars:
         last[i] = (value, text)
     assert last[0][1].startswith(":material/error: empty.txt") and last[1][0] == 1.0 and last[1][1].startswith(":material/check_circle: long.txt")
-    assert ("success", "Done. The results are below.") in box.notes
+    assert ("success", "Done. Your contracts have been read.") in box.notes

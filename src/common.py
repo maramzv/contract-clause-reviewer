@@ -21,7 +21,7 @@ def result_actions(st, store, res):
     from clause_review.export import csv_text
     refresh_corner(st)
     st.sidebar.download_button("Download CSV", csv_text(store, res["pid"]), file_name="clause_review.csv",
-                               mime="text/csv", help="Accepted and not-yet-reviewed findings, plus every category still to check.")
+                               mime="text/csv")  # no hover text
 
 
 def resume_latest(st, store):

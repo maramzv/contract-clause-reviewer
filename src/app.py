@@ -111,7 +111,7 @@ if "result" not in st.session_state and not go:  # nothing to continue: say how 
     start_slot = st.empty()
     with start_slot.container():
         hero(st, demo=tools and not dev and default_choice() == "mock")
-        st.info("Open **New review** on the left: choose the clause types, upload your contracts and select Run review. "
+        st.info("Open **New review** on the left: choose the clause types, upload your contracts and press Run. "
                 "Your last review, if you have one, opens here by itself.")
 
 if go:
@@ -125,7 +125,10 @@ if go:
         st.session_state.pop("new_review", None)  # done: the setup tucks away
         demo_picker.reset(st)
         st.session_state.pop("nr_ok", None)
-        st.rerun()  # redraw so the new run appears under Saved runs (the sidebar was drawn before the run)
+        # stay on the progress screen and offer View results there (the sidebar was drawn before the run; pressing the
+        # button reruns the page, which then shows the Overview and the up-to-date sidebar)
+        st.button("View results", type="primary", icon=":material/arrow_forward:", key="view_results")
+        st.stop()  # redraw so the new run appears under Saved runs (the sidebar was drawn before the run)
     except BudgetExceeded as e:
         st.session_state.pop("result", None)
         st.error(f"Stopped at the spending limit: {e}. Responses already paid for are saved and are reused on a rerun.")

@@ -70,9 +70,8 @@ kpi_row(st, [(count[OPEN], "Open question" if count[OPEN] == 1 else "Open questi
              (count[ANSWERED] + count[RESOLVED], "Answered", None, False),
              (len(gaps), "Unconfirmed categor" + ("y" if len(gaps) == 1 else "ies"), "not found or failed", len(gaps) > 0)])
 st.sidebar.download_button("Download questions CSV", questions_csv_text(store, pid), file_name="questions_for_senior_lawyer.csv",
-                           mime="text/csv", help="Only the findings the junior associate asked about, with the answers so far.")
-st.sidebar.download_button("Download full table CSV", csv_text(store, pid), file_name="clause_review.csv", mime="text/csv",
-                           help="The whole table, with the junior associate's review marks, questions and your answers.")
+                           mime="text/csv")
+st.sidebar.download_button("Download full table CSV", csv_text(store, pid), file_name="clause_review.csv", mime="text/csv")
 
 tab_q, tab_c, tab_g = st.tabs([f"Questions ({len(asked)})", "By clause", f"Unconfirmed ({len(gaps)})"])
 
