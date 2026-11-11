@@ -36,7 +36,7 @@ def _css():
         f'[class*="st-key-nrc{i}_off"] button::before{{background-image:{_uri(p, "#9fb1c0")};}}'
         f'[class*="st-key-nrc{i}_on"] button::before{{background-image:{_uri(p, "#C4A972")};}}' for i, p in enumerate(ICONS))
     return f"""<style>
-section[data-testid="stSidebar"] [class*="st-key-nr_rail"] {{ position:relative; padding-left:26px; gap:.9rem; }}
+section[data-testid="stSidebar"] [class*="st-key-nr_rail"] {{ position:relative; padding-left:26px; gap:.9rem; box-sizing:border-box; width:100%; }}
 section[data-testid="stSidebar"] [class*="st-key-nr_rail"]::before {{ content:""; position:absolute; left:8px; top:10px; bottom:16px; width:1px; background:#34506A; }}
 section[data-testid="stSidebar"] [class*="st-key-nr_s"] {{ position:relative; gap:.35rem; }}
 [class*="st-key-nr_s"]::before {{ content:""; position:absolute; left:-26px; top:2px; width:17px; height:17px; border-radius:50%;
@@ -50,7 +50,7 @@ section[data-testid="stSidebar"] [class*="st-key-nr_s"] {{ position:relative; ga
 [class*="st-key-nr_s"] [data-testid="stMarkdownContainer"] > * {{ margin-bottom:0 !important; }}
 .nr-h {{ font-weight:600; font-size:14px; color:#F3EFE6; margin-top:1px; }}
 .nr-hint {{ font-size:12.5px; color:#9fb1c0; white-space:nowrap; }}
-.nr-files {{ list-style:none; margin:0; padding:0; max-height:112px; overflow:auto; border-block:1px solid #34506A; }}
+.nr-files {{ list-style:none; margin:0; padding:0; max-height:112px; overflow-y:auto; overflow-x:hidden; border-block:1px solid #34506A; }}
 .nr-files li {{ display:flex; gap:8px; align-items:center; padding:4px 0; border-bottom:1px solid rgba(52,80,106,.5); font-size:12.5px; color:#F3EFE6; }}
 .nr-files li:last-child {{ border-bottom:0; }}
 .nr-files .n {{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }}
@@ -173,11 +173,11 @@ def render(dev):
 
         # 3. run: appears as soon as one clause is chosen
         with st.container(key=f"nr_s3_{'now' if ready else 'dim'}"):
-            st.markdown('<div class="nr-h">Run</div>', unsafe_allow_html=True)
+            st.markdown('<div class="nr-h">Review</div>', unsafe_allow_html=True)
             if ready:
-                label = (f"Run review · {len(files)} contract{'s' if len(files) != 1 else ''} · "
-                         f"{len(chosen)} clause{'s' if len(chosen) != 1 else ''}")
-                go = st.button(label, key="nr_run", type="primary", disabled=bool(blocked), use_container_width=True)
+                st.markdown(f'<div class="nr-hint">{len(files)} contract{"s" if len(files) != 1 else ""} · '
+                            f'{len(chosen)} clause{"s" if len(chosen) != 1 else ""}</div>', unsafe_allow_html=True)
+                go = st.button("Run", key="nr_run", type="primary", disabled=bool(blocked), use_container_width=True)
             else:
                 st.markdown('<div class="nr-hint">Appears once you choose a clause</div>', unsafe_allow_html=True)
     return go, chosen, files or [], provider_name, workers_from_env()
