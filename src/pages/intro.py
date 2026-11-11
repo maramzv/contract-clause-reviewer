@@ -1,13 +1,17 @@
-"""/intro: the slide deck, opened full width with no app chrome. The deck is a plain PDF in static/slides (served by Streamlit's
-static folder) and shown in a frame, so a new deck is just a new file copied over deck.pdf."""
-import streamlit as st
-import streamlit.components.v1 as components
+"""/intro: the slide deck as plain images, one under the other, full width with no app chrome. The images are in static/slides/deck
+(01.png, 02.png, ...). To change the deck, replace those files."""
+from pathlib import Path
 
-st.set_page_config(page_title="Clautra · Slides", page_icon="static/brand/clautra-mark-transparent.png", layout="wide", initial_sidebar_state="collapsed")
+import streamlit as st
+
+st.set_page_config(page_title="Clautra · Slides", page_icon="static/brand/clautra-mark-transparent.png", layout="centered", initial_sidebar_state="collapsed")
 st.markdown("""<style>
 [data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"], [data-testid="stToolbar"], header { display: none !important; }
-.block-container { padding: .8rem 1.2rem 0 !important; max-width: 100% !important; }
+.block-container { max-width: 1280px !important; padding-top: 1rem !important; }
+.slide { width: 100%; display: block; margin: 0 0 18px; border-radius: 6px; box-shadow: 0 2px 14px rgba(20,39,55,.25); }
 </style>""", unsafe_allow_html=True)
 
-components.html('<style>html,body{margin:0;height:100%}</style><iframe src="/app/static/slides/deck.pdf" style="width:100%;height:100%;border:0;border-radius:8px"></iframe>', height=850)
-st.markdown("[Open the slides as a PDF](/app/static/slides/deck.pdf)")
+slides = sorted((Path(__file__).resolve().parent.parent / "static" / "slides" / "deck").glob("*.png"))
+st.markdown("".join(f'<img class="slide" src="/app/static/slides/deck/{p.name}" alt="Slide {i}" loading="{"eager" if i < 3 else "lazy"}">'
+                    for i, p in enumerate(slides, 1)), unsafe_allow_html=True)
+st.markdown("[Download the slides as a PDF](/app/static/slides/deck.pdf)")
