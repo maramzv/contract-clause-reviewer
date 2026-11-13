@@ -1,0 +1,41 @@
+{
+  "v": 4,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-10T20:20:00Z"
+  },
+  "lists": "css",
+  "title": "Contract Clause Review: 2.5-minute pitch",
+  "order": [
+    "jd",
+    "address",
+    "workflow",
+    "architecture",
+    "results"
+  ],
+  "sections": {
+    "s1": {
+      "description": "The job and the problem we address.",
+      "start": "jd"
+    },
+    "s2": {
+      "description": "How the workflow improves and how the tool is built.",
+      "start": "workflow"
+    },
+    "s3": {
+      "description": "What we measured and what we did not.",
+      "start": "results"
+    }
+  },
+  "faces": {
+    "space-grotesk": {
+      "family": "Space Grotesk",
+      "href": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap"
+    },
+    "inter": {
+      "family": "Inter",
+      "href": "https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+    }
+  },
+  "designSystems": []
+}
