@@ -1,6 +1,6 @@
-# Contract Clause Extraction and Review
+# Clautra
 
-A web app that turns a batch of commercial contracts into a first-pass clause review table. Every finding shows the exact contract wording and its page. Every category the tool could not find is flagged for human review instead of being left blank.
+Junior associates and contracts paralegals reviewing contracts during a deal, as in the ImmunityBio, Cantor Fitzgerald and Andrews Myers postings we studied, search every agreement for the same clauses and copy the wording and page into a table by hand. When a search finds nothing, they can't tell whether the clause is missing or they missed it, and a senior lawyer will still ask where the contract says it. Clautra (formerly Contract Clause Extraction and Review) reads a batch of contracts, shows the exact wording and page for five clause types, and marks everything it could not find for human review.
 
 **Owners:** Kerrian Gordon and Mara Munoz
 
