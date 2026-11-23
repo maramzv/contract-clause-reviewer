@@ -32,10 +32,25 @@ These pain points are **hypotheses**, not established facts. No posting says tha
 
 ## What it does
 
+Clautra reads a batch of contracts and, for five clause types, shows the exact wording and page for every clause it finds. It marks everything it could not find for a person to check, and it carries any question for a senior lawyer along with the answer.
+
+- **See the exact words and the page.** Each finding is a quotation copied from the contract with its page number, so you can check it in seconds instead of trusting a summary.
+- **Never mistake a blank for "not there."** Every clause type is either found or marked "Not found, review required," and removing a false match restores that flag.
+- **Keep or remove each finding.** You accept or remove each suggestion, and can restore one you removed. Removed findings stay in the export, so there is a record of what you rejected.
+- **Ask your senior lawyer.** Flag a question on any finding. The senior lawyer reads it beside the passage and answers on their own page, and the question and answer go into the export.
+- **One table for the whole batch.** Upload many contracts at once and download one CSV to hand on.
+
+## Two guarantees
+
+- **100% verbatim quotations.** A quotation is shown only if it is found word for word in the contract after whitespace normalization (minimum 15 characters). Anything else is dropped.
+- **100% visible gaps.** Any contract and category pair without a verified finding is labeled "not found, review required" or "failed to process". A missing result is never treated as a confirmed absence.
+
+## How it works
+
 1. Upload contracts (PDF or text) and choose the clause categories to check.
 2. The system finds candidate passages and keeps only quotations that appear **word for word** in the contract.
-3. Maya sees each finding with its quotation, page and status, then **accepts** it, **removes** it, or **restores** a removed one.
-4. Download the reviewed table as CSV with the columns document, category, quote, page, review and question (the question column stays empty until flagging is built). Removed findings stay in the file with the review column set to `removed`, so the record of what a reviewer rejected is kept, and each category with no verified finding appears as a bracketed row such as `[Not found, review required]` or `[Failed to process]`.
+3. Maya sees each finding with its quotation, page and status, then **accepts** it, **removes** it, or **restores** a removed one. She can also flag a question on a finding for the senior lawyer, who answers it on the Senior lawyer page without changing her decisions.
+4. Download the reviewed table as CSV with the columns document, category, quote, page, review, question, answer, found_by and decided_by. Removed findings stay in the file with the review column set to `removed`, and each category with no verified finding appears as a bracketed row such as `[Not found, review required]` or `[Failed to process]`.
 
 Each run in the app creates a new review named by the time of the run.
 
@@ -51,16 +66,11 @@ Each run in the app creates a new review named by the time of the run.
 
 **Each category in each contract ends in one of three visible states:** Found · Not found, review required · Failed to process. If every finding in a category is removed, it goes back to "Not found, review required", so removing a false match never reads as a confirmed absence.
 
-## Two guarantees
-
-- **100% verbatim quotations.** A quotation is shown only if it is found word for word in the contract after whitespace normalization (minimum 15 characters). Anything else is dropped.
-- **100% visible gaps.** Any contract and category pair without a verified finding is labeled "not found, review required" or "failed to process". A missing result is never treated as a confirmed absence.
-
 ## Scope
 
 **P0 (committed for the build window):** multi-file upload, failed-file reporting with reason, category selection, quotation + page for each finding, per-category status, accept/remove, CSV export.
 
-**P1/P2:** highlighting in full text, marking a category as reviewed, flagging a question for a senior lawyer, adding a missed passage, filters, custom categories. Built only if P0 is finished and demonstrated.
+**P1/P2:** highlighting in full text, marking a category as reviewed, flagging a question for a senior lawyer, adding a missed passage, filters, custom categories. Built only if P0 is finished and demonstrated. Flagging a question for a senior lawyer has since been built, with the Senior lawyer page and the `answer` column in the CSV.
 
 **Non-goals:** legal interpretation or risk scoring, OCR for scanned PDFs, non-English contracts, drafting/redlining, multi-user accounts, processing real client contracts with a hosted model, scoring notice of non-renewal.
 
