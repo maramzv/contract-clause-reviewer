@@ -4,7 +4,7 @@ Junior associates and contracts paralegals reviewing contracts during a deal, as
 
 **Owners:** Kerrian Gordon and Mara Munoz
 
-To try it, go to [Run it](#run-it). The source of truth is the [final PRD](docs/02-prd/FINAL%20-%20Contract%20Clause%20Extraction%20and%20Review%20-%20%20PRD%20-%20Kerrian%20Gordon%20%26%20Mara%20Munoz.md). (the product requirements document). This README summarizes it and the code in `src/`. If they disagree, the PRD wins.
+To try it, go to [Run it](#run-it). The source of truth is the [final PRD](docs/02-prd/FINAL%20-%20Contract%20Clause%20Extraction%20and%20Review%20-%20%20PRD%20-%20Kerrian%20Gordon%20%26%20Mara%20Munoz.md) (the product requirements document). This README summarizes it and the code in `src/`. If they disagree, the PRD wins.
 
 ## The problem
 
