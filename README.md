@@ -4,25 +4,7 @@ Junior associates and contracts paralegals reviewing contracts during a deal, as
 
 **Owners:** Kerrian Gordon and Mara Munoz
 
-The source of truth is the [final PRD](docs/02-prd/FINAL%20-%20Contract%20Clause%20Extraction%20and%20Review%20-%20%20PRD%20-%20Kerrian%20Gordon%20%26%20Mara%20Munoz.md). This README summarizes it and the code in `src/`. If they disagree, the PRD wins.
-
-## Who did what
-
-**Kerrian Gordon: the build and the evaluation design**
-- The PRD's later updates and the scoring rule (pull requests #3 and #7).
-- The Python package in `src/`: ingest, chunk, extract, verify, store, export, the model providers with a spend limit and cache, and its tests (#1).
-- The Streamlit review screen, with accept, remove and restore, and the CSV download (#1, #2).
-- The CUAD loader and evaluation script, with a regex-only baseline (#6).
-- The written clause definitions and the answer-key design.
-
-**Mara Munoz: research, documentation, design and the answer-key check**
-- The assignment breakdown and the research: the job-description analysis and early design notes (`docs/00-assignment/`, `docs/01-research/`).
-- This README and the repo setup: the `main` and `developer` branch workflow, and reviewing and merging pull requests (#1 to #7).
-- The intro slideshow at `intro/`, with the project name and tagline (#4).
-- UI design work for the review screens: a clickable prototype, a UI inventory and a plain-English walkthrough. These are kept locally for now and are not in the repo.
-- The answer-key check: set up the test materials, read the contracts and the clause definitions, and signed off the definitions (`docs/03-tests/`). The marks for the 10 test contracts were produced by an AI model (Claude) from those contracts, not marked independently by a person, so the check is not an independent human check.
-
-**Both:** the original PRD, owned by Kerrian and Mara together.
+To try it, go to [Run it](#run-it). The source of truth is the [final PRD](docs/02-prd/FINAL%20-%20Contract%20Clause%20Extraction%20and%20Review%20-%20%20PRD%20-%20Kerrian%20Gordon%20%26%20Mara%20Munoz.md). (the product requirements document). This README summarizes it and the code in `src/`. If they disagree, the PRD wins.
 
 ## The problem
 
@@ -81,7 +63,7 @@ Each run in the app creates a new review named by the time of the run.
 
 ## Scope
 
-**P0 (committed for the build window):** multi-file upload, failed-file reporting with reason, category selection, quotation + page for each finding, per-category status, accept/remove, CSV export.
+**P0 means committed for the build window, P1/P2 means optional extras.** **P0:** multi-file upload, failed-file reporting with reason, category selection, quotation + page for each finding, per-category status, accept/remove, CSV export.
 
 **P1/P2:** highlighting in full text, marking a category as reviewed, flagging a question for a senior lawyer, adding a missed passage, filters, custom categories. Built only if P0 is finished and demonstrated. Flagging a question for a senior lawyer has since been built, with the Senior lawyer page and the `answer` column in the CSV.
 
@@ -95,7 +77,7 @@ Each run in the app creates a new review named by the time of the run.
 - **Providers:** `mock` (offline, the code default, for running without a key), `anthropic` (set `CLAUSE_PROVIDER=anthropic` in `.env`), `local`, and `claude_code` (`providers.py`)
 - **PDF parsing:** `pypdf`
 - **Storage:** SQLite (one local file)
-- **Evaluation:** the public CUAD contract dataset, with an offline replay cache so results can be re-scored without an API key
+- **Evaluation:** CUAD (the Contract Understanding Atticus Dataset, 510 public contracts labeled by lawyers), with an offline replay cache so results can be re-scored without an API key
 - **Tests:** `pytest`
 
 ## How it's built
@@ -140,7 +122,7 @@ By default it scores the 408 development contracts. The 102-contract test split 
 
 | Variable | What it does |
 |---|---|
-| `CLAUSE_PROVIDER` | `mock` (default), `anthropic` or `local` |
+| `CLAUSE_PROVIDER` | `mock` (default), `anthropic`, `local` or `claude_code` |
 | `ANTHROPIC_API_KEY` | Needed only for `anthropic` |
 | `CLAUSE_MODEL` | Model name; the code defaults to `claude-sonnet-5-5` |
 | `CLAUSE_WORKERS` | Parallel model calls (1 = one at a time) |
@@ -217,9 +199,27 @@ Either definition change edits the signed Clause Definitions, so it needs approv
 
 ## Status
 
-**Built:** upload, category choice, findings with quotation, page and category status, failed files listed with the reason, accept/remove/restore, a checkbox to mark each category as reviewed (a progress mark that never changes the category's status and is not in the CSV), CSV download, the model providers with a spend limit and response cache, the CUAD loader and evaluation script (with a regex-only baseline, development split by default), and 64 passing tests (offline, on small invented files and the mock provider).
+**Built:** upload, category choice, findings with quotation, page and category status, failed files listed with the reason, accept/remove/restore, questions for a senior lawyer with answers on a Senior lawyer page, a checkbox to mark each category as reviewed (a progress mark that never changes the category's status and is not in the CSV), CSV download, the model providers with a spend limit and response cache, the CUAD loader and evaluation script (with a regex-only baseline, development split by default), and 132 passing tests (offline, on small invented files and the mock provider).
 
-**Not built yet:** the other P1 and P2 items (highlighting, flagging a question, adding a missed passage, filters, custom categories). The regex-only baseline (average precision 0.48, recall 0.52, F1 0.42 on the 408 development contracts) and the real-model run on the 102 test contracts are done; results are above.
+**Not built yet:** the other P1 and P2 items (highlighting, adding a missed passage, filters, custom categories). The regex-only baseline (average precision 0.48, recall 0.52, F1 0.42 on the 408 development contracts) and the real-model run on the 102 test contracts are done; results are above.
+
+## Who did what
+
+**Kerrian Gordon: the build and the evaluation design**
+- The PRD's later updates and the scoring rule (pull requests #3 and #7).
+- The Python package in `src/`: ingest, chunk, extract, verify, store, export, the model providers with a spend limit and cache, and its tests (#1).
+- The Streamlit review screen, with accept, remove and restore, and the CSV download (#1, #2).
+- The CUAD loader and evaluation script, with a regex-only baseline (#6).
+- The written clause definitions and the answer-key design.
+
+**Mara Munoz: research, documentation, design and the answer-key check**
+- The assignment breakdown and the research: the job-description analysis and early design notes (`docs/00-assignment/`, `docs/01-research/`).
+- This README and the repo setup: the `main` and `developer` branch workflow, and reviewing and merging pull requests (#1 to #7).
+- The intro slideshow at `intro/` (the first version), with the project name and tagline (#4).
+- The visual design and the review and Senior lawyer screens: brand files, design rounds and before/after previews are in `docs/03-design/`.
+- The answer-key check: set up the test materials, read the contracts and the clause definitions, and signed off the definitions (`docs/03-tests/`). The marks for the 10 test contracts were produced by an AI model (Claude) from those contracts, not marked independently by a person, so the check is not an independent human check.
+
+**Both:** the original PRD, owned by Kerrian and Mara together.
 
 ## Repo layout
 
@@ -227,7 +227,12 @@ Either definition change edits the signed Clause Definitions, so it needs approv
 docs/00-assignment/   the assignment breakdown
 docs/01-research/     job descriptions and early design notes
 docs/02-prd/          the final PRD (source of truth)
+docs/03-design/       brand files, design rounds and before/after previews
 docs/03-tests/        materials for the answer-key check (test contracts, marking sheet, definitions)
-intro/                the intro slideshow (open intro/index.html)
-src/                  the app, the clause_review package and tests
+docs/04-presentation/ the Nov 10 results deck, kept as presented under the earlier name
+docs/images/          the screenshots used in this README
+intro/                the first intro slideshow (open intro/index.html); the app's own /intro page is in src/pages/
+src/                  the app, the clause_review package, its pages and tests
+requirements.txt      the Python packages to install
+.streamlit/           the app's theme settings
 ```
