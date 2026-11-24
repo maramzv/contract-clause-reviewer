@@ -74,20 +74,24 @@ Each run in the app creates a new review named by the time of the run.
 
 **Non-goals:** legal interpretation or risk scoring, OCR for scanned PDFs, non-English contracts, drafting/redlining, multi-user accounts, processing real client contracts with a hosted model, scoring notice of non-renewal.
 
-## How it's built
+## Tech stack
 
-| Layer | Choice |
-|---|---|
-| Frontend | Streamlit (one Python process) |
-| Backend | `clause_review` Python package in `src/`: ingest → chunk → extract → verify → store → export |
-| Database | SQLite (one local file) |
-| Model | Claude Sonnet via the facilitator's API key (environment variable, never stored). A mock provider runs offline and is the default. |
+- **UI:** Streamlit (>=1.40)
+- **Language and package:** Python, `clause_review` package in `src/`
+- **Model:** Claude Sonnet (`claude-sonnet-5-5`) via the `anthropic` Python SDK; override with `CLAUSE_MODEL`. The API key comes from an environment variable and is never stored.
+- **Providers:** `mock` (offline, the code default, for running without a key), `anthropic` (set `CLAUSE_PROVIDER=anthropic` in `.env`), `local`, and `claude_code` (`providers.py`)
+- **PDF parsing:** `pypdf`
+- **Storage:** SQLite (one local file)
+- **Evaluation:** the public CUAD contract dataset, with an offline replay cache so results can be re-scored without an API key
+- **Tests:** `pytest`
+
+## How it's built
 
 **Pipeline:**
 
 1. **Ingest:** pypdf reads each page and records page starts. Unreadable or scanned files become "Failed to process".
 2. **Chunk:** about 3,000-character windows with 300 characters of overlap, cut at paragraph or sentence boundaries.
-3. **Extract:** one model call per chunk returns category and exact quotation as JSON. The prompt lists, for each category, what counts and what does not (worded from the approved Clause Definitions). A keyword (regex) pass also finds candidate sentences, but its findings are kept only for a category where the model found nothing in that contract, so a model miss can still surface a candidate for review. Responses are cached by a hash of provider, model and prompt.
+3. **Extract:** one model call per chunk returns category and exact quotation as JSON. The prompt lists, for each category, what counts and what does not (worded from the approved Clause Definitions). A keyword (regex) pass is a fallback: it also finds candidate sentences, but its findings are kept only for a category the model left empty in that contract, so a model miss can still surface a candidate for review. Responses are cached by a hash of provider, model and prompt.
 4. **Verify:** drop any quotation not found verbatim. Where findings in a category overlap, the model's quotation is kept over a regex one, and among quotations from the same source the tightest is kept.
 5. **Store:** findings and category statuses go to SQLite.
 6. **Review and export:** accept, remove or restore, then download the CSV.
