@@ -22,7 +22,7 @@ Clautra reads a batch of contracts and, for five clause types, shows the exact w
 - **Ask your senior lawyer.** Flag a question on any finding. The senior lawyer reads it beside the passage and answers on their own page, and the question and answer go into the export.
 - **One table for the whole batch.** Upload many contracts at once and download one CSV to hand on.
 
-**Screenshots** (frames from the demo recording, on public contracts):
+**Screenshots** (frames from the 2:52 demo recording, on public contracts):
 
 ![The overview: ten contracts by five clause types, with each finding or gap visible](docs/images/clautra-overview.jpg)
 *The overview: every contract and clause type is a found passage to review or a flagged gap.*
@@ -33,7 +33,7 @@ Clautra reads a batch of contracts and, for five clause types, shows the exact w
 ![A gap with the senior lawyer's answer shown under the junior associate's question](docs/images/clautra-senior-answer.jpg)
 *A question to the senior lawyer, answered beside the passage.*
 
-The 2:52 demo recording is in the repo at [`src/static/video/clautra_demo.mp4`](src/static/video/clautra_demo.mp4); the earlier 2:28 cut is `clautra_demo_previous.mp4` in the same folder. The screenshots above come from an earlier cut of it.
+The 2:52 demo recording is in the repo at [`src/static/video/clautra_demo.mp4`](src/static/video/clautra_demo.mp4); the earlier 2:28 cut is `clautra_demo_previous.mp4` in the same folder.
 
 ## Two guarantees
 
