@@ -102,7 +102,8 @@ From the `src/` folder:
 ```
 python -m venv .venv
 .venv\Scripts\activate          # macOS/Linux: source .venv/bin/activate
-pip install streamlit pypdf pytest anthropic    # anthropic is only needed for the hosted model
+pip install -r ../requirements.txt          # streamlit, pypdf and anthropic (anthropic is only needed for the hosted model)
+pip install pytest                            # only to run the tests
 python -m pytest -q             # runs offline with the mock provider
 streamlit run app.py            # the review screen, on the mock provider by default
 ```
@@ -137,6 +138,8 @@ More detail, and the assumptions that are tested vs. still unmeasured, are in [s
 Evaluation and demos use **public contracts from CUAD** (510 contracts, 41 categories, CC BY 4.0). Real deal contracts should not be sent to a hosted model. The database stores the full text of every uploaded contract, so use public contracts only. Development uses 408 CUAD contracts. The 102-contract test split stays untouched until the answer key is frozen.
 
 ## Evaluation (after the build window)
+
+**In short:** on the 102 held-out test contracts, one run with the frozen code scored an average F1 of 0.69, against 0.42 for a keyword-only baseline. That met the F1 target. Recall (0.74 against 0.80) and precision (0.65 against 0.70) fell short, and the reviewer pilot that would measure time saved was not run. The details follow.
 
 | Goal | Target |
 |---|---|
