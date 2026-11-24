@@ -1,0 +1,37 @@
+<section id="what" data-transition="fade" style="background:#f6f5f0">
+  <p id="e1-110tbn3" style="position:absolute; bottom:64px; left:128px; width:1400px; font-family:Inter, Arial, sans-serif; font-size:24px; color:#5b6670">Review screen built in Streamlit; results stored in a local SQLite file.</p>
+  <p id="e2-110tbn3" style="position:absolute; right:128px; bottom:64px; width:120px; font-family:Inter, Arial, sans-serif; font-size:24px; text-align:right; color:#5b6670">3</p>
+  <h2 id="p70aa32a7a4c8r0-6e447ef3" style="position:absolute; top:128px; left:128px; width:1664px; font-family:'Space Grotesk', Arial, sans-serif; font-size:72px; font-weight:700; line-height:1.1; color:#14202b">From upload to a reviewed table</h2>
+  <div id="p70aa32a7a4c8r1-6e447ef3" style="position:absolute; top:255px; left:128px; width:1664px; height:281px; display:flex; flex-direction:row; gap:32px">
+    <div style="display:flex; flex-direction:column; gap:8px; flex:1; padding:32px; background:#ffffff; border:1px solid #dad7cc; border-radius:16px">
+      <p style="font-family:Inter, Arial, sans-serif; font-size:32px; font-weight:600; color:#0f766e">1</p>
+      <h3 style="font-family:'Space Grotesk', Arial, sans-serif; font-size:44px; font-weight:700; color:#14202b">Upload</h3>
+      <p style="font-family:Inter, Arial, sans-serif; font-size:24px; line-height:1.4; color:#3a4651">PDF or text contracts, and the categories to check.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px; flex:1; padding:32px; background:#ffffff; border:1px solid #dad7cc; border-radius:16px">
+      <p style="font-family:Inter, Arial, sans-serif; font-size:32px; font-weight:600; color:#0f766e">2</p>
+      <h3 style="font-family:'Space Grotesk', Arial, sans-serif; font-size:44px; font-weight:700; color:#14202b">Find</h3>
+      <p style="font-family:Inter, Arial, sans-serif; font-size:24px; line-height:1.4; color:#3a4651">Candidate passages are found; only exact quotations are kept.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px; flex:1; padding:32px; background:#ffffff; border:1px solid #dad7cc; border-radius:16px">
+      <p style="font-family:Inter, Arial, sans-serif; font-size:32px; font-weight:600; color:#0f766e">3</p>
+      <h3 style="font-family:'Space Grotesk', Arial, sans-serif; font-size:44px; font-weight:700; color:#14202b">Review</h3>
+      <p style="font-family:Inter, Arial, sans-serif; font-size:24px; line-height:1.4; color:#3a4651">Accept, remove or restore each finding, shown with its page.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px; flex:1; padding:32px; background:#ffffff; border:1px solid #dad7cc; border-radius:16px">
+      <p style="font-family:Inter, Arial, sans-serif; font-size:32px; font-weight:600; color:#0f766e">4</p>
+      <h3 style="font-family:'Space Grotesk', Arial, sans-serif; font-size:44px; font-weight:700; color:#14202b">Export</h3>
+      <p style="font-family:Inter, Arial, sans-serif; font-size:24px; line-height:1.4; color:#3a4651">A CSV of the reviewed table, with every gap listed.</p>
+    </div>
+  </div>
+  <div id="p70aa32a7a4c8r2-6e447ef3" style="position:absolute; top:584px; left:128px; width:1664px; height:217px; display:flex; flex-direction:column; gap:16px">
+    <p style="font-family:Inter, Arial, sans-serif; font-size:32px; font-weight:600; color:#14202b">Each category in each contract ends in one of three visible states</p>
+    <div style="display:flex; flex-direction:row; flex-wrap:wrap; gap:16px">
+      <p style="padding:14px 28px; font-family:Inter, Arial, sans-serif; font-size:32px; color:#ffffff; background:#0f766e; border-radius:256px">Found</p>
+      <p style="padding:14px 28px; font-family:Inter, Arial, sans-serif; font-size:32px; color:#ffffff; background:#a8530a; border-radius:256px">Not found, review required</p>
+      <p style="padding:14px 28px; font-family:Inter, Arial, sans-serif; font-size:32px; color:#ffffff; background:#14202b; border-radius:256px">Failed to process</p>
+    </div>
+  </div>
+  <p id="p70aa32a7a4c8r2_2-6e447ef3" style="position:absolute; top:752px; left:128px; width:1400px; font-family:Inter, Arial, sans-serif; font-size:24px; line-height:1.4; color:#3a4651">If every finding in a category is removed, it returns to “Not found, review required”, so removing a false match never reads as a confirmed absence.</p>
+  <aside>The user flow. Upload contracts and choose categories. The system finds candidate passages and keeps only quotations that appear word for word in the contract. Maya accepts, removes or restores each finding. The CSV leaves out removed findings, and every category without a verified finding appears as a bracketed row. The three states are what make a gap visible: a missing result is never treated as a confirmed absence.</aside>
+</section>

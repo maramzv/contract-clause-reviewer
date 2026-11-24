@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Review overview</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button{font-family:Inter,system-ui,sans-serif;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 1440px; height: 860px; box-sizing: border-box; display: flex; flex-direction: row; background: #F3EFE6; color: #142737; font-family: Inter, system-ui, sans-serif; font-size: 14px; overflow: hidden">
+
+<div style="width: 270px; flex: none; box-sizing: border-box; background: #142737; padding: 26px 16px 20px 16px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; font-weight: 600; color: #C4A972; letter-spacing: 0.02em; padding: 0 10px 18px 10px">Clautra</span>
+<a href="#" style="display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 3px; color: #F3EFE6; text-decoration: none; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 19px; font-weight: 600">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C4A972" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l2 2 4-4"/><rect x="4" y="3" width="16" height="18" rx="2"/></svg>Junior associate</a>
+<a href="Workspace.dc.html" style="display: block; margin-left: 28px; padding: 7px 10px; border-radius: 3px; border-left: 3px solid transparent; color: #F3EFE6; text-decoration: none; font-size: 14px">Review</a>
+<a href="#" style="display: block; margin-left: 28px; padding: 7px 10px; border-radius: 3px; background: rgba(196,169,114,0.18); border-left: 3px solid #C4A972; color: #E4D3A6; text-decoration: none; font-size: 14px; font-weight: 600">Overview</a>
+<a href="#" style="display: flex; align-items: center; gap: 10px; margin-top: 8px; padding: 9px 10px; border-radius: 3px; color: #F3EFE6; text-decoration: none; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 19px; font-weight: 600">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C4A972" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M6 21h12M5 8h14M5 8l-2 6a3 3 0 006 0zM19 8l-2 6a3 3 0 006 0z"/></svg>Senior lawyer</a>
+<span style="flex-grow: 1"></span>
+<div style="border-top: 1px solid #34506A; padding: 14px 10px 0 10px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 12.5px; color: #B9C8D4; line-height: 1.4">Review 10 Nov<br>11 contracts · 5 clauses</span>
+<button style="height: 36px; border-radius: 3px; border: 1px solid #A58A58; background: #C4A972; color: #0f1c28; font-weight: 600">Download CSV</button>
+<button style="height: 34px; border-radius: 3px; border: 1px solid rgba(243,239,230,0.35); background: transparent; color: #F3EFE6">Refresh</button>
+</div>
+</div>
+
+<div style="flex: 1; min-width: 0; min-height: 0; box-sizing: border-box; padding: 22px 32px; display: flex; flex-direction: column; gap: 16px; overflow: hidden">
+
+<div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+<div>
+<div style="font-size: 11.5px; letter-spacing: 0.2em; text-transform: uppercase; color: #7A6334; font-weight: 600">Junior associate</div>
+<h1 style="margin: 2px 0 0 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 36px; font-weight: 500; line-height: 1.05">Where every clause stands</h1>
+</div>
+<a href="Workspace.dc.html" style="display: inline-flex; align-items: center; height: 40px; padding: 0 20px; border-radius: 3px; border: 1px solid #7A6334; background: #C4A972; color: #0f1c28; font-weight: 600; text-decoration: none">Continue reviewing: 33 findings left</a>
+</div>
+
+<div style="display: flex; gap: 14px">
+<sc-for list="{{tiles}}" as="t" hint-placeholder-count="4">
+<div style="flex: 1; box-sizing: border-box; background: {{t.bg}}; border: 1px solid #D3CAB4; border-radius: 4px; padding: 12px 16px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 36px; font-weight: 600; line-height: 1">{{t.num}}</span>
+<span style="font-weight: 600; font-size: 13.5px">{{t.label}}</span>
+<span style="font-size: 12.5px; color: #3d5163">{{t.note}}</span>
+</div>
+</sc-for>
+</div>
+
+<div style="display: flex; align-items: center; gap: 8px">
+<button style="height: 32px; padding: 0 14px; border-radius: 16px; border: 1px solid #142737; background: #142737; color: #F3EFE6; font-size: 13px">All contracts 11</button>
+<button style="height: 32px; padding: 0 14px; border-radius: 16px; border: 1px solid #A58A58; background: transparent; color: #142737; font-size: 13px">To check by hand 9</button>
+<button style="height: 32px; padding: 0 14px; border-radius: 16px; border: 1px solid #A58A58; background: transparent; color: #142737; font-size: 13px">Has a question 1</button>
+<span style="flex-grow: 1"></span>
+<span style="font-size: 12.5px; color: #3d5163">Sorted by most to check first · click a cell to open it in the review</span>
+</div>
+
+<div style="background: #FFFDF8; border: 1px solid #D3CAB4; border-radius: 4px; display: flex; flex-direction: column; min-height: 0; overflow: hidden">
+<div style="display: flex; align-items: flex-end; padding: 9px 16px; border-bottom: 1px solid #D3CAB4; background: #EAE4D5; font-size: 12.5px; font-weight: 600; color: #142737">
+<span style="width: 330px; flex: none">Contract</span>
+<span style="flex: 1; min-width: 0">Assignment</span>
+<span style="flex: 1; min-width: 0">Change of control</span>
+<span style="flex: 1; min-width: 0">Termination for convenience</span>
+<span style="flex: 1; min-width: 0">Renewal</span>
+<span style="flex: 1; min-width: 0">Governing law</span>
+</div>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="11">
+<div style="display: flex; align-items: center; padding: 0 16px; height: 45px; flex: none; border-bottom: 1px solid #E6DFCC">
+<span style="width: 330px; flex: none; box-sizing: border-box; padding-right: 14px; display: flex; flex-direction: column; min-width: 0">
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; font-weight: 600; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.title}}</span>
+<span style="font-size: 12px; color: #3d5163; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.party}}</span>
+</span>
+<sc-for list="{{r.cells}}" as="c" hint-placeholder-count="5">
+<span style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 5px">
+<a href="Workspace.dc.html" style="display: inline-block; padding: 3px 10px; border-radius: 5px; font-size: 12px; font-weight: 600; white-space: nowrap; text-decoration: none; background: {{c.bg}}; color: {{c.fg}}">{{c.label}}</a>
+<sc-if value="{{c.q}}" hint-placeholder-val="{{ false }}"><span title="Question answered by the senior lawyer" style="padding: 1px 7px; border-radius: 9px; background: #142737; color: #F3EFE6; font-size: 11px; font-weight: 600">Answered</span></sc-if>
+</span>
+</sc-for>
+</div>
+</sc-for>
+</div>
+
+<div style="display: flex; gap: 20px; font-size: 12.5px; color: #3d5163; flex-wrap: wrap">
+<span><strong style="color: #142737">2 found</strong> quotes found, none reviewed yet</span>
+<span><strong style="color: #142737">Accepted</strong> you confirmed the quote</span>
+<span><strong style="color: #142737">To check</strong> nothing found: search the contract yourself</span>
+<span><strong style="color: #142737">Failed</strong> the file could not be read</span>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":860}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const N = (n) => ({ label: n + ' found', bg: '#B9C8D4', fg: '#10202d', q: false });
+    const Q = (n) => ({ label: n + ' found', bg: '#B9C8D4', fg: '#10202d', q: true });
+    const C = () => ({ label: 'To check', bg: '#EBD8B0', fg: '#57431a', q: false });
+    const row = (title, party, cells) => ({ title, party, cells });
+    const rows = [
+      row('Joint Filing Agreement', 'OneMain Holdings · contract_07', [C(), C(), C(), C(), C()]),
+      row('Cooperation Agreement, 50MWp Solar Project', 'Fenyi County · contract_08', [C(), C(), C(), C(), C()]),
+      row('Cooperation Agreement', 'HPIL Energytech and Ginares · contract_02', [C(), C(), C(), C(), N(1)]),
+      row('Strategic Alliance Agreement', 'SHBV and Waste2Energy · contract_05', [C(), C(), C(), C(), N(1)]),
+      row('Non-Competition and Right of First Offer', 'Glamis Gold and Western Copper · contract_06', [N(1), C(), C(), C(), C()]),
+      row('Consulting Agreement', 'Emerald Health Naturals · contract_03', [C(), C(), N(1), N(1), N(1)]),
+      row('Master Franchise Agreement', 'Kiosk Concepts · contract_04', [N(2), C(), N(1), C(), N(1)]),
+      row('Content License Agreement', 'Xinhua · contract_09', [N(1), C(), C(), C(), N(1)]),
+      row('Outsource Technology Development Agreement', 'contract_10', [N(1), C(), N(1), C(), N(1)]),
+      row('Endorsement Licensing and Co-Branding Agreement', 'MusclePharm · contract_01', [Q(1), C(), N(1), N(2), N(1)]),
+      row('Sample master services agreement (short)', 'sample', [N(1), N(1), N(1), N(1), N(1)])
+    ];
+    const tiles = [
+      { num: '11', label: 'Contracts', note: 'All read successfully', bg: '#FFFDF8' },
+      { num: '33', label: 'Findings to verify', note: '0 accepted · 0 removed', bg: '#FFFDF8' },
+      { num: '32', label: 'Clauses to check by hand', note: 'Nothing found: search the contract', bg: '#F6EFD9' },
+      { num: '1', label: 'Question answered', note: 'Waiting for you to resolve it', bg: '#FFFDF8' }
+    ];
+    return { rows, tiles };
+  }
+}
+</script>
+</body>
+</html>

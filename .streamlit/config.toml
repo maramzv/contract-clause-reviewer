@@ -1,0 +1,43 @@
+# Clautra "Ink & Ivory" theme. Run `streamlit run app.py` from this folder so this file is picked up.
+[server]
+enableStaticServing = true   # serves ./static (the fonts, logos and textures used by the theme)
+
+[client]
+toolbarMode = "minimal"
+showSidebarNavigation = false   # the Junior Associate / Senior Lawyer switch is drawn under the logo instead (theme.views)
+
+[theme]
+base = "light"
+primaryColor = "#A58A58"              # Muted Brass
+backgroundColor = "#F3EFE6"           # Warm Ivory
+secondaryBackgroundColor = "#EAE4D5"
+textColor = "#142737"                 # Ink Navy
+linkColor = "#7A6334"
+borderColor = "#D3CAB4"
+headingFont = "Latin Modern Roman"
+headingFontWeights = [400, 400, 400, 400, 400, 400]
+
+[[theme.fontFaces]]
+family = "Latin Modern Roman"
+url = "app/static/fonts/LatinModernRoman-Regular.woff"
+weight = 400
+style = "normal"
+
+[[theme.fontFaces]]
+family = "Latin Modern Roman"
+url = "app/static/fonts/LatinModernRoman-Italic.woff"
+weight = 400
+style = "italic"
+
+[[theme.fontFaces]]
+family = "Latin Modern Roman"
+url = "app/static/fonts/LatinModernRoman-Bold.woff"
+weight = 700
+style = "normal"
+
+[theme.sidebar]
+backgroundColor = "#142737"
+secondaryBackgroundColor = "#1F3648"
+textColor = "#F3EFE6"
+primaryColor = "#C4A972"
+borderColor = "#34506A"

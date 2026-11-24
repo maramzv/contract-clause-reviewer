@@ -1,0 +1,24 @@
+<section id="headline" data-transition="fade" style="background:#14202B;color:#F6F5F0;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1">Headline result on 102 test contracts</h2>
+<div style="display:flex;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#1E2F3E;padding:40px;border:1px solid #34495B;border-radius:16px">
+<p style="font-size:32px;font-weight:600;color:#C9D3DB">Precision</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:120px;font-weight:700;line-height:1.05;color:#5ED0C1">0.65</p>
+<p style="font-size:24px;color:#AEBBC6">95% range 0.57 to 0.74</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#1E2F3E;padding:40px;border:1px solid #34495B;border-radius:16px">
+<p style="font-size:32px;font-weight:600;color:#C9D3DB">Recall</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:120px;font-weight:700;line-height:1.05;color:#5ED0C1">0.74</p>
+<p style="font-size:24px;color:#AEBBC6">95% range 0.68 to 0.80</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#1E2F3E;padding:40px;border:1px solid #34495B;border-radius:16px">
+<p style="font-size:32px;font-weight:600;color:#C9D3DB">F1</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:120px;font-weight:700;line-height:1.05;color:#5ED0C1">0.69</p>
+<p style="font-size:24px;color:#AEBBC6">95% range 0.62 to 0.76</p>
+</div>
+</div>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:600;line-height:1.25">A regex-only baseline scores F1 0.42 on the same contracts. The extractor adds about 27 points.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1400px;font-size:24px;color:#AEBBC6">One run, frozen code, Claude Sonnet 5.5. Ranges resample the 102 contracts.</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;text-align:right;color:#AEBBC6">8</p>
+<aside>Averages of the five categories, from pooled counts, scored with the Jaccard rule (overlap divided by union at least 0.5). The 95% ranges come from resampling the 102 contracts 2,000 times. The baseline gain is about 27 points, with a 95% range of 0.21 to 0.32. A more lenient measure (overlap divided by the shorter passage) gives precision 0.69, recall 0.78 and F1 0.73. No contract failed. Scored against CUAD labels as published.</aside>
+</section>

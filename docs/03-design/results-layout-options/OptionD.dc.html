@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Verify queue with the contract beside it</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button{font-family:Inter,system-ui,sans-serif;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 1360px; height: 860px; box-sizing: border-box; display: flex; flex-direction: column; background: #F3EFE6; color: #142737; font-family: Inter, system-ui, sans-serif; font-size: 14px; overflow: hidden">
+
+<div style="height: 56px; flex: none; background: #142737; display: flex; align-items: center; gap: 28px; padding: 0 24px">
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 26px; font-weight: 600; color: #C4A972; letter-spacing: 0.02em">Clautra</span>
+<span style="display: flex; gap: 6px">
+<a href="#" style="padding: 8px 14px; border-radius: 3px; background: rgba(196,169,114,0.18); color: #E4D3A6; text-decoration: none; font-weight: 600">Junior associate</a>
+<a href="#" style="padding: 8px 14px; border-radius: 3px; color: #F3EFE6; text-decoration: none">Senior lawyer</a>
+</span>
+<span style="flex-grow: 1"></span>
+<span style="color: #B9C8D4; font-size: 13px">Review 10 Nov · 30 contracts · 5 clauses</span>
+<button style="height: 36px; padding: 0 16px; border-radius: 3px; border: 1px solid #A58A58; background: #C4A972; color: #0f1c28; font-weight: 600">Download CSV</button>
+</div>
+
+<div style="flex: 1; min-height: 0; display: flex">
+
+<div style="width: 470px; flex: none; box-sizing: border-box; background: #FFFDF8; border-right: 1px solid #D3CAB4; padding: 20px 26px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<span style="font-size: 11.5px; letter-spacing: 0.2em; text-transform: uppercase; color: #7A6334; font-weight: 600">Verify queue</span>
+<span style="font-size: 13px; color: #3d5163">Finding 12 of 61 · 8 to check by hand</span>
+</div>
+<span style="height: 6px; border-radius: 3px; background: #D3CAB4; display: block"><span style="display: block; height: 6px; border-radius: 3px; background: #2F5F82; width: 19%"></span></span>
+<div style="display: flex; gap: 6px; flex-wrap: wrap">
+<button style="height: 30px; padding: 0 12px; border-radius: 15px; border: 1px solid #142737; background: #142737; color: #F3EFE6; font-size: 12.5px">Not yet reviewed</button>
+<button style="height: 30px; padding: 0 12px; border-radius: 15px; border: 1px solid #A58A58; background: transparent; color: #142737; font-size: 12.5px">All clauses</button>
+<button style="height: 30px; padding: 0 12px; border-radius: 15px; border: 1px solid #A58A58; background: transparent; color: #142737; font-size: 12.5px">All 30 contracts</button>
+</div>
+
+<div style="border-top: 1px solid #D3CAB4; padding-top: 14px; display: flex; flex-direction: column; gap: 10px">
+<div style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 28px; font-weight: 600; line-height: 1.08">Northwind Hosting Agreement</div>
+<div style="display: flex; align-items: center; gap: 10px"><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 21px">Assignment</span><span style="padding: 2px 10px; border-radius: 5px; font-size: 12px; font-weight: 600; background: #B9C8D4; color: #10202d">Found</span><span style="font-size: 12.5px; color: #3d5163">Page 14</span></div>
+<div style="background: #DCE4EB; border-radius: 3px; padding: 12px 15px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 19px; line-height: 1.38; color: #0f1f2c">Neither party may assign this Agreement without the prior written consent of the other party, which shall not be unreasonably withheld.</div>
+<div style="font-size: 13px; color: #3d5163">Check the highlighted passage on the right says the same, word for word.</div>
+</div>
+
+<div style="display: flex; gap: 8px">
+<button style="flex: 1; height: 44px; border-radius: 3px; border: 1px solid #7A6334; background: #C4A972; color: #0f1c28; font-weight: 600; font-size: 15px">Accept <span style="font-weight: 500; font-size: 12px; opacity: 0.8">· A</span></button>
+<button style="flex: 1; height: 44px; border-radius: 3px; border: 1px solid rgba(20,39,55,0.45); background: transparent; color: #142737; font-size: 15px">Remove <span style="font-size: 12px; opacity: 0.7">· R</span></button>
+<button style="flex: 1; height: 44px; border-radius: 3px; border: 1px solid rgba(20,39,55,0.45); background: transparent; color: #142737; font-size: 15px">Ask <span style="font-size: 12px; opacity: 0.7">· Q</span></button>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="q-d" style="font-weight: 600; font-size: 13.5px">Question for the senior lawyer</label>
+<textarea id="q-d" rows="2" style="box-sizing: border-box; width: 100%; resize: none; border: 1px solid #D3CAB4; border-radius: 3px; padding: 8px 10px; font-family: Inter, system-ui, sans-serif; font-size: 13.5px; background: #fff; color: #142737">Does a transfer to an affiliate count as assignment here?</textarea>
+</div>
+
+<div style="margin-top: auto; border-top: 1px solid #D3CAB4; padding-top: 12px; display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #3d5163; font-weight: 600">Up next</span>
+<sc-for list="{{upNext}}" as="u" hint-placeholder-count="3">
+<div style="display: flex; align-items: center; gap: 10px; font-size: 13.5px"><span style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{u.name}} · {{u.clause}}</span><span style="padding: 2px 8px; border-radius: 5px; font-size: 11.5px; font-weight: 600; background: {{u.bg}}; color: {{u.fg}}">{{u.chip}}</span></div>
+</sc-for>
+</div>
+</div>
+
+<div style="flex: 1; min-width: 0; box-sizing: border-box; padding: 20px 36px 20px 36px; display: flex; flex-direction: column; gap: 12px; overflow: hidden">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column">
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; font-weight: 600">Contract text</span>
+<span style="font-size: 12.5px; color: #3d5163">Northwind Hosting Agreement · Page 14 of 31</span>
+</div>
+<div style="display: flex; gap: 8px">
+<button style="height: 32px; padding: 0 12px; border-radius: 3px; border: 1px solid rgba(20,39,55,0.4); background: transparent; color: #142737">Page 13</button>
+<button style="height: 32px; padding: 0 12px; border-radius: 3px; border: 1px solid rgba(20,39,55,0.4); background: transparent; color: #142737">Page 15</button>
+<button style="height: 32px; padding: 0 12px; border-radius: 3px; border: 1px solid rgba(20,39,55,0.4); background: transparent; color: #142737">Search in contract</button>
+</div>
+</div>
+<div style="flex: 1; min-height: 0; background: #FFFDF8; border: 1px solid #D3CAB4; border-radius: 4px; padding: 30px 44px; overflow: hidden; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18px; line-height: 1.5; color: #1b2a36">
+<p style="margin: 0 0 14px 0; color: #5d6c78">13.4 Each party shall return or destroy the other party's Confidential Information within thirty (30) days after written request, except as required by applicable law or its document retention policies.</p>
+<p style="margin: 0 0 8px 0; font-weight: 600; letter-spacing: 0.04em">14. ASSIGNMENT</p>
+<p style="margin: 0 0 14px 0">14.1 <mark style="background: #E4D3A6; color: #14202b; padding: 2px 0; box-shadow: 0 0 0 3px #E4D3A6">Neither party may assign this Agreement without the prior written consent of the other party, which shall not be unreasonably withheld.</mark></p>
+<p style="margin: 0 0 14px 0">14.2 Any purported assignment in violation of this Section shall be void. A transfer of all or substantially all of a party's assets to an affiliate shall be treated as an assignment for the purposes of this Section 14.</p>
+<p style="margin: 0 0 14px 0">14.3 This Agreement shall be binding upon and shall inure to the benefit of the parties and their respective successors and permitted assigns.</p>
+<p style="margin: 0 0 8px 0; font-weight: 600; letter-spacing: 0.04em">15. NOTICES</p>
+<p style="margin: 0 0 14px 0; color: #5d6c78">15.1 All notices under this Agreement shall be in writing and shall be deemed given when delivered by hand, one (1) business day after being sent by a nationally recognized overnight courier, or three (3) business days after being sent by registered mail to the address set out on the signature page.</p>
+<p style="margin: 0; color: #5d6c78">15.2 A party may change its address for notices by giving notice to the other party in accordance with this Section 15.</p>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":860}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const found = { chip: 'Found', bg: '#B9C8D4', fg: '#10202d' };
+    const check = { chip: 'To check', bg: '#EBD8B0', fg: '#57431a' };
+    const upNext = [
+      { name: 'Northwind Hosting Agreement', clause: 'Termination for convenience', ...found },
+      { name: 'Northwind Hosting Agreement', clause: 'Change of control', ...check },
+      { name: 'Orchard Distribution Agreement', clause: 'Assignment', ...found }
+    ];
+    return { upNext };
+  }
+}
+</script>
+</body>
+</html>

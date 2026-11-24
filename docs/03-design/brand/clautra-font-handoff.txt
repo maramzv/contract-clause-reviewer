@@ -1,0 +1,11 @@
+CLAUTRA / INK & IVORY
+Selected design: 06 Graduated. Three nested, open-right file outlines with square corners. Stroke weight tapers from outer to inner.
+
+The flat PNGs use Ink Navy #142737 and Muted Brass #A58A58. The mark-only, wordmark-only and full lockup exports have transparent backgrounds. The textured version is for brand presentations and larger placements.
+
+SERIF FAMILIES
+1. Latin Modern Roman Regular — used to redraw the exported wordmark. Elegant capitals and a fine serif.
+2. Nimbus Roman Regular — a crisper transitional alternative with compact proportions.
+3. P052 Roman — a warmer alternative with broader letterforms.
+
+The source was a generated concept, so the original typeface could not be identified. Use the exported wordmark for a consistent logo. For live typography, start with Latin Modern Roman for display headings. Keep controls and table labels in the app's sans serif.

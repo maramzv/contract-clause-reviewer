@@ -1,0 +1,15 @@
+<section id="categories" data-transition="fade" style="background:#F6F5F0;color:#14202B;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1">Results vary widely by category</h2>
+<table style="font-family:'Inter', Arial, sans-serif;font-size:32px;color:#14202B">
+<tr style="background:#14202B"><th style="width:34%;color:#F6F5F0">Category</th><th style="width:13%;color:#F6F5F0;text-align:right">Precision</th><th style="width:12%;color:#F6F5F0;text-align:right">Recall</th><th style="width:10%;color:#F6F5F0;text-align:right">F1</th><th style="width:31%;color:#F6F5F0;text-align:right">Right / predicted / labeled</th></tr>
+<tr style="background:#FFFFFF"><td>Assignment</td><td style="text-align:right">0.68</td><td style="text-align:right">0.67</td><td style="text-align:right">0.68</td><td style="text-align:right">92 / 135 / 137</td></tr>
+<tr style="background:#EEEDE6"><td>Change of Control</td><td style="text-align:right">0.44</td><td style="text-align:right">0.52</td><td style="text-align:right">0.47</td><td style="text-align:right">32 / 73 / 62</td></tr>
+<tr style="background:#FFFFFF"><td>Termination for Convenience</td><td style="text-align:right">0.69</td><td style="text-align:right">0.71</td><td style="text-align:right">0.70</td><td style="text-align:right">29 / 42 / 41</td></tr>
+<tr style="background:#EEEDE6"><td>Renewal</td><td style="text-align:right">0.60</td><td style="text-align:right">0.84</td><td style="text-align:right">0.70</td><td style="text-align:right">26 / 43 / 31</td></tr>
+<tr style="background:#FFFFFF"><td>Governing Law</td><td style="text-align:right">0.86</td><td style="text-align:right">0.96</td><td style="text-align:right">0.91</td><td style="text-align:right">86 / 100 / 90</td></tr>
+<tr style="background:#CFE6E1"><td>Average of five</td><td style="text-align:right">0.65</td><td style="text-align:right">0.74</td><td style="text-align:right">0.69</td><td style="text-align:right"></td></tr>
+</table>
+<p style="position:absolute;left:128px;bottom:64px;width:1400px;font-size:24px;color:#5B6670">Lenient overlap rule: precision 0.69, recall 0.78, F1 0.73. No contract failed.</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;text-align:right;color:#5B6670">9</p>
+<aside>Governing Law is the strongest category (F1 0.91). Change of Control is the weakest (F1 0.47). Only Renewal and Governing Law reach 0.80 recall. Right / predicted / labeled means: predictions that matched a label, total predictions, total labeled passages. Precision is understated by an unknown amount because CUAD leaves some real clauses unlabeled, and our Assignment definition is narrower than CUAD's.</aside>
+</section>

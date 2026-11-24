@@ -1,0 +1,25 @@
+<section id="next" data-transition="fade" style="background:#14202B;color:#F6F5F0;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:32px">
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1">What we would change next</h2>
+<p style="font-size:32px;line-height:1.4;color:#C9D3DB">Nothing that affects the findings or scores was changed after the test run, so the frozen result stays clean. A definition change needs approval and a new version tag.</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:8px;background:#1E2F3E;padding:32px 40px;border:1px solid #34495B;border-radius:16px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700;color:#5ED0C1">Assignment</h3>
+<p style="font-size:24px;line-height:1.4;color:#C9D3DB">Count sentences that make a prohibited assignment void or a breach. Development precision 0.71, recall 0.68.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#1E2F3E;padding:32px 40px;border:1px solid #34495B;border-radius:16px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700;color:#5ED0C1">Termination for convenience</h3>
+<p style="font-size:24px;line-height:1.4;color:#C9D3DB">Count a without-cause right to end part of the deal, such as a license or a fund. Precision 0.66, recall 0.78.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#1E2F3E;padding:32px 40px;border:1px solid #34495B;border-radius:16px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700;color:#5ED0C1">Change of control</h3>
+<p style="font-size:24px;line-height:1.4;color:#C9D3DB">Little room expected, because CUAD’s labeling is inconsistent here. Precision 0.35, recall 0.53.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#1E2F3E;padding:32px 40px;border:1px solid #34495B;border-radius:16px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700;color:#5ED0C1">Verification fix</h3>
+<p style="font-size:24px;line-height:1.4;color:#C9D3DB">Ignore page-break filler when matching quotes. Removed findings are now kept in the CSV (done Nov 10, scores unaffected).</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1400px;font-size:24px;color:#AEBBC6">These errors come from 100 development contracts, not the test split.</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;text-align:right;color:#AEBBC6">14</p>
+<aside>Not done, on purpose. The error analysis was replayed from cached model replies on 100 development contracts. Either definition change edits the signed Clause Definitions, so it needs approval, a new version tag, and a check on development contracts nobody has looked at. Running a changed version on the test split again would be exploratory and would have to be reported that way. The export item came from a demo run, not the evaluation: the CSV used to leave out removed findings. It was fixed on Nov 10 (export only; the findings and scores are unaffected) and checked on a mock run and one real-model run.</aside>
+</section>
