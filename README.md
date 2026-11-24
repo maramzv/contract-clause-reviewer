@@ -1,28 +1,10 @@
-# Contract Clause Extraction and Review
+# Clautra
 
-A web app that turns a batch of commercial contracts into a first-pass clause review table. Every finding shows the exact contract wording and its page. Every category the tool could not find is flagged for human review instead of being left blank.
+Junior associates and contracts paralegals reviewing contracts during a deal, as in the ImmunityBio, Cantor Fitzgerald and Andrews Myers postings we studied, search every agreement for the same clauses and copy the wording and page into a table by hand. When a search finds nothing, they can't tell whether the clause is missing or they missed it, and a senior lawyer will still ask where the contract says it. Clautra (formerly Contract Clause Extraction and Review) reads a batch of contracts, shows the exact wording and page for five clause types, and marks everything it could not find for human review.
 
 **Owners:** Kerrian Gordon and Mara Munoz
 
-The source of truth is the [final PRD](docs/02-prd/FINAL%20-%20Contract%20Clause%20Extraction%20and%20Review%20-%20%20PRD%20-%20Kerrian%20Gordon%20%26%20Mara%20Munoz.md). This README summarizes it and the code in `src/`. If they disagree, the PRD wins.
-
-## Who did what
-
-**Kerrian Gordon: the build and the evaluation design**
-- The PRD's later updates and the scoring rule (pull requests #3 and #7).
-- The Python package in `src/`: ingest, chunk, extract, verify, store, export, the model providers with a spend limit and cache, and its tests (#1).
-- The Streamlit review screen, with accept, remove and restore, and the CSV download (#1, #2).
-- The CUAD loader and evaluation script, with a regex-only baseline (#6).
-- The written clause definitions and the answer-key design.
-
-**Mara Munoz: research, documentation, design and the answer-key check**
-- The assignment breakdown and the research: the job-description analysis and early design notes (`docs/00-assignment/`, `docs/01-research/`).
-- This README and the repo setup: the `main` and `developer` branch workflow, and reviewing and merging pull requests (#1 to #7).
-- The intro slideshow at `intro/`, with the project name and tagline (#4).
-- UI design work for the review screens: a clickable prototype, a UI inventory and a plain-English walkthrough. These are kept locally for now and are not in the repo.
-- The answer-key check: set up the test materials, read the contracts and the clause definitions, and signed off the definitions (`docs/03-tests/`). The marks for the 10 test contracts were produced by an AI model (Claude) from those contracts, not marked independently by a person, so the check is not an independent human check.
-
-**Both:** the original PRD, owned by Kerrian and Mara together.
+To try it, go to [Run it](#run-it). The source of truth is the [final PRD](docs/02-prd/FINAL%20-%20Contract%20Clause%20Extraction%20and%20Review%20-%20%20PRD%20-%20Kerrian%20Gordon%20%26%20Mara%20Munoz.md) (the product requirements document). This README summarizes it and the code in `src/`. If they disagree, the PRD wins.
 
 ## The problem
 
@@ -32,10 +14,38 @@ These pain points are **hypotheses**, not established facts. No posting says tha
 
 ## What it does
 
+Clautra reads a batch of contracts and, for five clause types, shows the exact wording and page for every clause it finds. It marks everything it could not find for a person to check, and it carries any question for a senior lawyer along with the answer.
+
+- **See the exact words and the page.** Each finding is a quotation copied from the contract with its page number, so you can check it in seconds instead of trusting a summary.
+- **Never mistake a blank for "not there."** Every clause type is either found or marked "Not found, review required," and removing a false match restores that flag.
+- **Keep or remove each finding.** You accept or remove each suggestion, and can restore one you removed. Removed findings stay in the export, so there is a record of what you rejected.
+- **Ask your senior lawyer.** Flag a question on any finding. The senior lawyer reads it beside the passage and answers on their own page, and the question and answer go into the export.
+- **One table for the whole batch.** Upload many contracts at once and download one CSV to hand on.
+
+**Screenshots** (frames from the 2:52 demo recording, on public contracts):
+
+![The overview: ten contracts by five clause types, with each finding or gap visible](docs/images/clautra-overview.jpg)
+*The overview: every contract and clause type is a found passage to review or a flagged gap.*
+
+![Reviewing one finding next to the contract text, with Accept, Remove and Ask senior](docs/images/clautra-review.jpg)
+*Reviewing a finding: the quotation and page on the left, the highlighted passage in the contract on the right.*
+
+![A gap with the senior lawyer's answer shown under the junior associate's question](docs/images/clautra-senior-answer.jpg)
+*A question to the senior lawyer, answered beside the passage.*
+
+The 2:52 demo recording is in the repo at [`src/static/video/clautra_demo.mp4`](src/static/video/clautra_demo.mp4); the earlier 2:28 cut is `clautra_demo_previous.mp4` in the same folder.
+
+## Two guarantees
+
+- **100% verbatim quotations.** A quotation is shown only if it is found word for word in the contract after whitespace normalization (minimum 15 characters). Anything else is dropped.
+- **100% visible gaps.** Any contract and category pair without a verified finding is labeled "not found, review required" or "failed to process". A missing result is never treated as a confirmed absence.
+
+## How it works
+
 1. Upload contracts (PDF or text) and choose the clause categories to check.
 2. The system finds candidate passages and keeps only quotations that appear **word for word** in the contract.
-3. Maya sees each finding with its quotation, page and status, then **accepts** it, **removes** it, or **restores** a removed one.
-4. Download the reviewed table as CSV with the columns document, category, quote, page, review and question (the question column stays empty until flagging is built). Removed findings stay in the file with the review column set to `removed`, so the record of what a reviewer rejected is kept, and each category with no verified finding appears as a bracketed row such as `[Not found, review required]` or `[Failed to process]`.
+3. Maya sees each finding with its quotation, page and status, then **accepts** it, **removes** it, or **restores** a removed one. She can also flag a question on a finding for the senior lawyer, who answers it on the Senior lawyer page without changing her decisions.
+4. Download the reviewed table as CSV with the columns document, category, quote, page, review, question, answer, found_by and decided_by. Removed findings stay in the file with the review column set to `removed`, and each category with no verified finding appears as a bracketed row such as `[Not found, review required]` or `[Failed to process]`.
 
 Each run in the app creates a new review named by the time of the run.
 
@@ -51,33 +61,32 @@ Each run in the app creates a new review named by the time of the run.
 
 **Each category in each contract ends in one of three visible states:** Found · Not found, review required · Failed to process. If every finding in a category is removed, it goes back to "Not found, review required", so removing a false match never reads as a confirmed absence.
 
-## Two guarantees
-
-- **100% verbatim quotations.** A quotation is shown only if it is found word for word in the contract after whitespace normalization (minimum 15 characters). Anything else is dropped.
-- **100% visible gaps.** Any contract and category pair without a verified finding is labeled "not found, review required" or "failed to process". A missing result is never treated as a confirmed absence.
-
 ## Scope
 
-**P0 (committed for the build window):** multi-file upload, failed-file reporting with reason, category selection, quotation + page for each finding, per-category status, accept/remove, CSV export.
+**P0 means committed for the build window, P1/P2 means optional extras.** **P0:** multi-file upload, failed-file reporting with reason, category selection, quotation + page for each finding, per-category status, accept/remove, CSV export.
 
-**P1/P2:** highlighting in full text, marking a category as reviewed, flagging a question for a senior lawyer, adding a missed passage, filters, custom categories. Built only if P0 is finished and demonstrated.
+**P1/P2:** highlighting in full text, marking a category as reviewed, flagging a question for a senior lawyer, adding a missed passage, filters, custom categories. Built only if P0 is finished and demonstrated. Flagging a question for a senior lawyer has since been built, with the Senior lawyer page and the `answer` column in the CSV.
 
 **Non-goals:** legal interpretation or risk scoring, OCR for scanned PDFs, non-English contracts, drafting/redlining, multi-user accounts, processing real client contracts with a hosted model, scoring notice of non-renewal.
 
-## How it's built
+## Tech stack
 
-| Layer | Choice |
-|---|---|
-| Frontend | Streamlit (one Python process) |
-| Backend | `clause_review` Python package in `src/`: ingest → chunk → extract → verify → store → export |
-| Database | SQLite (one local file) |
-| Model | Claude Sonnet via the facilitator's API key (environment variable, never stored). A mock provider runs offline and is the default. |
+- **UI:** Streamlit (>=1.40)
+- **Language and package:** Python, `clause_review` package in `src/`
+- **Model:** Claude Sonnet (`claude-sonnet-5-5`) via the `anthropic` Python SDK; override with `CLAUSE_MODEL`. The API key comes from an environment variable and is never stored.
+- **Providers:** `mock` (offline, the code default, for running without a key), `anthropic` (set `CLAUSE_PROVIDER=anthropic` in `.env`), `local`, and `claude_code` (`providers.py`)
+- **PDF parsing:** `pypdf`
+- **Storage:** SQLite (one local file)
+- **Evaluation:** CUAD (the Contract Understanding Atticus Dataset, 510 public contracts labeled by lawyers), with an offline replay cache so results can be re-scored without an API key
+- **Tests:** `pytest`
+
+## How it's built
 
 **Pipeline:**
 
 1. **Ingest:** pypdf reads each page and records page starts. Unreadable or scanned files become "Failed to process".
 2. **Chunk:** about 3,000-character windows with 300 characters of overlap, cut at paragraph or sentence boundaries.
-3. **Extract:** one model call per chunk returns category and exact quotation as JSON. The prompt lists, for each category, what counts and what does not (worded from the approved Clause Definitions). A keyword (regex) pass also finds candidate sentences, but its findings are kept only for a category where the model found nothing in that contract, so a model miss can still surface a candidate for review. Responses are cached by a hash of provider, model and prompt.
+3. **Extract:** one model call per chunk returns category and exact quotation as JSON. The prompt lists, for each category, what counts and what does not (worded from the approved Clause Definitions). A keyword (regex) pass is a fallback: it also finds candidate sentences, but its findings are kept only for a category the model left empty in that contract, so a model miss can still surface a candidate for review. Responses are cached by a hash of provider, model and prompt.
 4. **Verify:** drop any quotation not found verbatim. Where findings in a category overlap, the model's quotation is kept over a regex one, and among quotations from the same source the tightest is kept.
 5. **Store:** findings and category statuses go to SQLite.
 6. **Review and export:** accept, remove or restore, then download the CSV.
@@ -93,7 +102,8 @@ From the `src/` folder:
 ```
 python -m venv .venv
 .venv\Scripts\activate          # macOS/Linux: source .venv/bin/activate
-pip install streamlit pypdf pytest anthropic    # anthropic is only needed for the hosted model
+pip install -r ../requirements.txt          # streamlit, pypdf and anthropic (anthropic is only needed for the hosted model)
+pip install pytest                            # only to run the tests
 python -m pytest -q             # runs offline with the mock provider
 streamlit run app.py            # the review screen, on the mock provider by default
 ```
@@ -113,7 +123,7 @@ By default it scores the 408 development contracts. The 102-contract test split 
 
 | Variable | What it does |
 |---|---|
-| `CLAUSE_PROVIDER` | `mock` (default), `anthropic` or `local` |
+| `CLAUSE_PROVIDER` | `mock` (default), `anthropic`, `local` or `claude_code` |
 | `ANTHROPIC_API_KEY` | Needed only for `anthropic` |
 | `CLAUSE_MODEL` | Model name; the code defaults to `claude-sonnet-5-5` |
 | `CLAUSE_WORKERS` | Parallel model calls (1 = one at a time) |
@@ -128,6 +138,8 @@ More detail, and the assumptions that are tested vs. still unmeasured, are in [s
 Evaluation and demos use **public contracts from CUAD** (510 contracts, 41 categories, CC BY 4.0). Real deal contracts should not be sent to a hosted model. The database stores the full text of every uploaded contract, so use public contracts only. Development uses 408 CUAD contracts. The 102-contract test split stays untouched until the answer key is frozen.
 
 ## Evaluation (after the build window)
+
+**In short:** on the 102 held-out test contracts, one run with the frozen code scored an average F1 of 0.69, against 0.42 for a keyword-only baseline. That met the F1 target. Recall (0.74 against 0.80) and precision (0.65 against 0.70) fell short, and the reviewer pilot that would measure time saved was not run. The details follow.
 
 | Goal | Target |
 |---|---|
@@ -190,9 +202,27 @@ Either definition change edits the signed Clause Definitions, so it needs approv
 
 ## Status
 
-**Built:** upload, category choice, findings with quotation, page and category status, failed files listed with the reason, accept/remove/restore, a checkbox to mark each category as reviewed (a progress mark that never changes the category's status and is not in the CSV), CSV download, the model providers with a spend limit and response cache, the CUAD loader and evaluation script (with a regex-only baseline, development split by default), and 64 passing tests (offline, on small invented files and the mock provider).
+**Built:** upload, category choice, findings with quotation, page and category status, failed files listed with the reason, accept/remove/restore, questions for a senior lawyer with answers on a Senior lawyer page, a checkbox to mark each category as reviewed (a progress mark that never changes the category's status and is not in the CSV), CSV download, the model providers with a spend limit and response cache, the CUAD loader and evaluation script (with a regex-only baseline, development split by default), and 132 passing tests (offline, on small invented files and the mock provider).
 
-**Not built yet:** the other P1 and P2 items (highlighting, flagging a question, adding a missed passage, filters, custom categories). The regex-only baseline (average precision 0.48, recall 0.52, F1 0.42 on the 408 development contracts) and the real-model run on the 102 test contracts are done; results are above.
+**Not built yet:** the other P1 and P2 items (highlighting, adding a missed passage, filters, custom categories). The regex-only baseline (average precision 0.48, recall 0.52, F1 0.42 on the 408 development contracts) and the real-model run on the 102 test contracts are done; results are above.
+
+## Who did what
+
+**Kerrian Gordon: the build and the evaluation design**
+- The PRD's later updates and the scoring rule (pull requests #3 and #7).
+- The Python package in `src/`: ingest, chunk, extract, verify, store, export, the model providers with a spend limit and cache, and its tests (#1).
+- The Streamlit review screen, with accept, remove and restore, and the CSV download (#1, #2).
+- The CUAD loader and evaluation script, with a regex-only baseline (#6).
+- The written clause definitions and the answer-key design.
+
+**Mara Munoz: research, documentation, design and the answer-key check**
+- The assignment breakdown and the research: the job-description analysis and early design notes (`docs/00-assignment/`, `docs/01-research/`).
+- This README and the repo setup: the `main` and `developer` branch workflow, and reviewing and merging pull requests (#1 to #7).
+- The intro slideshow at `intro/` (the first version), with the project name and tagline (#4).
+- The visual design and the review and Senior lawyer screens: brand files, design rounds and before/after previews are in `docs/03-design/`.
+- The answer-key check: set up the test materials, read the contracts and the clause definitions, and signed off the definitions (`docs/03-tests/`). The marks for the 10 test contracts were produced by an AI model (Claude) from those contracts, not marked independently by a person, so the check is not an independent human check.
+
+**Both:** the original PRD, owned by Kerrian and Mara together.
 
 ## Repo layout
 
@@ -200,7 +230,12 @@ Either definition change edits the signed Clause Definitions, so it needs approv
 docs/00-assignment/   the assignment breakdown
 docs/01-research/     job descriptions and early design notes
 docs/02-prd/          the final PRD (source of truth)
+docs/03-design/       brand files, design rounds and before/after previews
 docs/03-tests/        materials for the answer-key check (test contracts, marking sheet, definitions)
-intro/                the intro slideshow (open intro/index.html)
-src/                  the app, the clause_review package and tests
+docs/04-presentation/ the Nov 10 results deck, kept as presented under the earlier name
+docs/images/          the screenshots used in this README
+intro/                the first intro slideshow (open intro/index.html); the app's own /intro page is in src/pages/
+src/                  the app, the clause_review package, its pages and tests
+requirements.txt      the Python packages to install
+.streamlit/           the app's theme settings
 ```

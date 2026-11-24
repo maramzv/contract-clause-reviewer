@@ -1,4 +1,4 @@
-# Contract clause review: skeleton
+# Clautra: source code
 
 Pipeline: ingest -> chunk -> extract (regex + LLM) -> verify (exact quote) -> SQLite -> CSV.
 

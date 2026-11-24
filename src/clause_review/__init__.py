@@ -1,1 +1,1 @@
-"""Contract clause extraction and review: a skeleton pipeline."""
+"""Clautra: the contract clause extraction and review pipeline."""
