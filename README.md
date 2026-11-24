@@ -40,6 +40,19 @@ Clautra reads a batch of contracts and, for five clause types, shows the exact w
 - **Ask your senior lawyer.** Flag a question on any finding. The senior lawyer reads it beside the passage and answers on their own page, and the question and answer go into the export.
 - **One table for the whole batch.** Upload many contracts at once and download one CSV to hand on.
 
+**Screenshots** (frames from the demo recording, on public contracts):
+
+![The overview: ten contracts by five clause types, with each finding or gap visible](docs/images/clautra-overview.jpg)
+*The overview: every contract and clause type is a found passage to review or a flagged gap.*
+
+![Reviewing one finding next to the contract text, with Accept, Remove and Ask senior](docs/images/clautra-review.jpg)
+*Reviewing a finding: the quotation and page on the left, the highlighted passage in the contract on the right.*
+
+![A gap with the senior lawyer's answer shown under the junior associate's question](docs/images/clautra-senior-answer.jpg)
+*A question to the senior lawyer, answered beside the passage.*
+
+The 2:28 demo recording is in the repo at [`src/static/video/clautra_demo.mp4`](src/static/video/clautra_demo.mp4).
+
 ## Two guarantees
 
 - **100% verbatim quotations.** A quotation is shown only if it is found word for word in the contract after whitespace normalization (minimum 15 characters). Anything else is dropped.
