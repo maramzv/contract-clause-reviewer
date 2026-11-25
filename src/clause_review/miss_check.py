@@ -82,12 +82,16 @@ def also_mentions(text, patterns, shown, threshold=0.5):
 
 
 def check(contracts, categories, cache, patterns=ALSO_MENTIONS):
+    """Report on `categories`, but read the saved replies with all five: the evaluation asks the model about every
+    category in one prompt, and the saved reply is filed under a hash of that whole prompt. Asking about fewer
+    categories builds a different prompt and finds nothing."""
+    ask = list(CATEGORIES)
     report = {c: {"contracts": 0, "labeled": 0, "matched": 0, "gap": 0, "wrong": 0, "partial": 0,
                   "surfaced": 0, "list_lengths": []} for c in categories}
     skipped = 0
     for con in contracts:
         try:
-            found = find_findings(con.text, categories, Offline(), cache=cache)
+            found = find_findings(con.text, ask, Offline(), cache=cache)
         except LookupError:
             skipped += 1
             continue
@@ -111,6 +115,10 @@ def check(contracts, categories, cache, patterns=ALSO_MENTIONS):
 
 def format_report(report, skipped):
     lines = [f"{skipped} contracts skipped (replies not all saved)", ""]
+    if skipped and not any(r["contracts"] for r in report.values()):
+        lines += ["Every contract was skipped, so no saved reply matched. The usual causes: CLAUSE_MODEL is not the model the",
+                  "development run used, the prompt or the Clause Definitions changed after that run, or --cache is not",
+                  "the file that run wrote.", ""]
     for cat, r in report.items():
         missed = r["gap"] + r["wrong"] + r["partial"]
         lines.append(f"{cat}: {r['contracts']} contracts, {r['labeled']} labeled passages, {r['matched']} matched, {missed} missed")

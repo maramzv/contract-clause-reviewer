@@ -55,6 +55,27 @@ def test_offline_files_replies_under_the_real_providers_name_and_model(monkeypat
     assert (Offline().name, Offline().model) == ("anthropic", "some-model")
 
 
+def test_a_check_on_two_categories_still_finds_replies_saved_for_all_five():
+    # Regression: asking about fewer categories builds a different prompt, so every saved reply was missed.
+    import json
+
+    from clause_review.categories import CATEGORIES
+    from clause_review.pipeline import find_findings
+    from clause_review.providers import Provider
+
+    class Canned(Provider):
+        name, model = "anthropic", "claude-sonnet-5-5"
+
+        def _complete(self, prompt):
+            return json.dumps([]), 0, 0
+
+    cache = Store()
+    find_findings(TEXT, list(CATEGORIES), Canned(), cache=cache)
+    con = SimpleNamespace(text=TEXT, gold={"Assignment": [], "Change of Control": []})
+    _, skipped = check([con], ["Assignment", "Change of Control"], cache)
+    assert skipped == 0
+
+
 def test_end_to_end_on_saved_replies_reports_a_silent_partial_miss_and_that_the_list_surfaces_it():
     import json
 
@@ -68,7 +89,8 @@ def test_end_to_end_on_saved_replies_reports_a_silent_partial_miss_and_that_the_
             return json.dumps([{"category": "Assignment", "quote": RESTRICTION}]), 0, 0
 
     cache = Store()
-    find_findings(TEXT, ["Assignment"], Canned(), cache=cache)  # the paid run: saves the reply
+    from clause_review.categories import CATEGORIES
+    find_findings(TEXT, list(CATEGORIES), Canned(), cache=cache)  # the paid run asks about all five categories
     con = SimpleNamespace(text=TEXT, gold={"Assignment": [span(RESTRICTION), span(CONSEQUENCE)]})
     report, skipped = check([con], ["Assignment"], cache)  # the check: reads the saved reply, calls nothing
     r = report["Assignment"]
