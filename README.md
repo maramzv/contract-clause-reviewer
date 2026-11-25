@@ -2,7 +2,7 @@
 
 Junior associates reviewing contracts for a deal search every agreement for the same clauses and copy the wording and page into a table by hand. When a search finds nothing, they can't tell whether the clause isn't there or they missed it, and a senior lawyer will still ask, "Where does the contract say that?"
 
-Clautra reads a batch of contracts, shows the exact wording and page for five clause types, and marks everything it couldn't find "Not found, review required."
+Clautra reads a batch of contracts, shows the exact wording and page for five clause types, and marks everything it couldn't find "Not found, review required," which means a person must search that contract for it, because an empty result does not prove the clause is absent.
 
 *Formerly "Contract Clause Extraction and Review." The roles come from the ImmunityBio, Cantor Fitzgerald and Andrews Myers postings we studied.*
 
