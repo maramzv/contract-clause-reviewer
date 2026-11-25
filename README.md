@@ -16,7 +16,7 @@ These pain points are **hypotheses**, not established facts. No posting says tha
 
 Clautra reads a batch of contracts and, for five clause types, shows the exact wording and page for every clause it finds. It marks everything it could not find for a person to check, and it carries any question for a senior lawyer along with the answer.
 
-- **See the exact words and the page.** Each finding is a quotation copied from the contract with its page number, so you can check it in seconds instead of trusting a summary.
+- **See the exact words and the page.** Each finding is a quotation copied from the contract with its page number, so you can check it against the contract instead of trusting a summary.
 - **Never mistake a blank for "not there."** Every clause type is either found or marked "Not found, review required," and removing a false match restores that flag.
 - **Keep or remove each finding.** You accept or remove each suggestion, and can restore one you removed. Removed findings stay in the export, so there is a record of what you rejected.
 - **Ask your senior lawyer.** Flag a question on any finding. The senior lawyer reads it beside the passage and answers on their own page, and the question and answer go into the export.
@@ -202,9 +202,9 @@ Either definition change edits the signed Clause Definitions, so it needs approv
 
 ## Status
 
-**Built:** upload, category choice, findings with quotation, page and category status, failed files listed with the reason, accept/remove/restore, questions for a senior lawyer with answers on a Senior lawyer page, a checkbox to mark each category as reviewed (a progress mark that never changes the category's status and is not in the CSV), CSV download, the model providers with a spend limit and response cache, the CUAD loader and evaluation script (with a regex-only baseline, development split by default), and 132 passing tests (offline, on small invented files and the mock provider).
+**Built:** upload, category choice, findings with quotation, page and category status, the passage highlighted in the contract text, adding a passage the tool missed by selecting it in the contract, failed files listed with the reason, accept/remove/restore, questions for a senior lawyer with answers on a Senior lawyer page, a checkbox to mark each category as reviewed (a progress mark that never changes the category's status and is not in the CSV), CSV download, the model providers with a spend limit and response cache, the CUAD loader and evaluation script (with a regex-only baseline, development split by default), and 132 passing tests (offline, on small invented files and the mock provider).
 
-**Not built yet:** the other P1 and P2 items (highlighting, adding a missed passage, filters, custom categories). The regex-only baseline (average precision 0.48, recall 0.52, F1 0.42 on the 408 development contracts) and the real-model run on the 102 test contracts are done; results are above.
+**Not built yet:** filters and custom categories (the clause list is fixed at five). The regex-only baseline (average precision 0.48, recall 0.52, F1 0.42 on the 408 development contracts) and the real-model run on the 102 test contracts are done; results are above.
 
 ## Who did what
 
