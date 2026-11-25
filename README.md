@@ -102,16 +102,20 @@ Locations are PDF page numbers. A text file counts as one page. Section headings
 
 ## Run it
 
-From the `src/` folder:
+You need Python 3.11 or newer (tested on 3.11, 3.12 and 3.13) and git. No API key is needed to try it: the default `mock` provider works offline.
 
 ```
+git clone https://github.com/maramzv/contract-clause-reviewer.git
+cd contract-clause-reviewer/src
 python -m venv .venv
-.venv\Scripts\activate          # macOS/Linux: source .venv/bin/activate
-pip install -r ../requirements.txt          # streamlit, pypdf and anthropic (anthropic is only needed for the hosted model)
-pip install pytest                            # only to run the tests
-python -m pytest -q             # runs offline with the mock provider
-streamlit run app.py            # the review screen, on the mock provider by default
+source .venv/bin/activate       # Windows: .venv\Scripts\activate
+pip install -r ../requirements.txt     # streamlit, pypdf and anthropic (anthropic is only used with an API key)
+streamlit run app.py            # opens the review screen at http://localhost:8501
 ```
+
+To check the install, run `pip install pytest` and then `python -m pytest -q` (132 tests, offline, about 3 seconds).
+
+**To use the real model instead of the mock:** copy `.env.example` (in the repository's top folder) to `.env`, set `CLAUSE_PROVIDER=anthropic` and put your key in `ANTHROPIC_API_KEY`, then run `streamlit run app.py` again. The key stays in `.env`, which git ignores.
 
 Try it with `src/samples/sample_contract.txt`. The mock provider finds clauses with keyword rules, so its results say nothing about real model quality, and the screen says so.
 
