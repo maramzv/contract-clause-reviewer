@@ -8,6 +8,12 @@ For each labeled passage the tool missed, say what the review screen would have 
 
 It also tries a display-only keyword rule (ALSO_MENTIONS) for sentences the tool did not suggest, and reports how many of
 the missed passages those sentences would put in front of the reader, and how long the list would be per contract.
+Run it from the code that saved the replies. Saved replies are filed under a hash of the exact prompt, and the prompt on
+main changed after the freeze, so on main every contract is skipped. To check the frozen run:
+  git worktree add ../clautra-frozen freeze-2026-11-08
+  cp src/clause_review/miss_check.py ../clautra-frozen/src/clause_review/
+  cd ../clautra-frozen/src   (then run the command below with the paths to the CUAD files and the cache)
+Use --diagnose to see which provider and model have saved replies, and --show-misses to read the missed passages.
 Reads the CUAD files and the saved model replies (eval_cache.db) on your machine; a contract whose replies are not all
 saved is skipped and counted, so nothing is paid for. It prints counts; it writes no answer key anywhere."""
 import argparse
@@ -29,7 +35,8 @@ from .store import Store
 
 # Display-only rules, kept apart from the scored keyword patterns in categories.py so that nothing scored changes.
 # Hypothesis to test: the sentences the model misses in Assignment are the ones that say what an assignment without
-# consent does (void, null, of no effect, a breach or default).
+# consent does (void, null, of no effect, a breach or default). Result on 29 frozen-run development contracts: the rule
+# surfaced 1 of the 7 missed Assignment passages, so it is not built into the review screen. Kept here as the test.
 ALSO_MENTIONS = {
     "Assignment": [
         r"\bassign(?:ed|ment|ments|s)?\b[^.]{0,250}\b(?:void|null and void|of no (?:force or )?effect|invalid|breach|default)\b",
