@@ -33,7 +33,7 @@ Clautra reads a batch of contracts and, for five clause types, shows the exact w
 ![A gap with the senior lawyer's answer shown under the junior associate's question](docs/images/clautra-senior-answer.jpg)
 *A question to the senior lawyer, answered beside the passage.*
 
-The 2:52 demo recording is in the repo at [`src/static/video/clautra_demo.mp4`](src/static/video/clautra_demo.mp4); the earlier 2:28 cut is `clautra_demo_previous.mp4` in the same folder.
+The 2:52 demo recording is in the repo at [`src/static/video/clautra_demo.mp4`](src/static/video/clautra_demo.mp4).
 
 ## Two guarantees
 
