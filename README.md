@@ -71,12 +71,13 @@ Each run in the app creates a new review named by the time of the run.
 
 ## Tech stack
 
-- **UI:** Streamlit (>=1.40)
-- **Language and package:** Python, `clause_review` package in `src/`
+- **Language:** Python, in the `clause_review` package in `src/`
+- **Review screen:** Streamlit (>=1.40) hosts a custom component written in plain HTML, CSS and JavaScript (`src/ui/workspace.js`); Python builds the data it draws (`src/workspace_html.py`). There is no separate backend.
 - **Model:** Claude Sonnet (`claude-sonnet-5-5`) via the `anthropic` Python SDK; override with `CLAUSE_MODEL`. The API key comes from an environment variable and is never stored.
-- **Providers:** `mock` (offline, the code default, for running without a key), `anthropic` (set `CLAUSE_PROVIDER=anthropic` in `.env`), `local`, and `claude_code` (`providers.py`)
+- **Other model providers** (`src/clause_review/providers.py`): `mock` (offline, the code default, needs no API key; it finds clauses with keyword rules only, so its results say nothing about model quality), `local` (any model server at `CLAUSE_LOCAL_URL`, called with Python's built-in `urllib`), and `claude_code`
+- **Extraction:** one model call per chunk, plus a Python `re` keyword pass for candidate sentences
 - **PDF parsing:** `pypdf`
-- **Storage:** SQLite (one local file)
+- **Storage:** SQLite (one local file), which also holds the model-response cache
 - **Evaluation:** CUAD (the Contract Understanding Atticus Dataset, 510 public contracts labeled by lawyers), with an offline replay cache so results can be re-scored without an API key
 - **Tests:** `pytest`
 
