@@ -7,3 +7,5 @@ The results deck for the class project, 14 slides.
 - `source/` holds the slide files the deck was built from (`deck.json` sets the order, one HTML file per slide, 1920 by 1080). They are kept so the deck can be edited. The PDF is the reference copy.
 
 The deck says what the one test run showed and what it did not: reported scores use the CUAD labels as published, the answer-key check was made after the freeze and is not independent, and time saved is untested because the reviewer pilot was not run. If the pilot is run, update slide 10 and slide 13 here, the README and the PRD together.
+
+This deck was presented under the project's earlier name, Contract Clause Extraction and Review. The product is now named Clautra.

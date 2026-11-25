@@ -161,6 +161,8 @@ Evaluation and demos use **public contracts from CUAD** (510 contracts, 41 categ
 
 The answer key, written category definitions and extractor prompts were frozen on Nov 8, 2026 and tagged `freeze-2026-11-08` (commit d717d6f).
 
+**The code on `main` is newer than the frozen version.** After the freeze, the extractor prompt gained a rule ("Judge by meaning, not by keywords…", in `src/clause_review/extract.py`), so a fresh clone does not run exactly what was scored. That change has not been scored. Every result below belongs to the tag, and `git checkout freeze-2026-11-08` gives the code that produced them.
+
 ### Results on the 102 test contracts (one run, frozen code, Claude Sonnet 5.5)
 
 Run on Nov 8 after the freeze tag was pushed, a day earlier than the schedule's Nov 9. The freeze came first, so no test result could have influenced the frozen code.
