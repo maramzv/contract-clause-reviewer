@@ -114,3 +114,27 @@ def test_diagnose_names_the_provider_and_model_that_have_saved_replies():
     out = diagnose([SimpleNamespace(text=TEXT)], cache)
     assert "anthropic | claude-sonnet-4-5: 1 of 1" in out and "claude-sonnet-5-5:" not in out
     assert "no provider" in diagnose([SimpleNamespace(text=TEXT)], Store())
+
+
+def test_show_misses_lists_the_missed_passage_and_what_was_shown_instead():
+    import json
+
+    from clause_review.categories import CATEGORIES
+    from clause_review.miss_check import format_misses
+    from clause_review.pipeline import find_findings
+    from clause_review.providers import Provider
+
+    class Canned(Provider):
+        name, model = "anthropic", "claude-sonnet-5-5"
+
+        def _complete(self, prompt):
+            return json.dumps([{"category": "Assignment", "quote": RESTRICTION}]), 0, 0
+
+    cache = Store()
+    find_findings(TEXT, list(CATEGORIES), Canned(), cache=cache)
+    con = SimpleNamespace(title="Sample Agreement", text=TEXT, gold={"Assignment": [span(RESTRICTION), span(CONSEQUENCE)]})
+    misses = []
+    check([con], ["Assignment"], cache, misses=misses)
+    out = format_misses(misses)
+    assert len(misses) == 1 and misses[0]["kind"] == "partial"
+    assert "MISSED: " + CONSEQUENCE in out and "shown:  " + RESTRICTION in out and "Sample Agreement" in out

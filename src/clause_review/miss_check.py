@@ -83,7 +83,7 @@ def also_mentions(text, patterns, shown, threshold=0.5):
     return [s for s in sentence_spans(text, patterns) if not any(coverage(s, f) >= threshold for f in shown)]
 
 
-def check(contracts, categories, cache, patterns=ALSO_MENTIONS):
+def check(contracts, categories, cache, patterns=ALSO_MENTIONS, misses=None):
     """Report on `categories`, but read the saved replies with all five: the evaluation asks the model about every
     category in one prompt, and the saved reply is filed under a hash of that whole prompt. Asking about fewer
     categories builds a different prompt and finds nothing."""
@@ -107,6 +107,11 @@ def check(contracts, categories, cache, patterns=ALSO_MENTIONS):
             r["matched"] += res["matched"]
             if res["kind"]:
                 r[res["kind"]] += res["missed"]
+                if misses is not None:
+                    for g in gold:
+                        if not any(overlap(sp, g) >= 0.5 for sp in shown):
+                            misses.append({"category": cat, "title": getattr(con, "title", ""), "kind": res["kind"],
+                                           "missed": con.text[g[0]:g[1]], "shown": [con.text[a:b] for a, b in shown]})
             if cat in patterns:
                 extra = also_mentions(con.text, patterns[cat], shown)
                 r["list_lengths"].append(len(extra))
@@ -142,6 +147,21 @@ def diagnose(contracts, cache, models=None, providers=None, n=5):
     return "\n".join(lines)
 
 
+def format_misses(misses, width=260):
+    """The missed passages themselves, for reading on screen. Not written to the --json file."""
+    def cut(t):
+        t = " ".join(t.split())
+        return t if len(t) <= width else t[:width] + "..."
+    lines = []
+    for i, m in enumerate(misses, 1):
+        lines.append(f"{i}. {m['category']} | {m['title']} | {m['kind']}")
+        lines.append(f"   MISSED: {cut(m['missed'])}")
+        for sh in m["shown"][:2]:
+            lines.append(f"   shown:  {cut(sh)}")
+        lines.append("")
+    return "\n".join(lines)
+
+
 def format_report(report, skipped):
     lines = [f"{skipped} contracts skipped (replies not all saved)", ""]
     if skipped and not any(r["contracts"] for r in report.values()):
@@ -173,6 +193,7 @@ def main(argv=None):
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--json", help="write the counts to this file")
     ap.add_argument("--diagnose", action="store_true", help="instead of the check, show why saved replies are not found")
+    ap.add_argument("--show-misses", action="store_true", help="also print each missed passage and what was shown instead")
     ap.add_argument("--models", nargs="+", help="model names to try with --diagnose")
     a = ap.parse_args(argv)
     dev, _ = split_contracts(load_cuad(a.cuad), a.test)  # the held-out test contracts are never read
@@ -180,8 +201,11 @@ def main(argv=None):
     if a.diagnose:
         print(diagnose(chosen, Store(a.cache), a.models))
         return
-    report, skipped = check(chosen, a.categories, Store(a.cache))
+    misses = [] if a.show_misses else None
+    report, skipped = check(chosen, a.categories, Store(a.cache), misses=misses)
     print(format_report(report, skipped))
+    if misses is not None:
+        print(format_misses(misses))
     if a.json:
         with open(a.json, "w") as fh:
             json.dump({"skipped": skipped, "report": report}, fh, indent=1)
