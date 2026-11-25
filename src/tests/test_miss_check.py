@@ -97,3 +97,20 @@ def test_end_to_end_on_saved_replies_reports_a_silent_partial_miss_and_that_the_
     assert skipped == 0
     assert (r["labeled"], r["matched"], r["partial"], r["gap"], r["wrong"]) == (2, 1, 1, 0, 0)
     assert r["surfaced"] == 1 and r["list_lengths"] == [1]
+
+
+def test_diagnose_names_the_provider_and_model_that_have_saved_replies():
+    import hashlib
+
+    from clause_review.categories import CATEGORIES
+    from clause_review.chunk import chunk
+    from clause_review.extract import PROMPT, describe
+    from clause_review.miss_check import diagnose
+
+    cache = Store()
+    for ch in chunk(TEXT):
+        pr = PROMPT.format(cats="\n".join(describe(c) for c in CATEGORIES), chunk=ch.text)
+        cache.put(hashlib.sha256(f"anthropic|claude-sonnet-4-5|{pr}".encode()).hexdigest(), "[]")
+    out = diagnose([SimpleNamespace(text=TEXT)], cache)
+    assert "anthropic | claude-sonnet-4-5: 1 of 1" in out and "claude-sonnet-5-5:" not in out
+    assert "no provider" in diagnose([SimpleNamespace(text=TEXT)], Store())

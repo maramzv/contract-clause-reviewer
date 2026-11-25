@@ -11,6 +11,7 @@ the missed passages those sentences would put in front of the reader, and how lo
 Reads the CUAD files and the saved model replies (eval_cache.db) on your machine; a contract whose replies are not all
 saved is skipped and counted, so nothing is paid for. It prints counts; it writes no answer key anywhere."""
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -19,7 +20,8 @@ import sys
 
 from .categories import CATEGORIES
 from .cuad import load_cuad, sample, split_contracts
-from .extract import _BOUNDARY
+from .chunk import chunk
+from .extract import _BOUNDARY, PROMPT, describe
 from .pipeline import find_findings
 from .providers import Provider
 from .score import coverage, overlap
@@ -113,6 +115,33 @@ def check(contracts, categories, cache, patterns=ALSO_MENTIONS):
     return report, skipped
 
 
+DIAGNOSE_MODELS = ["claude-sonnet-5-5", "claude-sonnet-4-5", "claude-opus-5-5", "claude-haiku-5-5"]
+DIAGNOSE_PROVIDERS = ["anthropic", "claude_code", "local", "mock"]
+
+
+def diagnose(contracts, cache, models=None, providers=None, n=5):
+    """Why would a saved reply not be found? Counts the rows in the cache, then for the first n contracts counts how many
+    chunk prompts have a saved reply under each provider and model, asking about all five categories. Prints counts only."""
+    models = models or DIAGNOSE_MODELS
+    providers = providers or DIAGNOSE_PROVIDERS
+    rows = cache.db.execute("SELECT COUNT(*) FROM LLMCache").fetchone()[0]
+    prompts = []
+    for con in contracts[:n]:
+        for ch in chunk(con.text):
+            prompts.append(PROMPT.format(cats="\n".join(describe(c) for c in CATEGORIES), chunk=ch.text))
+    lines = [f"rows in the cache: {rows}", f"prompts built from the first {min(n, len(contracts))} contracts: {len(prompts)}"]
+    for prov in providers:
+        for model in models + [""]:
+            hits = sum(1 for pr in prompts
+                       if cache.get(hashlib.sha256(f"{prov}|{model}|{pr}".encode()).hexdigest()) is not None)
+            if hits:
+                lines.append(f"  {prov} | {model or '(no model name)'}: {hits} of {len(prompts)} have a saved reply")
+    if len(lines) == 2:
+        lines.append("  no provider and model combination tried has a saved reply for these prompts. Either the model name is "
+                     "one not tried (pass --models), or the prompt or definitions differ from the run that saved them.")
+    return "\n".join(lines)
+
+
 def format_report(report, skipped):
     lines = [f"{skipped} contracts skipped (replies not all saved)", ""]
     if skipped and not any(r["contracts"] for r in report.values()):
@@ -143,9 +172,14 @@ def main(argv=None):
     ap.add_argument("--limit", type=int, help="only this many development contracts, drawn with --seed")
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--json", help="write the counts to this file")
+    ap.add_argument("--diagnose", action="store_true", help="instead of the check, show why saved replies are not found")
+    ap.add_argument("--models", nargs="+", help="model names to try with --diagnose")
     a = ap.parse_args(argv)
     dev, _ = split_contracts(load_cuad(a.cuad), a.test)  # the held-out test contracts are never read
     chosen = sample(dev, a.limit, a.seed)
+    if a.diagnose:
+        print(diagnose(chosen, Store(a.cache), a.models))
+        return
     report, skipped = check(chosen, a.categories, Store(a.cache))
     print(format_report(report, skipped))
     if a.json:
