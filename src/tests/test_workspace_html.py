@@ -151,3 +151,28 @@ def test_page_number_is_only_shown_for_pdfs():
     f = {"id": 1, "page": 14, "review": "pending", "quote": "q", "question": None, "answer": None, "qstate": None}
     assert _finding(f, 1, 1, "deal.pdf")["page"] == 14
     assert _finding(f, 1, 1, "contract_01 - Title (Party).txt")["page"] is None  # a text file has no pages
+
+
+def test_a_found_clause_says_how_much_it_holds_and_asks_for_the_rest_to_be_checked():
+    s, docs = setup()
+    v = build_view(s, docs(), {})
+    cur = v["current"]
+    assert cur["caption"].startswith("Looked for: restrictions on assigning")
+    assert cur["caption"].endswith("Found 1 passage. Check the rest of the contract for other wording.")  # a text file shows no pages
+    assert cur["reviewedLabel"] == "I checked the rest of the contract for other assignment wording"
+
+
+def test_a_gap_keeps_its_own_wording_and_a_removed_passage_is_not_counted():
+    s, docs = setup()
+    (asg,) = finding_ids(s, "Assignment")
+    apply_action(s, {}, {"type": "remove", "id": asg}, docs())
+    v = build_view(s, docs(), {"ws_mode": "All clauses"})
+    assert v["current"]["name"] == "Assignment" and v["findings"] == []
+    assert v["current"]["caption"] is None and v["current"]["reviewedLabel"] is None
+
+
+def test_the_caption_is_plain_text_for_the_page_to_escape():
+    s, docs = setup()
+    import json
+    caption = build_view(s, docs(), {})["current"]["caption"]
+    assert "<" not in caption and json.loads(json.dumps(caption)) == caption

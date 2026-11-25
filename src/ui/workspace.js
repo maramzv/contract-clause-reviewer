@@ -33,13 +33,14 @@ function left(d) {
     <div class="section">
       <div class="head"><span class="name">${esc(c.name)}</span><span class="tag ${c.state}">${esc(c.mine ? 'Found by you' : (STATE_TAG[c.state] || c.status))}</span>
         ${c.reviewed ? '<span class="of">✔ reviewed</span>' : ''}</div>`];
+  if (c.caption) out.push(`<div class="hint">${esc(c.caption)}</div>`);
   if (c.failed) out.push(`<div class="qa">Failed to process: ${esc(c.failed)}</div>`);
   const about = { clause: d.current.name, contract: d.title, senior: sr };
   d.findings.forEach((f, i) => out.push(finding(f, i === d.findings.findIndex((x) => x.review === 'pending'), about)));
   if (!d.findings.length) out.push(gapPanel(d, about));
   else if (d.gapq) out.push(`<div class="hint">${sr ? 'A question about this clause, asked before a passage was found:' : 'Your question about this clause, asked before a passage was found:'}</div>`, sr ? answerBlock(d.gapq, about) : qaBlock(d.gapq, about, GAP_WORDS, false));
   d.removed.forEach((r) => out.push(`<div class="restore"><div class="quote removed">${esc(r.quote)}</div><button class="btn" data-act="restore" data-id="${r.id}">Restore</button></div>`));
-  out.push(`<label class="check"><input type="checkbox" data-reviewed ${c.reviewed ? 'checked' : ''}>${d.findings.length ? 'Mark this clause as reviewed' : 'I searched the contract (optional)'}</label></div>`);
+  out.push(`<label class="check"><input type="checkbox" data-reviewed ${c.reviewed ? 'checked' : ''}>${d.findings.length ? (c.reviewedLabel || 'Mark this clause as reviewed') : 'I searched the contract (optional)'}</label></div>`);
   return out.join('');
 }
 

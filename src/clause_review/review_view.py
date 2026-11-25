@@ -3,6 +3,7 @@ through, what is left to do in each, and the excerpt of a contract around a quot
 import html
 import re
 
+from .categories import CATEGORIES
 from .store import FOUND, NOT_FOUND
 
 
@@ -49,6 +50,30 @@ def build_slots(docs):
 
 def live_findings(doc, category):
     return [f for f in doc["findings"] if f["category"] == category and f["review"] != "removed"]
+
+
+def found_summary(live):
+    """How much stands in a clause, in words: "Found 2 passages, pages 8 and 31." None when nothing is live (a gap).
+    It counts what is there so a reader cannot take a found clause to be a complete one."""
+    if not live:
+        return None
+    n = len(live)
+    pages = sorted({f["page"] for f in live if f.get("page")})
+    out = f"Found {n} passage{'' if n == 1 else 's'}"
+    if pages:
+        shown = ", ".join(str(p) for p in pages[:-1]) + (" and " if len(pages) > 1 else "") + str(pages[-1])
+        out += f", page{'' if len(pages) == 1 else 's'} {shown}"
+    return out + "."
+
+
+def found_caption(category, live):
+    """The line under a found clause's heading: what the tool looked for, what it found, and a nudge not to stop there.
+    None for a gap, which keeps its own wording."""
+    summary = found_summary(live)
+    if summary is None:
+        return None
+    desc = CATEGORIES[category]["description"]
+    return f"Looked for: {desc[:1].lower()}{desc[1:]} {summary} Check the rest of the contract for other wording."
 
 
 def found_by_you(doc, category):

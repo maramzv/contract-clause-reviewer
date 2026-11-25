@@ -6,7 +6,7 @@ Page -> Python: one trigger, `act`, with a dict such as {"type": "accept", "id":
 import re
 from pathlib import Path
 
-from clause_review.review_view import (build_slots, clause_state, found_by_you, gap_question, is_gap, live_findings, locate, overview_stats, passage_html,
+from clause_review.review_view import (build_slots, clause_state, found_by_you, found_caption, gap_question, is_gap, live_findings, locate, overview_stats, passage_html,
                                        question_counts, search_snippets, split_title)
 from clause_review.store import ANSWERED, OPEN, RESOLVED
 from workspace import short
@@ -86,6 +86,11 @@ def build_view(store, docs, state, categories=None):
     live = live_findings(doc, cat)
     current = next((f for f in live if f["id"] == fid), None)
     cur = (pos, fid)
+    # what stands in this clause, in words, so a found clause is not read as a complete one. Page numbers are shown
+    # only where the passages show them (a PDF); a clause made only of passages the reader highlighted has no tool result to describe
+    pages_shown = bool(store.page_starts(doc_id)) or doc["name"].lower().endswith(".pdf")
+    caption = None if found_by_you(doc, cat) else found_caption(cat, [{**f, "page": f["page"] if pages_shown else None} for f in live])
+    reviewed_label = f"I checked the rest of the contract for other {short(cat).lower()} wording" if caption else None
     where = members.index(cur) + 1 if cur in members else 0
     later = [m for m in members if items.index(m) > items.index(cur)][:2]
     stats = overview_stats(docs, list(docs[0]["categories"]))  # the same numbers the Overview shows
@@ -110,7 +115,7 @@ def build_view(store, docs, state, categories=None):
         "clauses": [{"name": c, "label": short(c), "state": clause_state(doc, c), "active": c == cat} for c in doc["categories"]],
         "current": {"name": short(cat), "state": clause_state(doc, cat), "status": doc["categories"][cat] or "Failed",
                     "reviewed": bool(doc["reviewed"].get(cat)), "failed": doc["error"] if doc["status"] == "failed" else None,
-                    "mine": found_by_you(doc, cat)},
+                    "mine": found_by_you(doc, cat), "caption": caption, "reviewedLabel": reviewed_label},
         "role": "senior" if state.get("review_role") == "senior" else "junior",
         "questions": dict(zip(("open", "total"), question_counts(docs, list(doc["categories"])))),
         "findings": [_finding(current, [f["id"] for f in live].index(fid) + 1, len(live), doc["name"], paged=bool(store.page_starts(doc_id)))] if current else [],
