@@ -65,7 +65,7 @@ Each run in the app creates a new review named by the time of the run.
 
 **P0 means committed for the build window, P1/P2 means optional extras.** **P0:** multi-file upload, failed-file reporting with reason, category selection, quotation + page for each finding, per-category status, accept/remove, CSV export.
 
-**P1/P2:** highlighting in full text, marking a category as reviewed, flagging a question for a senior lawyer, adding a missed passage, filters, custom categories. Built only if P0 is finished and demonstrated. Flagging a question for a senior lawyer has since been built, with the Senior lawyer page and the `answer` column in the CSV.
+**P1/P2:** highlighting in full text, marking a category as reviewed, flagging a question for a senior lawyer, adding a missed passage, filters, custom categories. Built only if P0 is finished and demonstrated. All of these have since been built except custom categories, including the Senior lawyer page and the `answer` column in the CSV.
 
 **Non-goals:** legal interpretation or risk scoring, OCR for scanned PDFs, non-English contracts, drafting/redlining, multi-user accounts, processing real client contracts with a hosted model, scoring notice of non-renewal.
 
@@ -202,9 +202,9 @@ Either definition change edits the signed Clause Definitions, so it needs approv
 
 ## Status
 
-**Built:** upload, category choice, findings with quotation, page and category status, the passage highlighted in the contract text, adding a passage the tool missed by selecting it in the contract, failed files listed with the reason, accept/remove/restore, questions for a senior lawyer with answers on a Senior lawyer page, a checkbox to mark each category as reviewed (a progress mark that never changes the category's status and is not in the CSV), CSV download, the model providers with a spend limit and response cache, the CUAD loader and evaluation script (with a regex-only baseline, development split by default), and 132 passing tests (offline, on small invented files and the mock provider).
+**Built:** upload, category choice, findings with quotation, page and category status, the passage highlighted in the contract text, adding a passage the tool missed by selecting it in the contract, filters on the overview and export pages (all, needs review, has a question, gaps), failed files listed with the reason, accept/remove/restore, questions for a senior lawyer with answers on a Senior lawyer page, a checkbox to mark each category as reviewed (a progress mark that never changes the category's status and is not in the CSV), CSV download, the model providers with a spend limit and response cache, the CUAD loader and evaluation script (with a regex-only baseline, development split by default), and 132 passing tests (offline, on small invented files and the mock provider).
 
-**Not built yet:** filters and custom categories (the clause list is fixed at five). The regex-only baseline (average precision 0.48, recall 0.52, F1 0.42 on the 408 development contracts) and the real-model run on the 102 test contracts are done; results are above.
+**Not built yet:** custom categories (the clause list is fixed at five). The regex-only baseline (average precision 0.48, recall 0.52, F1 0.42 on the 408 development contracts) and the real-model run on the 102 test contracts are done; results are above.
 
 ## Who did what
 
