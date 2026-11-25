@@ -236,6 +236,7 @@ docs/03-design/       brand files, design rounds and before/after previews
 docs/03-tests/        materials for the answer-key check (test contracts, marking sheet, definitions)
 docs/04-presentation/ the Nov 10 results deck, kept as presented under the earlier name
 docs/images/          the screenshots used in this README
+docs/BEFORE-YOU-SHARE.md  a checklist to run before sharing the repo
 intro/                the first intro slideshow (open intro/index.html); the app's own /intro page is in src/pages/
 src/                  the app, the clause_review package, its pages and tests
 requirements.txt      the Python packages to install
